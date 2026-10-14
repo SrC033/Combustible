@@ -1,0 +1,2091 @@
+<!-- MODULO PAGINAS HIJO - CON EDITOR VISUAL Y ENLACES PREDEFINIDOS -->
+<div class="paginas-modulo">
+    <!-- Panel de Enlaces Predefinidos -->
+    <div class="panel enlaces-panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-link"></i> Enlaces Predefinidos para APKs</h3>
+            <div class="header-actions">
+                <button id="recargarEnlacesBtn" class="btn-outline btn-sm">
+                    <i class="fas fa-sync-alt"></i> Recargar
+                </button>
+            </div>
+        </div>
+        <div id="enlacesList" class="enlaces-container">
+            <div class="empty-state"><div class="spinner"></div><p>Cargando enlaces...</p></div>
+        </div>
+    </div>
+
+    <!-- Panel Principal - Lista de Páginas -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-file-code"></i> Páginas de Clientes</h3>
+            <div class="header-actions">
+                <button id="recargarPaginasBtn" class="btn-outline btn-sm">
+                    <i class="fas fa-sync-alt"></i> Recargar
+                </button>
+                <button id="crearPaginaBtn" class="btn-success btn-sm">
+                    <i class="fas fa-plus"></i> Nueva Página
+                </button>
+            </div>
+        </div>
+        <div id="paginasList" class="paginas-list-container-scroll">
+            <div class="empty-state"><div class="spinner"></div><p>Cargando páginas...</p></div>
+        </div>
+    </div>
+
+    <!-- Subventana: Editor Visual Integrado -->
+    <div class="editor-subwindow">
+        <div class="editor-subwindow-header">
+            <div class="editor-title">
+                <i class="fas fa-paint-brush"></i>
+                <h4>Editor Visual de Páginas</h4>
+                <span class="editor-badge">Diseño en tiempo real</span>
+            </div>
+            <div class="editor-controls">
+                <select id="selectorPaginaEditar" class="select-editor">
+                    <option value="">-- Seleccione página para editar --</option>
+                </select>
+                <button id="guardarPaginaBtn" class="btn-success btn-sm" disabled>
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+                <button id="previsualizarBtn" class="btn-primary btn-sm" disabled>
+                    <i class="fas fa-eye"></i> Ver
+                </button>
+            </div>
+        </div>
+        
+        <div class="editor-subwindow-body">
+            <!-- Sidebar de estilos -->
+            <div class="editor-sidebar">
+                <div class="sidebar-section">
+                    <h5><i class="fas fa-palette"></i> Colores</h5>
+                    <div class="color-row">
+                        <div class="color-item">
+                            <label>Principal</label>
+                            <input type="color" id="editColorPrimario" class="color-picker" value="#f59e0b">
+                        </div>
+                        <div class="color-item">
+                            <label>Secundario</label>
+                            <input type="color" id="editColorSecundario" class="color-picker" value="#d97706">
+                        </div>
+                        <div class="color-item">
+                            <label>Fondo</label>
+                            <input type="color" id="editColorFondo" class="color-picker" value="#0f0f1a">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h5><i class="fas fa-heading"></i> Textos</h5>
+                    <div class="input-group">
+                        <label>Título de la Página</label>
+                        <input type="text" id="editTitulo" class="input-editor" placeholder="Título">
+                    </div>
+                    <div class="input-group">
+                        <label>Subtítulo</label>
+                        <input type="text" id="editSubtitulo" class="input-editor" placeholder="Subtítulo">
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h5><i class="fas fa-list"></i> Elementos del Formulario</h5>
+                    <div id="editEditorElementos" class="elementos-container-scroll">
+                        <div class="empty-state-small">
+                            <i class="fas fa-info-circle"></i>
+                            <p>No hay elementos. Use el botón "+" para agregar.</p>
+                        </div>
+                    </div>
+                    <div class="add-elemento-row">
+                        <select id="editNuevoElementoTipo" class="select-editor-small">
+                            <option value="select">📋 Selección (Combustible)</option>
+                            <option value="text">✏️ Campo de Texto (Galones)</option>
+                        </select>
+                        <button id="editAgregarElementoBtn" class="btn-outline btn-sm">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vista previa -->
+            <div class="editor-preview">
+                <div class="preview-header">
+                    <span><i class="fas fa-mobile-alt"></i> Vista Previa en Tiempo Real</span>
+                    <button id="recargarPreviewBtn" class="btn-outline btn-sm">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div id="vistaPrevia" class="preview-frame">
+                    <div class="empty-state-preview">
+                        <i class="fas fa-eye"></i>
+                        <p>Seleccione una página para comenzar a editar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ==================== ESTILOS COMPLETOS ==================== */
+
+.paginas-modulo {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    animation: fadeInUp 0.5s ease;
+}
+
+/* ========== TEMAS ========== */
+body.default-theme .paginas-modulo .panel {
+    background: rgba(15, 15, 25, 0.7);
+}
+body.dark-theme .paginas-modulo .panel {
+    background: rgba(10, 14, 26, 0.8);
+}
+body.light-theme .paginas-modulo .panel {
+    background: rgba(255, 255, 255, 0.85);
+}
+body.light-theme .paginas-modulo .panel-header {
+    background: rgba(0,0,0,0.05);
+    border-bottom-color: rgba(0,0,0,0.1);
+}
+body.light-theme .paginas-modulo .panel-header h3 { color: #1a1a2e; }
+body.light-theme .paginas-modulo .panel-header h3 i { color: #d97706; }
+body.light-theme .paginas-modulo .pagina-nombre { color: #1a1a2e; }
+body.light-theme .paginas-modulo .pagina-url-completa { color: #d97706; }
+body.light-theme .paginas-modulo .pagina-card {
+    background: linear-gradient(135deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+    border-color: rgba(0,0,0,0.08);
+}
+body.light-theme .paginas-modulo .pagina-card-header {
+    background: rgba(0,0,0,0.03);
+    border-bottom-color: rgba(0,0,0,0.05);
+}
+body.light-theme .paginas-modulo .badge-active {
+    background: rgba(16,185,129,0.15);
+    color: #059669;
+}
+body.light-theme .paginas-modulo .btn-outline {
+    border-color: rgba(0,0,0,0.2);
+    color: #4a4a6a;
+}
+body.light-theme .paginas-modulo .btn-outline:hover {
+    background: rgba(0,0,0,0.05);
+    border-color: #d97706;
+    color: #d97706;
+}
+body.light-theme .paginas-modulo .btn-copy {
+    background: rgba(16,185,129,0.15);
+    color: #059669;
+    border-color: rgba(16,185,129,0.2);
+}
+body.light-theme .paginas-modulo .btn-open {
+    background: rgba(245,158,11,0.15);
+    color: #d97706;
+    border-color: rgba(245,158,11,0.2);
+}
+body.light-theme .paginas-modulo .btn-delete {
+    background: rgba(239,68,68,0.15);
+    color: #dc2626;
+    border-color: rgba(239,68,68,0.2);
+}
+body.light-theme .paginas-modulo .editor-subwindow {
+    background: rgba(255,255,255,0.85);
+    border-color: rgba(0,0,0,0.1);
+}
+body.light-theme .paginas-modulo .editor-subwindow-header {
+    background: rgba(0,0,0,0.05);
+    border-bottom-color: rgba(0,0,0,0.1);
+}
+body.light-theme .paginas-modulo .editor-title h4 { color: #1a1a2e; }
+body.light-theme .paginas-modulo .editor-badge { color: #d97706; background: rgba(0,0,0,0.05); }
+body.light-theme .paginas-modulo .select-editor {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.15);
+    color: #1a1a2e;
+}
+body.light-theme .paginas-modulo .editor-sidebar {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.08);
+}
+body.light-theme .paginas-modulo .sidebar-section h5 { color: #d97706; }
+body.light-theme .paginas-modulo .color-item label { color: #4a4a6a; }
+body.light-theme .paginas-modulo .input-editor {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.15);
+    color: #1a1a2e;
+}
+body.light-theme .paginas-modulo .input-editor:focus {
+    border-color: #d97706;
+}
+body.light-theme .paginas-modulo .input-group label { color: #4a4a6a; }
+body.light-theme .paginas-modulo .elemento-card-editor {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.08);
+}
+body.light-theme .paginas-modulo .elemento-tipo { color: #d97706; }
+body.light-theme .paginas-modulo .editor-preview {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.08);
+}
+body.light-theme .paginas-modulo .preview-header span { color: #4a4a6a; }
+body.light-theme .paginas-modulo .preview-frame { background: #f0f0f0; }
+body.light-theme .paginas-modulo .preview-card-header p { color: #4a4a6a; }
+body.light-theme .paginas-modulo .preview-elemento-header strong { color: #1a1a2e; }
+body.light-theme .paginas-modulo .preview-select,
+body.light-theme .paginas-modulo .preview-input {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.15);
+    color: #1a1a2e;
+}
+
+body.navy-theme .paginas-modulo .panel {
+    background: rgba(26, 42, 108, 0.7);
+}
+body.nature-theme .paginas-modulo .panel {
+    background: rgba(19, 78, 94, 0.7);
+}
+body.image-theme .paginas-modulo .panel {
+    background: rgba(0,0,0,0.5);
+}
+
+/* ==================== ESTILOS DEL MÓDULO ==================== */
+
+.panel {
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+.panel-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.panel-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    margin: 0;
+}
+
+.panel-header h3 i {
+    color: #f59e0b;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ===== ENLACES PREDEFINIDOS ===== */
+.enlaces-container {
+    padding: 20px;
+}
+
+.enlaces-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.enlace-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 16px 20px;
+    transition: all 0.3s ease;
+}
+
+.enlace-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.enlace-card .enlace-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.enlace-card .enlace-icono {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+}
+
+.enlace-card .enlace-nombre {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.enlace-card .enlace-descripcion {
+    font-size: 0.65rem;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.enlace-card .enlace-url-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+
+.enlace-card .enlace-url-container input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #60a5fa;
+    font-family: monospace;
+    font-size: 0.65rem;
+    outline: none;
+}
+
+.enlace-card .enlace-url-container .btn-copy-enlace {
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(59,130,246,0.2);
+    color: #60a5fa;
+    cursor: pointer;
+    font-size: 0.6rem;
+    transition: all 0.2s;
+}
+
+.enlace-card .enlace-url-container .btn-copy-enlace:hover {
+    background: rgba(59,130,246,0.4);
+}
+
+.enlace-card .enlace-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+}
+
+.enlace-card .btn-open-enlace {
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: none;
+    font-size: 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.enlace-card .btn-open-enlace:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+.enlace-card .btn-open-enlace.verde {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+.enlace-card .btn-open-enlace.verde:hover {
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+.enlace-card .btn-open-enlace.amarillo {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.enlace-card .btn-open-enlace.amarillo:hover {
+    box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+
+.enlace-card .enlace-status {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.55rem;
+    font-weight: 600;
+}
+
+.enlace-card .enlace-status.activo {
+    background: rgba(16,185,129,0.2);
+    color: #10b981;
+}
+
+.enlace-card .enlace-status.inactivo {
+    background: rgba(239,68,68,0.2);
+    color: #ef4444;
+}
+
+/* ===== PÁGINAS LIST ===== */
+.paginas-list-container-scroll {
+    padding: 20px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.paginas-list-container-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.paginas-list-container-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.paginas-list-container-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 10px;
+}
+
+.paginas-list-container-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.paginas-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pagina-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.pagina-card:hover {
+    transform: translateX(5px);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.pagina-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 18px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pagina-numero {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 12px;
+}
+
+.pagina-info {
+    flex: 1;
+}
+
+.pagina-nombre {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.pagina-fecha {
+    font-size: 10px;
+    color: #888;
+}
+
+.badge-active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.badge-active i {
+    margin-right: 4px;
+    font-size: 9px;
+}
+
+.pagina-card-body {
+    padding: 12px 18px;
+}
+
+.pagina-url {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.pagina-url code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: #10b981;
+    font-size: 10px;
+}
+
+.pagina-url-completa {
+    font-size: 10px;
+    color: #f59e0b;
+    word-break: break-all;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-family: monospace;
+}
+
+.pagina-card-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #aaa;
+    padding: 6px 14px;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.65rem;
+}
+
+.btn-copy, .btn-open, .btn-delete {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-copy {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.btn-copy:hover {
+    background: rgba(16, 185, 129, 0.4);
+}
+
+.btn-open {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.btn-open:hover {
+    background: rgba(245, 158, 11, 0.4);
+}
+
+.btn-delete {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.4);
+}
+
+.editor-subwindow {
+    background: rgba(10, 10, 20, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    overflow: hidden;
+}
+
+.editor-subwindow-header {
+    padding: 14px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.editor-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.editor-title i {
+    color: #f59e0b;
+    font-size: 1.1rem;
+}
+
+.editor-title h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.editor-badge {
+    background: rgba(245, 158, 11, 0.2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    color: #fbbf24;
+}
+
+.editor-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.select-editor {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 40px;
+    padding: 8px 16px;
+    color: white;
+    font-size: 0.7rem;
+    cursor: pointer;
+    min-width: 220px;
+}
+
+.select-editor:focus {
+    outline: none;
+    border-color: #f59e0b;
+}
+
+.editor-subwindow-body {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    min-height: 550px;
+}
+
+.editor-sidebar {
+    width: 380px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 18px;
+    overflow-y: auto;
+    max-height: 550px;
+}
+
+.editor-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.editor-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.editor-sidebar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 10px;
+}
+
+.sidebar-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-section h5 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #f59e0b;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.color-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.color-item {
+    flex: 1;
+    min-width: 80px;
+}
+
+.color-item label {
+    display: block;
+    font-size: 0.6rem;
+    color: #aaa;
+    margin-bottom: 4px;
+}
+
+.color-picker {
+    width: 100%;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    background: transparent;
+}
+
+.input-group {
+    margin-bottom: 12px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.6rem;
+    color: #aaa;
+    margin-bottom: 4px;
+}
+
+.input-editor {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.7rem;
+}
+
+.input-editor:focus {
+    outline: none;
+    border-color: #f59e0b;
+}
+
+.elementos-container-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.elementos-container-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+
+.elementos-container-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.elementos-container-scroll::-webkit-scrollbar-thumb {
+    background: #f59e0b;
+    border-radius: 10px;
+}
+
+.elemento-card-editor {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.elemento-header-editor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.elemento-tipo {
+    font-size: 0.65rem;
+    color: #f59e0b;
+}
+
+.btn-delete-elemento {
+    background: rgba(239, 68, 68, 0.2);
+    border: none;
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: #ef4444;
+    font-size: 0.6rem;
+    cursor: pointer;
+}
+
+.btn-delete-elemento:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.elemento-body-editor .input-group-small {
+    margin-bottom: 10px;
+}
+
+.elemento-body-editor .input-group-small label {
+    display: block;
+    font-size: 0.55rem;
+    color: #aaa;
+    margin-bottom: 3px;
+}
+
+.input-editor-small {
+    width: 100%;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.65rem;
+}
+
+.opciones-container {
+    margin-top: 8px;
+    padding-left: 8px;
+    border-left: 2px solid #f59e0b;
+}
+
+.opcion-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+}
+
+.opcion-row .input-editor-small {
+    flex: 1;
+}
+
+.btn-delete-opcion {
+    background: rgba(239, 68, 68, 0.2);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 0.6rem;
+}
+
+.btn-add-opcion {
+    background: rgba(16, 185, 129, 0.2);
+    border: none;
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: #10b981;
+    cursor: pointer;
+    font-size: 0.6rem;
+    margin-top: 5px;
+}
+
+.add-elemento-row {
+    display: flex;
+    gap: 8px;
+}
+
+.select-editor-small {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 40px;
+    padding: 6px 12px;
+    color: white;
+    font-size: 0.65rem;
+}
+
+.empty-state-small {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 0.7rem;
+}
+
+.editor-preview {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.preview-header {
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-header span {
+    font-size: 0.65rem;
+    color: #aaa;
+}
+
+.preview-frame {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    min-height: 450px;
+}
+
+.preview-frame::-webkit-scrollbar {
+    width: 6px;
+}
+
+.preview-frame::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.preview-frame::-webkit-scrollbar-thumb {
+    background: #f59e0b;
+    border-radius: 10px;
+}
+
+.empty-state-preview {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-state-preview i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-state-preview p {
+    font-size: 0.75rem;
+}
+
+.preview-card {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.preview-card-header {
+    text-align: center;
+    padding: 20px;
+    border-bottom: 2px solid;
+}
+
+.preview-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+}
+
+.preview-icon i {
+    font-size: 24px;
+    color: white;
+}
+
+.preview-card-header h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.preview-card-header p {
+    font-size: 0.7rem;
+    color: #aaa;
+}
+
+.preview-card-body {
+    padding: 20px;
+}
+
+.preview-elemento {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-left: 3px solid;
+}
+
+.preview-elemento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.preview-elemento-header strong {
+    font-size: 0.75rem;
+    color: white;
+}
+
+.btn-eliminar-preview {
+    background: rgba(239, 68, 68, 0.2);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 0.6rem;
+}
+
+.preview-select, .preview-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.7rem;
+}
+
+.preview-total {
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.7rem;
+}
+
+.preview-total-monto {
+    width: 100%;
+    text-align: right;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+}
+
+.preview-total-monto strong {
+    color: #10b981;
+    font-size: 1.1rem;
+}
+
+.preview-btn-enviar {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.preview-btn-enviar:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.empty-state-preview-small {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(245, 158, 11, 0.3);
+    border-top-color: #f59e0b;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    animation: spin 1s linear infinite;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: #888;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.toast-message-custom {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10001;
+    font-size: 13px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(20px); }
+    15% { opacity: 1; transform: translateX(0); }
+    85% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(20px); }
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 10px;
+}
+
+body.light-theme ::-webkit-scrollbar-track {
+    background: #e0e0e0;
+}
+
+@media (max-width: 1000px) {
+    .editor-subwindow-body {
+        flex-direction: column;
+    }
+    
+    .editor-sidebar {
+        width: 100%;
+        max-height: 400px;
+    }
+    
+    .paginas-modulo {
+        padding: 15px;
+    }
+    
+    .editor-controls {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .select-editor {
+        flex: 1;
+    }
+    
+    .enlaces-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .pagina-card-footer {
+        flex-wrap: wrap;
+    }
+    
+    .btn-copy, .btn-open, .btn-delete {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .color-row {
+        flex-direction: column;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .header-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// ==================== MODULO PAGINAS HIJO CON ENLACES PREDEFINIDOS ====================
+(function() {
+    console.log("Módulo Páginas Hijo cargando...");
+    
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        body.style.background = '';
+        body.style.backgroundImage = '';
+        body.style.backgroundColor = '';
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+            body.style.backgroundImage = 'url(' + imagenUrl + ')';
+            body.style.backgroundSize = 'cover';
+            body.style.backgroundPosition = 'center';
+            body.style.backgroundAttachment = 'fixed';
+        } else {
+            body.classList.add(tema + '-theme');
+            switch(tema) {
+                case 'default': body.style.background = 'radial-gradient(circle at 10% 20%, #0a0f1c, #03060c)'; break;
+                case 'dark': body.style.background = '#0a0e1a'; break;
+                case 'light': body.style.background = '#f5f7fa'; break;
+                case 'navy': body.style.background = 'linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb4d)'; break;
+                case 'nature': body.style.background = 'linear-gradient(135deg, #134e5e, #71b280)'; break;
+                default: body.style.background = 'radial-gradient(circle at 10% 20%, #0a0f1c, #03060c)';
+            }
+        }
+        aplicarColoresModulo();
+    }
+
+    function aplicarColoresModulo() {
+        var colores = {
+            moduloFondo: localStorage.getItem('moduloFondo') || '#1a1a2e',
+            moduloBorde: localStorage.getItem('moduloBorde') || '#2a2a3e',
+            moduloTexto: localStorage.getItem('moduloTexto') || '#e0e0e0',
+            moduloCard: localStorage.getItem('moduloCard') || '#1e1e2f',
+            moduloEtiqueta: localStorage.getItem('moduloEtiqueta') || '#f59e0b',
+            moduloAcento: localStorage.getItem('moduloAcento') || '#f59e0b'
+        };
+        
+        document.querySelectorAll('.paginas-modulo .panel').forEach(function(el) {
+            el.style.background = colores.moduloFondo;
+            el.style.borderColor = colores.moduloBorde;
+            el.style.color = colores.moduloTexto;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .panel-header').forEach(function(el) {
+            el.style.background = 'rgba(0,0,0,0.3)';
+            el.style.borderBottomColor = colores.moduloAcento;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .panel-header h3').forEach(function(el) {
+            el.style.color = colores.moduloEtiqueta;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .editor-subwindow').forEach(function(el) {
+            el.style.background = colores.moduloCard;
+            el.style.borderColor = colores.moduloAcento;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .editor-subwindow-header').forEach(function(el) {
+            el.style.background = 'rgba(0,0,0,0.2)';
+            el.style.borderBottomColor = colores.moduloAcento;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .editor-title h4').forEach(function(el) {
+            el.style.color = colores.moduloTexto;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .editor-sidebar').forEach(function(el) {
+            el.style.background = 'rgba(0,0,0,0.2)';
+            el.style.borderColor = colores.moduloBorde;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .sidebar-section h5').forEach(function(el) {
+            el.style.color = colores.moduloEtiqueta;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .editor-preview').forEach(function(el) {
+            el.style.background = 'rgba(0,0,0,0.15)';
+            el.style.borderColor = colores.moduloBorde;
+        });
+        
+        document.querySelectorAll('.paginas-modulo .preview-frame').forEach(function(el) {
+            el.style.background = colores.moduloFondo;
+        });
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        
+        var coloresGuardados = localStorage.getItem(usuarioKey + '_colores');
+        if (coloresGuardados) {
+            try {
+                var colores = JSON.parse(coloresGuardados);
+                if (colores.moduloFondo) localStorage.setItem('moduloFondo', colores.moduloFondo);
+                if (colores.moduloBorde) localStorage.setItem('moduloBorde', colores.moduloBorde);
+                if (colores.moduloTexto) localStorage.setItem('moduloTexto', colores.moduloTexto);
+                if (colores.moduloCard) localStorage.setItem('moduloCard', colores.moduloCard);
+                if (colores.moduloEtiqueta) localStorage.setItem('moduloEtiqueta', colores.moduloEtiqueta);
+                if (colores.moduloAcento) localStorage.setItem('moduloAcento', colores.moduloAcento);
+            } catch(e) {}
+        }
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else {
+                aplicarTema(temaGuardado);
+            }
+        } else {
+            aplicarTema('default');
+        }
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+                var tema = event.data.tema;
+                var imagen = event.data.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+            if (event.data && (event.data.type === 'APLICAR_COLORES' || event.data.type === 'APLICAR_COLORES_MODULO')) {
+                var colores = event.data.colores;
+                if (colores) {
+                    if (colores.moduloFondo) localStorage.setItem('moduloFondo', colores.moduloFondo);
+                    if (colores.moduloBorde) localStorage.setItem('moduloBorde', colores.moduloBorde);
+                    if (colores.moduloTexto) localStorage.setItem('moduloTexto', colores.moduloTexto);
+                    if (colores.moduloCard) localStorage.setItem('moduloCard', colores.moduloCard);
+                    if (colores.moduloEtiqueta) localStorage.setItem('moduloEtiqueta', colores.moduloEtiqueta);
+                    if (colores.moduloAcento) localStorage.setItem('moduloAcento', colores.moduloAcento);
+                    aplicarColoresModulo();
+                }
+            }
+        });
+    }
+
+    // ==================== FUNCIONES ====================
+    var paginasLista = [];
+    var elementosEditor = [];
+    var paginaEditandoId = null;
+    var urlBaseGlobal = null;
+
+    function mostrarToast(mensaje, tipo) {
+        var oldToast = document.querySelector('.toast-message-custom');
+        if (oldToast) oldToast.remove();
+        
+        var toast = document.createElement('div');
+        toast.className = 'toast-message-custom';
+        var icono = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        toast.innerHTML = '<i class="fas ' + icono + '"></i> ' + mensaje;
+        var bgColor = tipo === 'success' ? '#10b981' : (tipo === 'error' ? '#ef4444' : '#3b82f6');
+        toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:' + bgColor + ';color:white;padding:12px 20px;border-radius:12px;z-index:10001;font-size:13px;box-shadow:0 4px 15px rgba(0,0,0,0.3);animation:fadeInOut 3s ease forwards;';
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3000);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ==================== OBTENER URL BASE (SIN CLOUDFLARE) ====================
+    async function obtenerUrlBase() {
+        try {
+            // Primero intentar con el servidor público
+            var response = await fetch('/api/servidor_publico/url');
+            if (response.ok) {
+                var data = await response.json();
+                if (data.ok && data.url) {
+                    console.log('🌐 URL pública obtenida:', data.url);
+                    return data.url;
+                }
+            }
+        } catch(e) {
+            console.log('⚠️ Error obteniendo URL pública:', e.message);
+        }
+        
+        // Si falla, intentar con la URL actual
+        try {
+            var response2 = await fetch('/api/servidor_publico/info');
+            if (response2.ok) {
+                var data2 = await response2.json();
+                if (data2.ok && data2.url) {
+                    console.log('🌐 URL pública (info):', data2.url);
+                    return data2.url;
+                }
+            }
+        } catch(e) {
+            console.log('⚠️ Error obteniendo info:', e.message);
+        }
+        
+        // Fallback a localhost
+        console.log('🌐 Usando URL local:', window.location.origin);
+        return window.location.origin;
+    }
+
+    // ==================== ENLACES PREDEFINIDOS ====================
+    async function cargarEnlaces() {
+        var container = document.getElementById('enlacesList');
+        if (!container) return;
+        
+        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Cargando enlaces...</p></div>';
+        
+        try {
+            console.log("Cargando enlaces desde /api/obtener_enlaces");
+            var response = await fetch('/api/obtener_enlaces');
+            console.log("Respuesta:", response.status);
+            
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var data = await response.json();
+            console.log("Datos recibidos:", data);
+            
+            if (!data.ok || !data.enlaces) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>' + (data.error || 'Error al cargar enlaces') + '</p></div>';
+                return;
+            }
+            
+            var enlaces = data.enlaces;
+            var html = '<div class="enlaces-grid">';
+            var tieneEnlaces = false;
+            
+            // Primogénito
+            if (enlaces.primogenito && enlaces.primogenito.url) {
+                html += generarCardEnlace(enlaces.primogenito);
+                tieneEnlaces = true;
+            }
+            
+            // Conductor
+            if (enlaces.conductor && enlaces.conductor.url) {
+                html += generarCardEnlace(enlaces.conductor);
+                tieneEnlaces = true;
+            }
+            
+            // Servidor
+            if (enlaces.servidor && enlaces.servidor.url) {
+                html += generarCardEnlace(enlaces.servidor);
+                tieneEnlaces = true;
+            }
+            
+            // Servidor con ID
+            if (enlaces.servidor_id && enlaces.servidor_id.url) {
+                html += generarCardEnlace(enlaces.servidor_id);
+                tieneEnlaces = true;
+            }
+            
+            html += '</div>';
+            
+            if (!tieneEnlaces) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-info-circle"></i><p>No hay enlaces disponibles. Asegúrate de que el servidor esté activo.</p></div>';
+            } else {
+                container.innerHTML = html;
+            }
+            
+        } catch(e) {
+            console.error("Error cargando enlaces:", e);
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar enlaces: ' + e.message + '</p><button class="btn-primary btn-sm" onclick="window.cargarEnlaces()">Reintentar</button></div>';
+        }
+    }
+
+    function generarCardEnlace(enlace) {
+        var color = enlace.color || '#3b82f6';
+        var btnClass = '';
+        if (enlace.color === '#10b981') btnClass = 'verde';
+        else if (enlace.color === '#f59e0b') btnClass = 'amarillo';
+        else if (enlace.color === '#8b5cf6') btnClass = 'morado';
+        
+        var idFijoInfo = '';
+        if (enlace.id_fijo && enlace.id_fijo !== 'NO-DISPONIBLE') {
+            idFijoInfo = '<div style="font-size:0.55rem;color:#8b5cf6;margin-top:4px;">🔒 ID Fijo: ' + enlace.id_fijo + '</div>';
+        }
+        
+        return '<div class="enlace-card">' +
+            '<div class="enlace-header">' +
+                '<div class="enlace-icono" style="background:' + color + ';"><i class="fas ' + enlace.icono + '"></i></div>' +
+                '<div class="enlace-nombre">' + enlace.nombre + '</div>' +
+                '<span class="enlace-status activo">✅ Activo</span>' +
+            '</div>' +
+            '<div class="enlace-descripcion">' + enlace.descripcion + '</div>' +
+            idFijoInfo +
+            '<div class="enlace-url-container">' +
+                '<input type="text" value="' + escapeHtml(enlace.url) + '" readonly id="url_' + enlace.nombre.replace(/\s/g, '_') + '">' +
+                '<button class="btn-copy-enlace" onclick="window.copiarEnlace(\'' + escapeHtml(enlace.url) + '\')"><i class="fas fa-copy"></i> Copiar</button>' +
+            '</div>' +
+            '<div class="enlace-actions">' +
+                '<button class="btn-open-enlace ' + btnClass + '" onclick="window.open(\'' + escapeHtml(enlace.url) + '\', \'_blank\')"><i class="fas fa-external-link-alt"></i> Abrir en navegador</button>' +
+            '</div>' +
+        '</div>';
+    }
+
+    window.copiarEnlace = function(url) {
+        navigator.clipboard.writeText(url).then(function() {
+            mostrarToast('✅ URL copiada: ' + url, 'success');
+        }).catch(function() {
+            // Fallback
+            var input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            mostrarToast('✅ URL copiada', 'success');
+        });
+    };
+
+    window.cargarEnlaces = cargarEnlaces;
+
+    // ==================== PÁGINAS - CRUD ====================
+    async function cargarListaPaginas() {
+        var container = document.getElementById('paginasList');
+        if (!container) return;
+        
+        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Cargando páginas...</p></div>';
+        
+        try {
+            var response = await fetch('/api/paginas');
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var data = await response.json();
+            paginasLista = data.paginas || [];
+            urlBaseGlobal = await obtenerUrlBase();
+            
+            var selector = document.getElementById('selectorPaginaEditar');
+            if (selector) {
+                selector.innerHTML = '<option value="">-- Seleccione página para editar --</option>';
+                for (var i = 0; i < paginasLista.length; i++) {
+                    var p = paginasLista[i];
+                    selector.innerHTML += '<option value="' + p.id + '">' + escapeHtml(p.nombre) + ' (' + p.url_id + ')</option>';
+                }
+            }
+            
+            if (paginasLista.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-file-code"></i><p>No hay páginas creadas</p><button class="btn-success btn-sm" onclick="window.crearNuevaPagina()"><i class="fas fa-plus"></i> Crear primera página</button></div>';
+                return;
+            }
+            
+            var html = '<div class="paginas-grid">';
+            for (var i = 0; i < paginasLista.length; i++) {
+                var p = paginasLista[i];
+                var urlCompleta = urlBaseGlobal + '/p/' + p.url_id;
+                var fecha = new Date(p.fecha).toLocaleDateString('es-ES');
+                
+                html += '<div class="pagina-card">' +
+                    '<div class="pagina-card-header">' +
+                        '<div class="pagina-numero">' + (i+1) + '</div>' +
+                        '<div class="pagina-info">' +
+                            '<div class="pagina-nombre">' + escapeHtml(p.nombre) + '</div>' +
+                            '<div class="pagina-fecha"><i class="far fa-calendar-alt"></i> ' + fecha + '</div>' +
+                        '</div>' +
+                        '<div class="pagina-estado"><span class="badge-active"><i class="fas fa-check-circle"></i> Activo</span></div>' +
+                    '</div>' +
+                    '<div class="pagina-card-body">' +
+                        '<div class="pagina-url"><i class="fas fa-link"></i> <code>' + escapeHtml(p.url_id) + '</code></div>' +
+                        '<div class="pagina-url-completa">' + urlCompleta + '</div>' +
+                    '</div>' +
+                    '<div class="pagina-card-footer">' +
+                        '<button class="btn-copy" onclick="window.copiarLink(\'' + urlCompleta + '\')"><i class="fas fa-copy"></i> Copiar</button>' +
+                        '<button class="btn-open" onclick="window.open(\'' + urlCompleta + '\', \'_blank\')"><i class="fas fa-external-link-alt"></i> Abrir</button>' +
+                        '<button class="btn-delete" onclick="window.eliminarPagina(\'' + p.id + '\')"><i class="fas fa-trash"></i> Eliminar</button>' +
+                    '</div>' +
+                '</div>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
+            
+            aplicarColoresModulo();
+            
+        } catch(e) {
+            console.error("Error cargando páginas:", e);
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar las páginas</p><button class="btn-primary btn-sm" onclick="window.cargarListaPaginas()">Reintentar</button></div>';
+        }
+    }
+
+    window.crearNuevaPagina = async function() {
+        var nombre = prompt('Ingrese el nombre de la página:', 'Nueva página');
+        if (!nombre || nombre.trim() === '') return;
+        
+        var btn = document.getElementById('crearPaginaBtn');
+        var originalText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creando...';
+        }
+        
+        try {
+            var response = await fetch('/api/crear_pagina', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    nombre: nombre.trim(), 
+                    estilos: {
+                        "color_primario": "#f59e0b",
+                        "color_secundario": "#d97706",
+                        "color_fondo": "#0f0f1a",
+                        "titulo": nombre.trim(),
+                        "subtitulo": "Complete el formulario de pedido de combustible"
+                    }
+                })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('Página "' + nombre + '" creada exitosamente', 'success');
+                cargarListaPaginas();
+            } else {
+                mostrarToast('Error: ' + (data.error || 'No se pudo crear'), 'error');
+            }
+        } catch(e) {
+            mostrarToast('Error de conexión', 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    };
+
+    window.eliminarPagina = async function(id) {
+        var pagina = paginasLista.find(function(p) { return p.id === id; });
+        if (!confirm('Eliminar la página "' + (pagina ? pagina.nombre : '') + '"?\n\nEsta acción no se puede deshacer.')) return;
+        
+        try {
+            var response = await fetch('/api/eliminar_pagina', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('Página eliminada correctamente', 'success');
+                if (paginaEditandoId === id) {
+                    paginaEditandoId = null;
+                    elementosEditor = [];
+                    renderizarElementosEditor();
+                    document.getElementById('guardarPaginaBtn').disabled = true;
+                    document.getElementById('previsualizarBtn').disabled = true;
+                }
+                cargarListaPaginas();
+            } else {
+                mostrarToast('Error: ' + (data.error || 'No se pudo eliminar'), 'error');
+            }
+        } catch(e) {
+            mostrarToast('Error de conexión', 'error');
+        }
+    };
+
+    window.copiarLink = function(url) {
+        navigator.clipboard.writeText(url).then(function() {
+            mostrarToast('Link copiado: ' + url, 'success');
+        }).catch(function() {
+            mostrarToast('Error al copiar', 'error');
+        });
+    };
+
+    // ==================== EDITOR VISUAL ====================
+    function actualizarPreview() {
+        var colorPrimario = document.getElementById('editColorPrimario')?.value || '#f59e0b';
+        var colorFondo = document.getElementById('editColorFondo')?.value || '#0f0f1a';
+        var titulo = document.getElementById('editTitulo')?.value || 'Título de la Página';
+        var subtitulo = document.getElementById('editSubtitulo')?.value || '';
+        
+        var elementosHtml = '';
+        for (var i = 0; i < elementosEditor.length; i++) {
+            var el = elementosEditor[i];
+            elementosHtml += '<div class="preview-elemento" style="border-left-color: ' + colorPrimario + ';">' +
+                '<div class="preview-elemento-header">' +
+                    '<strong>' + escapeHtml(el.texto || 'Elemento') + '</strong>' +
+                    '<button class="btn-eliminar-preview" onclick="window.eliminarElementoPreview(' + i + ')">' +
+                        '<i class="fas fa-trash-alt"></i>' +
+                    '</button>' +
+                '</div>';
+            
+            if (el.tipo === 'select') {
+                elementosHtml += '<select class="preview-select">' +
+                    '<option value="">Seleccione...</option>';
+                for (var j = 0; j < (el.opciones || []).length; j++) {
+                    elementosHtml += '<option value="' + escapeHtml(el.opciones[j]) + '">' + escapeHtml(el.opciones[j]) + '</option>';
+                }
+                elementosHtml += '</select>';
+            } else {
+                elementosHtml += '<input type="text" class="preview-input" placeholder="' + escapeHtml(el.placeholder || 'Escriba aquí...') + '">';
+            }
+            elementosHtml += '</div>';
+        }
+        
+        if (elementosEditor.length === 0) {
+            elementosHtml = '<div class="empty-state-preview-small"><i class="fas fa-info-circle"></i><p>Agregue elementos usando el botón "+"</p></div>';
+        }
+        
+        var html = '<div class="preview-card" style="background: ' + colorFondo + ';">' +
+            '<div class="preview-card-header" style="border-bottom-color: ' + colorPrimario + ';">' +
+                '<div class="preview-icon" style="background: ' + colorPrimario + ';"><i class="fas fa-gas-pump"></i></div>' +
+                '<h3 style="color: ' + colorPrimario + ';">' + escapeHtml(titulo) + '</h3>' +
+                '<p>' + escapeHtml(subtitulo) + '</p>' +
+            '</div>' +
+            '<div class="preview-card-body">' +
+                elementosHtml +
+                '<div class="preview-total">' +
+                    '<span>Precio por galón: <strong>C$0.00</strong></span>' +
+                    '<span>Distancia: <strong>0 km</strong></span>' +
+                    '<div class="preview-total-monto">TOTAL: <strong>C$0.00</strong></div>' +
+                '</div>' +
+                '<button class="preview-btn-enviar" style="background: linear-gradient(135deg, ' + colorPrimario + ', #d97706);">' +
+                    '<i class="fas fa-paper-plane"></i> Enviar Pedido' +
+                '</button>' +
+            '</div>' +
+        '</div>';
+        
+        var preview = document.getElementById('vistaPrevia');
+        if (preview) preview.innerHTML = html;
+    }
+
+    function renderizarElementosEditor() {
+        var container = document.getElementById('editEditorElementos');
+        if (!container) return;
+        
+        if (elementosEditor.length === 0) {
+            container.innerHTML = '<div class="empty-state-small"><i class="fas fa-info-circle"></i><p>No hay elementos. Use el botón "+" para agregar.</p></div>';
+            actualizarPreview();
+            return;
+        }
+        
+        var html = '';
+        for (var idx = 0; idx < elementosEditor.length; idx++) {
+            var el = elementosEditor[idx];
+            html += '<div class="elemento-card-editor" data-idx="' + idx + '">' +
+                '<div class="elemento-header-editor">' +
+                    '<span class="elemento-tipo">' + (el.tipo === 'select' ? '📋 Selección' : '✏️ Campo de Texto') + '</span>' +
+                    '<button class="btn-delete-elemento" onclick="window.eliminarElementoEditor(' + idx + ')">' +
+                        '<i class="fas fa-trash-alt"></i> Eliminar' +
+                    '</button>' +
+                '</div>' +
+                '<div class="elemento-body-editor">' +
+                    '<div class="input-group-small">' +
+                        '<label>Etiqueta</label>' +
+                        '<input type="text" value="' + escapeHtml(el.texto) + '" onchange="window.actualizarTexto(' + idx + ', this.value)" class="input-editor-small">' +
+                    '</div>';
+            
+            if (el.tipo === 'select') {
+                html += '<div class="opciones-container" id="opciones_' + idx + '">';
+                for (var optIdx = 0; optIdx < (el.opciones || []).length; optIdx++) {
+                    html += '<div class="opcion-row">' +
+                        '<input type="text" value="' + escapeHtml(el.opciones[optIdx]) + '" onchange="window.actualizarOpcion(' + idx + ', ' + optIdx + ', this.value)" class="input-editor-small">' +
+                        '<button class="btn-delete-opcion" onclick="window.eliminarOpcion(' + idx + ', ' + optIdx + ')">' +
+                            '<i class="fas fa-times"></i>' +
+                        '</button>' +
+                    '</div>';
+                }
+                html += '<button class="btn-add-opcion" onclick="window.agregarOpcionEditor(' + idx + ')">' +
+                    '<i class="fas fa-plus"></i> Agregar opción' +
+                '</button>';
+                html += '</div>';
+            } else {
+                html += '<div class="input-group-small">' +
+                    '<label>Placeholder</label>' +
+                    '<input type="text" value="' + escapeHtml(el.placeholder || '') + '" onchange="window.actualizarPlaceholder(' + idx + ', this.value)" class="input-editor-small">' +
+                '</div>';
+            }
+            
+            html += '</div></div>';
+        }
+        container.innerHTML = html;
+        actualizarPreview();
+    }
+
+    window.eliminarElementoEditor = function(idx) {
+        elementosEditor.splice(idx, 1);
+        renderizarElementosEditor();
+    };
+
+    window.eliminarElementoPreview = function(idx) {
+        elementosEditor.splice(idx, 1);
+        renderizarElementosEditor();
+    };
+
+    window.actualizarTexto = function(idx, valor) {
+        if (elementosEditor[idx]) elementosEditor[idx].texto = valor;
+        actualizarPreview();
+    };
+
+    window.actualizarPlaceholder = function(idx, valor) {
+        if (elementosEditor[idx]) elementosEditor[idx].placeholder = valor;
+        actualizarPreview();
+    };
+
+    window.actualizarOpcion = function(idx, optIdx, valor) {
+        if (elementosEditor[idx] && elementosEditor[idx].opciones) {
+            elementosEditor[idx].opciones[optIdx] = valor;
+        }
+        actualizarPreview();
+    };
+
+    window.eliminarOpcion = function(idx, optIdx) {
+        if (elementosEditor[idx] && elementosEditor[idx].opciones) {
+            elementosEditor[idx].opciones.splice(optIdx, 1);
+            renderizarElementosEditor();
+        }
+    };
+
+    window.agregarOpcionEditor = function(idx) {
+        if (elementosEditor[idx] && elementosEditor[idx].opciones) {
+            elementosEditor[idx].opciones.push('Nueva opción');
+            renderizarElementosEditor();
+        }
+    };
+
+    function agregarElementoEditor() {
+        var tipoSelect = document.getElementById('editNuevoElementoTipo');
+        var tipo = tipoSelect ? tipoSelect.value : 'select';
+        if (tipo === 'select') {
+            elementosEditor.push({ tipo: 'select', texto: 'Tipo de Combustible', opciones: ['DIESEL', 'DIESEL PREMIUM', 'GASOLINA SUPER', 'GASOLINA REGULAR'] });
+        } else {
+            elementosEditor.push({ tipo: 'text', texto: 'Cantidad de Galones', placeholder: 'Ingrese la cantidad...' });
+        }
+        renderizarElementosEditor();
+        mostrarToast('Elemento agregado', 'success');
+    }
+
+    // ==================== CARGAR PÁGINA PARA EDITAR ====================
+    async function cargarPaginaEditar(id) {
+        mostrarToast('Cargando página...', 'info');
+        
+        try {
+            var response = await fetch('/api/obtener_pagina/' + id);
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var data = await response.json();
+            
+            if (data.ok && data.pagina) {
+                paginaEditandoId = id;
+                var p = data.pagina;
+                var estilos = p.estilos || {};
+                
+                document.getElementById('editColorPrimario').value = estilos.color_primario || '#f59e0b';
+                document.getElementById('editColorSecundario').value = estilos.color_secundario || '#d97706';
+                document.getElementById('editColorFondo').value = estilos.color_fondo || '#0f0f1a';
+                document.getElementById('editTitulo').value = estilos.titulo || p.nombre || '';
+                document.getElementById('editSubtitulo').value = estilos.subtitulo || '';
+                document.getElementById('guardarPaginaBtn').disabled = false;
+                document.getElementById('previsualizarBtn').disabled = false;
+                
+                elementosEditor = p.elementos || [];
+                renderizarElementosEditor();
+                mostrarToast('Página "' + p.nombre + '" cargada', 'success');
+            } else {
+                mostrarToast(data.error || 'Error al cargar la página', 'error');
+            }
+        } catch(error) {
+            console.error("Error cargando página:", error);
+            mostrarToast('Error: ' + error.message, 'error');
+        }
+    }
+
+    async function guardarPaginaEditada() {
+        if (!paginaEditandoId) {
+            mostrarToast('Seleccione una página para editar', 'warning');
+            return;
+        }
+        
+        var estilos = {
+            color_primario: document.getElementById('editColorPrimario')?.value || '#f59e0b',
+            color_secundario: document.getElementById('editColorSecundario')?.value || '#d97706',
+            color_fondo: document.getElementById('editColorFondo')?.value || '#0f0f1a',
+            titulo: document.getElementById('editTitulo')?.value || '',
+            subtitulo: document.getElementById('editSubtitulo')?.value || ''
+        };
+        
+        mostrarToast('Guardando página...', 'info');
+        
+        try {
+            var response = await fetch('/api/actualizar_pagina', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: paginaEditandoId,
+                    estilos: estilos,
+                    elementos: elementosEditor
+                })
+            });
+            var data = await response.json();
+            
+            if (data.ok) {
+                mostrarToast('Página guardada correctamente', 'success');
+                cargarListaPaginas();
+            } else {
+                mostrarToast(data.error || 'Error al guardar', 'error');
+            }
+        } catch(error) {
+            console.error("Error guardando página:", error);
+            mostrarToast('Error: ' + error.message, 'error');
+        }
+    }
+
+    function previsualizarPagina() {
+        if (!paginaEditandoId) {
+            mostrarToast('Seleccione una página primero', 'warning');
+            return;
+        }
+        var pagina = paginasLista.find(function(p) { return p.id === paginaEditandoId; });
+        if (pagina) {
+            var urlBase = window.location.origin;
+            window.open(urlBase + '/p/' + pagina.url_id, '_blank');
+        } else {
+            mostrarToast('No se encontró la página', 'error');
+        }
+    }
+
+    // ==================== INICIALIZACIÓN ====================
+    function inicializar() {
+        console.log("Inicializando Páginas Hijo (sin Cloudflare)");
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        
+        if (window.parent && window.parent !== window) {
+            try {
+                window.parent.postMessage({ type: 'SOLICITAR_COLORES' }, '*');
+            } catch(e) {}
+        }
+        
+        setTimeout(function() {
+            cargarEnlaces();
+            cargarListaPaginas();
+            
+            var selector = document.getElementById('selectorPaginaEditar');
+            if (selector) {
+                selector.onchange = function() {
+                    if (this.value && this.value !== "") {
+                        cargarPaginaEditar(this.value);
+                    } else {
+                        paginaEditandoId = null;
+                        elementosEditor = [];
+                        renderizarElementosEditor();
+                        document.getElementById('guardarPaginaBtn').disabled = true;
+                        document.getElementById('previsualizarBtn').disabled = true;
+                        document.getElementById('vistaPrevia').innerHTML = '<div class="empty-state-preview"><i class="fas fa-eye"></i><p>Seleccione una página para comenzar a editar</p></div>';
+                    }
+                };
+            }
+            
+            document.getElementById('recargarEnlacesBtn')?.addEventListener('click', function() { cargarEnlaces(); });
+            document.getElementById('recargarPaginasBtn')?.addEventListener('click', function() { cargarListaPaginas(); });
+            document.getElementById('guardarPaginaBtn')?.addEventListener('click', function() { guardarPaginaEditada(); });
+            document.getElementById('previsualizarBtn')?.addEventListener('click', function() { previsualizarPagina(); });
+            document.getElementById('editAgregarElementoBtn')?.addEventListener('click', function() { agregarElementoEditor(); });
+            document.getElementById('recargarPreviewBtn')?.addEventListener('click', function() { actualizarPreview(); });
+            document.getElementById('crearPaginaBtn')?.addEventListener('click', function() { window.crearNuevaPagina(); });
+            
+            document.getElementById('editColorPrimario')?.addEventListener('change', function() { actualizarPreview(); });
+            document.getElementById('editColorSecundario')?.addEventListener('change', function() { actualizarPreview(); });
+            document.getElementById('editColorFondo')?.addEventListener('change', function() { actualizarPreview(); });
+            document.getElementById('editTitulo')?.addEventListener('input', function() { actualizarPreview(); });
+            document.getElementById('editSubtitulo')?.addEventListener('input', function() { actualizarPreview(); });
+            
+            setTimeout(aplicarColoresModulo, 300);
+            
+            console.log("Módulo Páginas Hijo inicializado correctamente (sin Cloudflare)");
+        }, 100);
+    }
+
+    window.cargarListaPaginas = cargarListaPaginas;
+    window.crearNuevaPagina = crearNuevaPagina;
+    window.eliminarPagina = eliminarPagina;
+    window.copiarLink = copiarLink;
+    window.eliminarElementoEditor = eliminarElementoEditor;
+    window.eliminarElementoPreview = eliminarElementoPreview;
+    window.actualizarTexto = actualizarTexto;
+    window.actualizarPlaceholder = actualizarPlaceholder;
+    window.actualizarOpcion = actualizarOpcion;
+    window.eliminarOpcion = eliminarOpcion;
+    window.agregarOpcionEditor = agregarOpcionEditor;
+    window.cargarTemaGuardado = cargarTemaGuardado;
+    window.cargarEnlaces = cargarEnlaces;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializar);
+    } else {
+        inicializar();
+    }
+    
+    console.log("Módulo Páginas Hijo cargado (sin Cloudflare)");
+})();
+</script>

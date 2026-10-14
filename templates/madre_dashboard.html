@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Dashboard | Grupo GSN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #0a1628;
+            color: #f0f3fa;
+            transition: all 0.3s ease;
+            backgroun: #1649c2;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .dashboard-container { display: flex; flex-direction: column; height: 100vh; width: 100%; }
+
+        /* ========== TOP BAR ========== */
+        .top-bar {
+            background: rgba(26, 58, 108, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 6px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            flex-shrink: 0;
+            gap: 8px;
+            flex-wrap: nowrap;
+            z-index: 100;
+            transition: all 0.4s ease;
+            min-height: 52px;
+            position: relative;
+        }
+        .top-bar.hidden { display: none; }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #ffffff, #e0e8f0);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .logo-icon i { font-size: 18px; color: #1a3a6c; transition: all 0.3s ease; }
+        .logo-text h1 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .logo-text p {
+            font-size: 8px;
+            color: rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .modulos-buttons-container {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            padding: 2px 0;
+            min-width: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+            display: flex;
+            justify-content: center;
+        }
+        .modulos-buttons-container::-webkit-scrollbar {
+            height: 3px;
+        }
+        .modulos-buttons-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .modulos-buttons-container::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+        }
+        .modulos-buttons-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        .modulos-buttons {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            padding: 2px 0;
+        }
+
+        .modulo-btn {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.08);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .modulo-btn i { font-size: 0.8rem; }
+        .modulo-btn .btn-tooltip {
+            display: none;
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 0.55rem;
+            color: #ffffff;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modulo-btn:hover { 
+            background: rgba(255,255,255,0.15); 
+            color: #ffffff; 
+            border-color: rgba(255,255,255,0.3); 
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+        }
+        .modulo-btn:hover .btn-tooltip {
+            display: block;
+        }
+        .modulo-btn.active {
+            background: #ffffff;
+            color: #1a3a6c;
+            border-color: transparent;
+            box-shadow: 0 2px 12px rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        .modulo-btn.active .btn-tooltip {
+            display: block;
+            background: rgba(26,58,108,0.9);
+        }
+
+        .modulo-btn span { display: none; }
+        .modulo-btn .mod-text { display: none; }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .action-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 5px 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.55rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .action-btn i { font-size: 0.7rem; }
+        .action-btn span { display: none; }
+        .action-btn:hover { background: rgba(255,255,255,0.1); color: #ffffff; border-color: rgba(255,255,255,0.2); }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            padding: 2px 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .zoom-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: rgba(255,255,255,0.6);
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .zoom-btn:hover { background: rgba(255,255,255,0.15); color: #ffffff; }
+        .zoom-level {
+            font-size: 8px;
+            color: #ffffff;
+            min-width: 35px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.04);
+            padding: 3px 8px 3px 4px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-avatar i { font-size: 11px; color: rgba(255,255,255,0.7); }
+        .user-details { display: none; }
+        .user-name-mobile { font-size: 0.6rem; font-weight: 600; color: #f0f3fa; }
+
+        .logout-btn {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            padding: 4px 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #f87171;
+            font-size: 0.55rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .logout-btn i { font-size: 0.6rem; }
+        .logout-btn span { display: none; }
+        .logout-btn:hover { background: rgba(239,68,68,0.25); border-color: rgba(239,68,68,0.5); }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .content-frame {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .content-frame.with-tom {
+            margin-right: 380px;
+        }
+        #moduloFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transition: transform 0.1s ease;
+        }
+
+        /* ========== TOM PANEL ========== */
+        .tom-panel {
+            position: fixed;
+            top: 52px;
+            right: 0;
+            bottom: 0;
+            width: 380px;
+            background: rgba(10, 22, 40, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-left: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 50;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .tom-panel.visible {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .tom-panel-header {
+            padding: 12px 18px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            min-height: 48px;
+        }
+        .tom-panel-header h4 {
+            color: #60a5fa;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .tom-panel-header h4 i { font-size: 0.85rem; opacity: 0.6; }
+        .tom-panel-header .tom-close-btn {
+            background: rgba(255,255,255,0.03);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+        .tom-panel-header .tom-close-btn:hover {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            transform: scale(1.05);
+        }
+        .tom-panel-body {
+            flex: 1;
+            overflow: hidden;
+            background: rgba(10, 22, 40, 0.01);
+        }
+        .tom-panel-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+        }
+
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center;
+            z-index: 1000; display: none;
+        }
+        .loading-spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,22,40,0.9);
+            backdrop-filter: blur(12px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            z-index: 10001;
+            font-weight: 500;
+            border-left: 3px solid #60a5fa;
+            font-size: 0.7rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.3s ease;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .tom-panel { width: 320px; }
+            .content-frame.with-tom { margin-right: 320px; }
+            .modulo-btn { width: 30px; height: 30px; font-size: 0.6rem; }
+            .modulo-btn i { font-size: 0.7rem; }
+        }
+        @media (max-width: 768px) {
+            .top-bar { padding: 4px 8px; gap: 6px; min-height: 46px; }
+            .logo-text p { display: none; }
+            .logo-text h1 { font-size: 12px; }
+            .logo-icon { width: 28px; height: 28px; }
+            .logo-icon i { font-size: 14px; }
+            .modulo-btn { width: 28px; height: 28px; font-size: 0.55rem; }
+            .modulo-btn i { font-size: 0.6rem; }
+            .action-btn { padding: 4px 6px; }
+            .user-info { padding: 2px 6px; }
+            .zoom-controls { padding: 1px 4px; }
+            .zoom-btn { width: 20px; height: 20px; font-size: 9px; }
+            .zoom-level { font-size: 7px; min-width: 28px; }
+            .logout-btn { padding: 3px 6px; font-size: 0.5rem; }
+            .tom-panel { width: 280px; }
+            .content-frame.with-tom { margin-right: 280px; }
+        }
+
+        @media (max-width: 600px) {
+            .top-bar { padding: 3px 6px; gap: 4px; min-height: 42px; }
+            .logo-text h1 { font-size: 10px; }
+            .logo-icon { width: 24px; height: 24px; }
+            .logo-icon i { font-size: 12px; }
+            .modulo-btn { width: 26px; height: 26px; font-size: 0.5rem; border-radius: 50%; }
+            .modulo-btn i { font-size: 0.55rem; }
+            .modulo-btn span { display: none; }
+            .modulo-btn .mod-text { display: none; }
+            .action-btn { padding: 3px 5px; border-radius: 14px; }
+            .action-btn i { font-size: 0.6rem; }
+            .user-name-mobile { display: none; }
+            .user-info { padding: 2px 4px; }
+            .user-avatar { width: 20px; height: 20px; }
+            .user-avatar i { font-size: 9px; }
+            .zoom-controls { display: none; }
+            .logout-btn { padding: 2px 5px; }
+            .logout-btn i { font-size: 0.5rem; }
+            .tom-panel { width: 100%; max-width: 300px; }
+            .content-frame.with-tom { margin-right: 300px; }
+            .modulo-btn .btn-tooltip { font-size: 0.45rem; bottom: -24px; padding: 2px 8px; }
+        }
+
+        @media (max-width: 400px) {
+            .top-bar { padding: 2px 4px; gap: 3px; min-height: 38px; }
+            .logo-text h1 { font-size: 9px; }
+            .logo-icon { width: 20px; height: 20px; }
+            .logo-icon i { font-size: 10px; }
+            .modulo-btn { width: 22px; height: 22px; font-size: 0.45rem; }
+            .modulo-btn i { font-size: 0.5rem; }
+            .action-btn { padding: 2px 4px; border-radius: 12px; }
+            .action-btn i { font-size: 0.5rem; }
+            .user-info { padding: 1px 3px; }
+            .user-avatar { width: 16px; height: 16px; }
+            .user-avatar i { font-size: 7px; }
+            .logout-btn { padding: 2px 4px; }
+            .tom-panel { width: 100%; max-width: 260px; }
+            .content-frame.with-tom { margin-right: 260px; }
+            .modulo-btn .btn-tooltip { font-size: 0.4rem; bottom: -20px; padding: 1px 6px; }
+        }
+
+        @media (min-width: 601px) {
+            .modulo-btn .mod-text { display: none; }
+            .modulo-btn span { display: none; }
+            .action-btn span { display: inline; }
+            .user-details { display: block; }
+            .user-name-mobile { display: none; }
+            .logout-btn span { display: inline; }
+            .logo-text p { display: block; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- TOP BAR -->
+    <div class="top-bar" id="topBar">
+        <div class="logo-area">
+            <div class="logo-icon" id="logoIcon"><i class="fas fa-gas-pump" id="logoIconInner"></i></div>
+            <div class="logo-text">
+                <h1 id="logoTitle">GRUPO GSN</h1>
+                <p id="logoSubtitle">Sistema de Gestión de Combustible</p>
+            </div>
+        </div>
+
+        <div class="modulos-buttons-container" id="modulosContainer">
+            <div class="modulos-buttons" id="modulosButtons"></div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomOutBtn"><i class="fas fa-search-minus"></i></button>
+                <span class="zoom-level" id="zoomLevel">100%</span>
+                <button class="zoom-btn" id="zoomInBtn"><i class="fas fa-search-plus"></i></button>
+                <button class="zoom-btn" id="zoomResetBtn"><i class="fas fa-undo-alt"></i></button>
+            </div>
+            <button class="action-btn" id="btnInicio"><i class="fas fa-home"></i><span>Inicio</span></button>
+            <button class="action-btn" id="btnIA"><i class="fas fa-robot"></i><span>TOM</span></button>
+        </div>
+
+        <div class="user-area">
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Cargando...</div>
+                    <div class="user-role" id="userRole">-</div>
+                </div>
+                <span class="user-name-mobile" id="userNameMobile">Usuario</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Salir</span></button>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="content-frame" id="contentFrame">
+            <iframe id="moduloFrame" src="/modulos/recepcion.html" title="Módulo"></iframe>
+        </div>
+
+        <!-- TOM PANEL -->
+        <div class="tom-panel" id="tomPanel">
+            <div class="tom-panel-header">
+                <h4><i class="fas fa-microphone-alt"></i> TOM - Asistente</h4>
+                <button class="tom-close-btn" id="tomCloseBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="tom-panel-body">
+                <iframe id="tomIframe" src="/modulos/tom_analizador.html"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
+
+<script>
+// ==================== CONFIGURACIÓN DE MÓDULOS ====================
+// Eliminados: paginas_hijo y tablas_editables
+const MODULOS = {
+    dashboard: { nombre: "Dashboard", icono: "fa-chart-line", ruta: "/modulos/recepcion.html", texto: "Dash" },
+    operaciones: { nombre: "Operaciones", icono: "fa-clipboard-list", ruta: "/modulos/operaciones.html", texto: "Ops" },
+    gestion_clientes: { nombre: "Gestión Clientes", icono: "fa-users", ruta: "/modulos/Gestión Clientes.html", texto: "Clientes" },
+    facturacion: { nombre: "Comercialización", icono: "fa-file-invoice-dollar", ruta: "/modulos/facturacion.html", texto: "Comer" },
+    reportes: { nombre: "Reportes", icono: "fa-chart-bar", ruta: "/modulos/reportes.html", texto: "Rep" },
+    configuracion: { nombre: "Configuración", icono: "fa-cog", ruta: "/modulos/configuracion.html", texto: "Config" }
+};
+
+const ORDEN_MODULOS = ["dashboard", "operaciones", "facturacion", "gestion_clientes", "reportes", "configuracion"];
+
+let usuarioActual = null;
+let currentModulo = "dashboard";
+let zoomActual = 1;
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 1.5;
+const ZOOM_STEP = 0.05;
+
+let tomVisible = false;
+
+// ==================== TOAST ====================
+function mostrarToast(mensaje, tipo = "success") {
+    let old = document.querySelector('.toast-message');
+    if (old) old.remove();
+    let toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = `<i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> ${mensaje}`;
+    toast.style.borderLeftColor = tipo === 'success' ? '#60a5fa' : '#ef4444';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function mostrarLoading(show) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = show ? 'flex' : 'none';
+}
+
+// ==================== UTILIDADES ====================
+function obtenerUsuarioData() {
+    try {
+        const usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+        if (usuarioStr) return JSON.parse(usuarioStr);
+    } catch(e) {}
+    return null;
+}
+
+// ==================== ENVIAR DATOS AL IFRAME ====================
+function enviarDatosAlIframe(iframe) {
+    if (!iframe || !iframe.contentWindow) return;
+    
+    try {
+        iframe.contentWindow.postMessage({ type: 'TEMA_ACTUAL', tema: 'default', imagen: '' }, '*');
+        iframe.contentWindow.postMessage({ type: 'RECARGAR_CONFIGURACION' }, '*');
+    } catch(e) {}
+}
+
+// ==================== SETUP IFRAME ====================
+function setupIframeEvents() {
+    const iframe = document.getElementById('moduloFrame');
+    if (!iframe) return;
+    
+    iframe.onload = function() {
+        mostrarLoading(false);
+        if (usuarioActual) {
+            try { iframe.contentWindow.postMessage({ type: 'USUARIO_ACTUAL', usuario: usuarioActual }, '*'); } catch(e) {}
+        }
+        setTimeout(() => enviarDatosAlIframe(iframe), 500);
+    };
+    iframe.onerror = function() { mostrarLoading(false); mostrarToast("Error al cargar el módulo", "error"); };
+}
+
+// ==================== ZOOM ====================
+function aplicarZoom() {
+    const iframe = document.getElementById('moduloFrame');
+    if (iframe) {
+        iframe.style.transform = `scale(${zoomActual})`;
+        iframe.style.transformOrigin = 'top left';
+        document.getElementById('zoomLevel').innerText = `${Math.round(zoomActual * 100)}%`;
+        const container = document.querySelector('.content-frame');
+        if (container) {
+            iframe.style.width = `${100 / zoomActual}%`;
+            iframe.style.height = `${100 / zoomActual}%`;
+        }
+    }
+}
+
+function zoomIn() {
+    if (zoomActual + ZOOM_STEP <= ZOOM_MAX) { zoomActual += ZOOM_STEP; aplicarZoom(); }
+}
+function zoomOut() {
+    if (zoomActual - ZOOM_STEP >= ZOOM_MIN) { zoomActual -= ZOOM_STEP; aplicarZoom(); }
+}
+function zoomReset() { zoomActual = 1; aplicarZoom(); mostrarToast("Zoom 100%", "info"); }
+function handleKeyboardZoom(e) {
+    if (e.ctrlKey && e.key === '+') { e.preventDefault(); zoomIn(); }
+    else if (e.ctrlKey && e.key === '-') { e.preventDefault(); zoomOut(); }
+    else if (e.ctrlKey && e.key === '0') { e.preventDefault(); zoomReset(); }
+}
+
+// ==================== TOM ====================
+function toggleTom() {
+    const panel = document.getElementById('tomPanel');
+    const frame = document.getElementById('contentFrame');
+    
+    tomVisible = !tomVisible;
+    
+    if (tomVisible) {
+        panel.classList.add('visible');
+        frame.classList.add('with-tom');
+        const iframe = document.getElementById('tomIframe');
+        if (iframe) iframe.src = '/modulos/tom_analizador.html';
+        mostrarToast('📡 TOM activado', 'success');
+    } else {
+        panel.classList.remove('visible');
+        frame.classList.remove('with-tom');
+        const iframe = document.getElementById('tomIframe');
+        if (iframe) iframe.src = 'about:blank';
+        mostrarToast('📡 TOM desactivado', 'info');
+    }
+}
+
+function cerrarTom() {
+    if (tomVisible) {
+        toggleTom();
+    }
+}
+
+// ==================== USUARIO ====================
+function cargarUsuarioSesion() {
+    try {
+        const usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+        if (usuarioStr) {
+            usuarioActual = JSON.parse(usuarioStr);
+            actualizarUIUsuario();
+            return true;
+        }
+    } catch(e) { console.error("Error cargando usuario:", e); }
+    return false;
+}
+
+function actualizarUIUsuario() {
+    if (!usuarioActual) return;
+    const userNameEl = document.getElementById('userName');
+    const userRoleEl = document.getElementById('userRole');
+    const userNameMobile = document.getElementById('userNameMobile');
+    const nombre = usuarioActual.nombre || usuarioActual.email?.split('@')[0] || 'Usuario';
+    if (userNameEl) userNameEl.innerText = nombre;
+    if (userNameMobile) userNameMobile.innerText = nombre;
+    if (userRoleEl) {
+        const roles = { admin: 'Admin', supervisor: 'Supervisor', contador: 'Contador', usuario: 'Usuario' };
+        userRoleEl.innerText = roles[usuarioActual.rol] || 'Usuario';
+    }
+}
+
+function obtenerModulosPermitidos() {
+    if (!usuarioActual) return ['dashboard', 'operaciones'];
+    if (usuarioActual.rol === 'admin') return ORDEN_MODULOS;
+    if (usuarioActual.modulos_permitidos && Array.isArray(usuarioActual.modulos_permitidos)) {
+        if (usuarioActual.modulos_permitidos.includes('*')) return ORDEN_MODULOS;
+        return ORDEN_MODULOS.filter(moduloId => 
+            usuarioActual.modulos_permitidos.includes(moduloId) && MODULOS[moduloId]
+        );
+    }
+    return ['dashboard', 'operaciones'];
+}
+
+function obtenerPrimerModuloPermitido() {
+    const modulosPermitidos = obtenerModulosPermitidos();
+    return modulosPermitidos[0] || 'dashboard';
+}
+
+// ==================== RENDERIZAR BOTONES ====================
+function renderizarBotones() {
+    const container = document.getElementById('modulosButtons');
+    if (!container) return;
+    const modulosPermitidos = obtenerModulosPermitidos();
+    
+    let html = '';
+    for (const moduloId of modulosPermitidos) {
+        const modulo = MODULOS[moduloId];
+        if (modulo) {
+            const activeClass = (currentModulo === moduloId) ? 'active' : '';
+            html += `
+                <button class="modulo-btn ${activeClass}" data-modulo="${moduloId}" onclick="cambiarModulo('${moduloId}')" title="${modulo.nombre}">
+                    <i class="fas ${modulo.icono}"></i>
+                    <span class="btn-tooltip">${modulo.nombre}</span>
+                </button>
+            `;
+        }
+    }
+    container.innerHTML = html;
+}
+
+// ==================== CAMBIAR MÓDULO ====================
+function cambiarModulo(moduloId) {
+    const modulo = MODULOS[moduloId];
+    if (!modulo) { mostrarToast("Módulo no disponible", "error"); return; }
+    
+    const modulosPermitidos = obtenerModulosPermitidos();
+    if (!modulosPermitidos.includes(moduloId)) {
+        mostrarToast("Sin permiso", "error");
+        return;
+    }
+    
+    currentModulo = moduloId;
+    
+    document.querySelectorAll('.modulo-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-modulo') === moduloId) {
+            btn.classList.add('active');
+        }
+    });
+    
+    const iframe = document.getElementById('moduloFrame');
+    if (iframe) {
+        mostrarLoading(true);
+        iframe.src = modulo.ruta;
+        iframe.onload = function() {
+            setTimeout(() => enviarDatosAlIframe(iframe), 600);
+            mostrarLoading(false);
+        };
+        iframe.onerror = function() {
+            mostrarLoading(false);
+            mostrarToast("Error al cargar", "error");
+        };
+    }
+    localStorage.setItem('ultimo_modulo', moduloId);
+}
+
+// ==================== ACCIONES ====================
+function irInicio() { cambiarModulo('dashboard'); }
+
+// ==================== CERRAR SESIÓN ====================
+function cerrarSesion() {
+    if (confirm('¿Cerrar sesión?')) {
+        if (tomVisible) cerrarTom();
+        localStorage.removeItem('usuario_actual');
+        localStorage.removeItem('usuario');
+        mostrarToast("Sesión cerrada", "success");
+        setTimeout(() => { window.location.href = '/modulos/login.html'; }, 500);
+    }
+}
+
+// ==================== ESCUCHAR MENSAJES ====================
+function setupMessageListener() {
+    window.addEventListener('message', function(event) {
+        const msg = event.data;
+        if (!msg) return;
+        
+        if (msg.type === 'SOLICITAR_TEMA') {
+            event.source.postMessage({ type: 'RESPUESTA_TEMA', tema: 'default', imagen: '' }, '*');
+        }
+        if (msg.type === 'SOLICITAR_COLORES') {
+            const colores = {
+                texto: '#f0f3fa',
+                primario: '#60a5fa',
+                secundario: '#3b82f6',
+                logo: '#60a5fa',
+                titulo: '#ffffff',
+                topBarFondo: '#1a3a6c',
+                topBarTexto: '#ffffff',
+                topBarBorde: 'rgba(255,255,255,0.08)',
+                menuFondo: '#1a3a6c',
+                menuTexto: 'rgba(255,255,255,0.7)',
+                menuActivo: '#ffffff',
+                menuActivoTexto: '#1a3a6c',
+                moduloFondo: '#0a1628',
+                moduloBorde: 'rgba(255,255,255,0.04)',
+                moduloTexto: '#e0e0e0',
+                moduloCard: '#0f1f35',
+                moduloEtiqueta: '#60a5fa',
+                moduloAcento: '#60a5fa'
+            };
+            event.source.postMessage({ type: 'RESPUESTA_COLORES', colores: colores }, '*');
+        }
+        if (msg.type === 'RECARGAR_CONFIGURACION') {
+            if (event.source && event.source.postMessage) enviarDatosAlIframe(event.source);
+        }
+        if (msg.type === 'PONG') console.log("🏓 PONG:", msg.modulo);
+    });
+}
+
+// ==================== VERIFICAR SESIÓN ====================
+function verificarSesion() {
+    const usuario = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+    if (!usuario) {
+        window.location.href = '/modulos/login.html';
+        return false;
+    }
+    usuarioActual = JSON.parse(usuario);
+    return true;
+}
+
+// ==================== INICIALIZACIÓN ====================
+function init() {
+    console.log("🚀 Dashboard MADRE");
+    
+    if (!verificarSesion()) return;
+    cargarUsuarioSesion();
+    
+    const ultimoModulo = localStorage.getItem('ultimo_modulo') || 'dashboard';
+    const moduloInicial = obtenerModulosPermitidos().includes(ultimoModulo) ? ultimoModulo : obtenerPrimerModuloPermitido();
+    currentModulo = moduloInicial;
+    
+    renderizarBotones();
+    
+    const iframe = document.getElementById('moduloFrame');
+    if (iframe) iframe.src = MODULOS[moduloInicial]?.ruta || '/modulos/recepcion.html';
+    
+    setupIframeEvents();
+    setupMessageListener();
+    
+    document.getElementById('btnInicio')?.addEventListener('click', irInicio);
+    document.getElementById('btnIA')?.addEventListener('click', toggleTom);
+    document.getElementById('tomCloseBtn')?.addEventListener('click', cerrarTom);
+    document.getElementById('zoomInBtn')?.addEventListener('click', zoomIn);
+    document.getElementById('zoomOutBtn')?.addEventListener('click', zoomOut);
+    document.getElementById('zoomResetBtn')?.addEventListener('click', zoomReset);
+    document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
+    
+    document.addEventListener('keydown', handleKeyboardZoom);
+    
+    const container = document.getElementById('modulosContainer');
+    if (container) {
+        container.addEventListener('wheel', function(e) {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                this.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+    }
+    
+    console.log("✅ Dashboard inicializado");
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
+</body>
+</html>

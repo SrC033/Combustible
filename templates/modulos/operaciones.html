@@ -1,0 +1,3736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Operaciones | Grupo GSN - Gestión de Flota</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ========== ESTILOS BASE ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            color: #34d399;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* ========== ESTILOS DEL MÓDULO ========== */
+        .operaciones-modulo { animation: fadeInUp 0.5s ease; max-width: 1600px; margin: 0 auto; }
+        
+        .operaciones-header-sticky {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 10px 24px;
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .operaciones-modulo {
+            padding-top: 80px;
+            animation: fadeInUp 0.5s ease;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header-titulo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #34d399;
+            font-size: 1.1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .header-titulo i { color: #10b981; font-size: 1.2rem; }
+        .header-titulo span {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .header-titulo .badge-version {
+            font-size: 0.55rem;
+            background: rgba(16,185,129,0.05);
+            color: #34d399;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            opacity: 0.6;
+        }
+
+        .header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .btn-nuevo-pedido {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.15));
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: #34d399;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        .btn-nuevo-pedido:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(16,185,129,0.25), rgba(5,150,105,0.25));
+        }
+
+        .btn-recargar {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.05);
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: #10b981;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+        .btn-recargar:hover { background: rgba(16, 185, 129, 0.1); }
+
+        /* ========== BOTONES DE MÓDULOS ========== */
+        .btn-modulo {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.08);
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #34d399;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-modulo:hover {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.2);
+            transform: translateY(-1px);
+        }
+        .btn-modulo i { font-size: 0.8rem; }
+
+        @media (max-width: 768px) {
+            .operaciones-header-sticky { padding: 8px 12px; height: 52px; flex-wrap: nowrap; gap: 8px; }
+            .header-titulo { font-size: 0.85rem; gap: 6px; }
+            .header-titulo .badge-version { display: none; }
+            .btn-nuevo-pedido { padding: 6px 12px; font-size: 0.7rem; }
+            .btn-nuevo-pedido span { display: none; }
+            .btn-recargar { padding: 6px 10px; font-size: 0.7rem; }
+            .btn-recargar span { display: none; }
+            .btn-modulo { padding: 4px 10px; font-size: 0.6rem; }
+            .btn-modulo span { display: none; }
+            .operaciones-modulo { padding-top: 70px; }
+        }
+        @media (max-width: 480px) {
+            .operaciones-header-sticky { padding: 6px 10px; height: 46px; }
+            .header-titulo { font-size: 0.7rem; }
+            .operaciones-modulo { padding-top: 60px; }
+        }
+
+        .etapa1-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #34d399;
+            margin: 20px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .etapa1-title i { color: #10b981; }
+        
+        .galones-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .galon-card {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(16,185,129,0.05);
+        }
+        .galon-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+        .galon-card.espera::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .galon-card.comprobante::before { background: linear-gradient(90deg, #10b981, #34d399); }
+        .galon-card.trasladando::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .galon-card.entregado::before { background: linear-gradient(90deg, #10b981, #34d399); }
+        .galon-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            backdrop-filter: blur(10px);
+        }
+        .galon-icon i { font-size: 32px; color: #34d399; }
+        .galon-valor { font-size: 2rem; font-weight: 800; color: #34d399; }
+        .galon-label { font-size: 0.75rem; color: #34d399; opacity: 0.6; margin-top: 8px; }
+        
+        .operaciones-layout {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 30px;
+            min-height: 700px;
+        }
+        .col-pedidos {
+            flex: 1.2;
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 28px;
+            border: 1px solid rgba(16,185,129,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .col-pedidos-header {
+            padding: 18px 22px;
+            background: rgba(16, 185, 129, 0.03);
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .col-pedidos-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #34d399;
+        }
+        .col-pedidos-header h3 i { color: #10b981; }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .pedidos-count {
+            background: rgba(16, 185, 129, 0.05);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            color: #34d399;
+        }
+        .btn-vaciar {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.05);
+            color: #f87171;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        .btn-vaciar:hover { background: rgba(239, 68, 68, 0.1); transform: scale(1.02); }
+        
+        .pedidos-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .progress-bar-container {
+            height: 3px;
+            background: rgba(16, 185, 129, 0.05);
+            overflow: hidden;
+            border-radius: 3px;
+            margin: 0 15px 5px 15px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 3px;
+            transition: width 0.05s linear;
+        }
+        
+        .pedidos-scroll {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 550px;
+            padding: 15px;
+        }
+        .pedidos-scroll::-webkit-scrollbar { width: 8px; }
+        .pedidos-scroll::-webkit-scrollbar-track { background: rgba(16,185,129,0.02); border-radius: 10px; }
+        .pedidos-scroll::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        
+        .pedido-card-pendiente {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(16,185,129,0.05);
+        }
+        .pedido-card-pendiente:hover {
+            transform: translateX(5px);
+            background: rgba(10, 26, 10, 0.1) !important;
+            border-color: rgba(16,185,129,0.1);
+        }
+        .pedido-card-pendiente.selected {
+            border: 2px solid rgba(16,185,129,0.2);
+            background: rgba(16,185,129,0.05);
+        }
+        .pedido-header-pendiente {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .pedido-empresa-pendiente {
+            font-size: 14px;
+            font-weight: 700;
+            color: #34d399;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pedido-id-pendiente {
+            font-size: 10px;
+            font-family: monospace;
+            color: #34d399;
+            opacity: 0.5;
+            background: rgba(16,185,129,0.05);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .estado-badge-pendiente {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(16,185,129,0.05);
+            border: 1px solid rgba(16,185,129,0.05);
+            color: #34d399;
+        }
+        .pedido-ruta-pendiente {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #34d399;
+            opacity: 0.6;
+            padding: 8px 12px;
+            background: rgba(16,185,129,0.02);
+            border-radius: 12px;
+        }
+        .pedido-detalles-pendiente {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 12px 0;
+            padding: 10px;
+            background: rgba(16,185,129,0.02);
+            border-radius: 16px;
+        }
+        .pedido-detalle-pendiente {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: #34d399;
+            opacity: 0.6;
+        }
+        .pedido-valor-pendiente {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: right;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(16,185,129,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .pedido-valor-pendiente .label-total { font-size: 11px; color: #34d399; opacity: 0.4; font-weight: normal; }
+        .pedido-valor-pendiente .monto { color: #10b981; font-size: 18px; }
+        .pedido-fecha-pendiente {
+            font-size: 10px;
+            color: #34d399;
+            opacity: 0.4;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+        
+        /* ========== COLUMNA ASIGNACIÓN - FONDO BLANCO SIN TRANSPARENCIA ========== */
+        .col-asignacion {
+            flex: 1.5;
+            background: #ffffff !important;
+            border-radius: 28px;
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+        .col-asignacion-header {
+            padding: 18px 22px;
+            background: #f8faf8;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .col-asignacion-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1a2e1a;
+        }
+        .col-asignacion-header h3 i { color: #10b981; }
+        .col-asignacion-body {
+            flex: 1;
+            padding: 22px;
+            overflow-y: auto;
+            max-height: 650px;
+            background: #ffffff;
+        }
+        .col-asignacion-body::-webkit-scrollbar { width: 8px; }
+        .col-asignacion-body::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 10px; }
+        .col-asignacion-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        
+        .comprobante-section {
+            background: #f8faf8;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1a2e1a;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 8px;
+        }
+        .section-title i { color: #10b981; }
+        .section-title .badge-auto {
+            font-size: 0.55rem;
+            background: rgba(16,185,129,0.05);
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: #1a2e1a;
+            opacity: 0.5;
+            font-weight: 400;
+        }
+        .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+        .info-field { display: flex; flex-direction: column; gap: 5px; }
+        .info-field label { 
+            font-size: 0.7rem; 
+            color: #1a2e1a; 
+            opacity: 0.6; 
+            font-weight: 600;
+        }
+        .info-field .field-value {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #1a2e1a;
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .info-field .field-value.readonly {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .select-moderno {
+            background: #ffffff !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #1a2e1a !important;
+            width: 100%;
+            cursor: pointer;
+        }
+        .select-moderno option { background: #ffffff; color: #1a2e1a; }
+        .select-moderno:focus {
+            outline: none;
+            border-color: rgba(16,185,129,0.2) !important;
+        }
+        .input-readonly {
+            background: #f5f7f5 !important;
+            border: 1px solid rgba(0,0,0,0.03) !important;
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #1a2e1a !important;
+            width: 100%;
+            cursor: not-allowed;
+            opacity: 0.7;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .input-readonly.oculto {
+            display: none !important;
+        }
+        .input-checkbox {
+            accent-color: #10b981;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .checkbox-label {
+            font-size: 0.7rem;
+            color: #1a2e1a;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .checkbox-label .badge-envio {
+            font-size: 0.5rem;
+            color: #10b981;
+            opacity: 0.4;
+            font-weight: 400;
+        }
+        .conductor-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .conductor-row .info-field {
+            flex: 1;
+            min-width: 180px;
+        }
+        .conductor-row .checkbox-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding-top: 6px;
+        }
+        .conductor-row .checkbox-group .checkbox-label {
+            font-size: 0.65rem;
+        }
+        .bonos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+        .viaticos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+        .vehiculos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+        .totales-row {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(16, 185, 129, 0.03);
+            padding: 15px;
+            border-radius: 16px;
+            margin-top: 15px;
+            border: 1px solid rgba(16,185,129,0.05);
+        }
+        .total-label { color: #1a2e1a; opacity: 0.6; }
+        .total-value { font-size: 1.3rem; font-weight: 800; color: #10b981; }
+        .acciones-buttons { display: flex; gap: 15px; margin-top: 20px; }
+        .btn-enviar-factura {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.15));
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            color: #1a2e1a;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            border: 1px solid rgba(16,185,129,0.1);
+        }
+        .btn-enviar-factura:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-limpiar {
+            background: transparent;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 12px 24px;
+            border-radius: 40px;
+            color: #1a2e1a;
+            cursor: pointer;
+        }
+        .empty-state { text-align: center; padding: 60px; color: #1a2e1a; opacity: 0.3; }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.3; }
+        
+        /* ========== ESTADOS ========== */
+        .estados-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .columna-estado {
+            flex: 1;
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 28px;
+            border: 1px solid rgba(16,185,129,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .columna-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .columna-header.comprobante { background: rgba(16, 185, 129, 0.03); border-bottom-color: rgba(16, 185, 129, 0.05); }
+        .columna-header.camino { background: rgba(139, 92, 246, 0.03); border-bottom-color: rgba(139, 92, 246, 0.05); }
+        .columna-header.entregado { background: rgba(16, 185, 129, 0.03); border-bottom-color: rgba(16, 185, 129, 0.05); }
+        .columna-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #34d399;
+        }
+        .columna-header .badge-count {
+            background: rgba(16, 185, 129, 0.05);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            color: #34d399;
+        }
+        .columna-lista {
+            flex: 1;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            min-height: 300px;
+        }
+        .columna-lista::-webkit-scrollbar { width: 8px; }
+        .columna-lista::-webkit-scrollbar-track { background: rgba(16,185,129,0.02); border-radius: 10px; }
+        .columna-lista::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        
+        /* ========== FACTURA CARD ========== */
+        .factura-card {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(16,185,129,0.05);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .factura-card:hover { transform: translateX(3px); background: rgba(10,26,10,0.1) !important; }
+        .factura-card.comprobante { border-left: 4px solid #10b981; }
+        .factura-card.camino { border-left: 4px solid #8b5cf6; }
+        .factura-card.entregado { border-left: 4px solid #10b981; opacity: 0.7; }
+        
+        .factura-card.editada {
+            border-left: 4px solid #8b5cf6;
+            background: rgba(139, 92, 246, 0.03);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.02);
+            animation: pulseMorado 0.5s ease;
+        }
+        .factura-card.editada .factura-numero { color: #a78bfa; }
+        .edit-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(139, 92, 246, 0.05);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #a78bfa;
+        }
+        
+        @keyframes pulseMorado {
+            0% { background: rgba(139, 92, 246, 0.01); border-left-color: rgba(167,139,250,0.1); }
+            50% { background: rgba(139, 92, 246, 0.05); border-left-color: rgba(196,181,253,0.2); }
+            100% { background: rgba(139, 92, 246, 0.03); border-left-color: rgba(139,92,246,0.1); }
+        }
+        
+        .factura-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding-right: 30px;
+        }
+        .factura-numero { font-weight: 700; font-size: 0.85rem; color: #34d399; }
+        .badge-estado { font-size: 0.6rem; padding: 3px 10px; border-radius: 20px; }
+        .badge-comprobante { background: rgba(16, 185, 129, 0.05); color: #10b981; }
+        .badge-camino { background: rgba(139, 92, 246, 0.05); color: #a78bfa; }
+        .badge-entregado { background: rgba(16, 185, 129, 0.05); color: #34d399; }
+        .badge-editada { background: rgba(139, 92, 246, 0.05); color: #a78bfa; }
+        
+        .info-factura {
+            font-size: 0.7rem;
+            color: #34d399;
+            opacity: 0.6;
+            margin: 8px 0;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .total-factura {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #10b981;
+            text-align: right;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(16,185,129,0.05);
+        }
+        .btn-estado-card {
+            margin-top: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(10px);
+        }
+        .btn-entregado { background: rgba(16,185,129,0.05); color: #34d399; }
+        .btn-ver-factura { background: rgba(16,185,129,0.05); color: #10b981; margin-left: 8px; }
+        .btn-observacion {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.05);
+            color: #fbbf24;
+            margin-top: 10px;
+            margin-right: 8px;
+        }
+        .observacion-texto {
+            font-size: 0.65rem;
+            color: #34d399;
+            opacity: 0.5;
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: rgba(10, 26, 10, 0.05);
+            border-radius: 8px;
+            display: none;
+        }
+        .observacion-texto.visible { display: block; }
+        
+        /* ========== TABLA ENTREGADOS ========== */
+        .tabla-entregados-section {
+            margin-top: 30px;
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 28px;
+            border: 1px solid rgba(16,185,129,0.05);
+            overflow: hidden;
+        }
+        .tabla-entregados-header {
+            padding: 18px 22px;
+            background: rgba(16, 185, 129, 0.03);
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tabla-entregados-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #34d399;
+        }
+        .tabla-entregados-header h3 i { color: #10b981; }
+        .tabla-entregados {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 500px;
+            padding: 0;
+        }
+        .tabla-entregados::-webkit-scrollbar { width: 8px; height: 8px; }
+        .tabla-entregados::-webkit-scrollbar-track { background: rgba(16,185,129,0.02); border-radius: 10px; }
+        .tabla-entregados::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        
+        .tabla-entregados table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        .tabla-entregados th {
+            text-align: left;
+            padding: 14px 12px;
+            background: rgba(10, 26, 10, 0.05);
+            color: #34d399;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.75rem;
+            backdrop-filter: blur(10px);
+        }
+        .tabla-entregados td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(16,185,129,0.03);
+            color: #34d399;
+            vertical-align: middle;
+        }
+        .tabla-entregados tr:hover { background: rgba(10, 26, 10, 0.05); }
+        .tabla-entregados tr.editada {
+            background: rgba(139, 92, 246, 0.03);
+            border-left: 3px solid rgba(139,92,246,0.05);
+        }
+        .tabla-entregados tr.editada td:first-child { border-left: 3px solid rgba(139,92,246,0.05); }
+        .edit-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(139, 92, 246, 0.05);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            color: #a78bfa;
+        }
+        .btn-ver-pdf {
+            background: rgba(16,185,129,0.05);
+            border: none;
+            color: #34d399;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        .btn-ver-pdf:hover { transform: scale(1.05); background: rgba(16,185,129,0.1); }
+        
+        /* ========== MODALES ========== */
+        .modal-detalle {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(30px);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-detalle-content {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 28px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85%;
+            overflow: auto;
+            border: 1px solid rgba(16,185,129,0.05);
+        }
+        .modal-detalle-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-detalle-header h3 { color: #34d399; display: flex; align-items: center; gap: 10px; }
+        .modal-detalle-header h3 i { color: #10b981; }
+        .close-modal-detalle {
+            background: none;
+            border: none;
+            color: #34d399;
+            opacity: 0.5;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        .modal-detalle-body { padding: 24px; }
+        .pdf-viewer {
+            width: 100%;
+            height: 50vh;
+            border: none;
+            border-radius: 16px;
+            background: rgba(16,185,129,0.02);
+            margin-bottom: 20px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn-modal-camino {
+            background: rgba(139,92,246,0.1);
+            color: #a78bfa;
+            padding: 12px 28px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .btn-futurista-primary {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.15));
+            color: #34d399;
+            padding: 12px 28px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .btn-futurista-outline {
+            background: transparent;
+            border: 1px solid rgba(16,185,129,0.05);
+            color: #34d399;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* ========== MODAL NUEVO PEDIDO ========== */
+        .modal-hijo {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(30px);
+            z-index: 30000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-hijo-content {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 28px;
+            width: 92%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(16, 185, 129, 0.05);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-hijo-content::-webkit-scrollbar { width: 6px; }
+        .modal-hijo-content::-webkit-scrollbar-track { background: rgba(16,185,129,0.02); border-radius: 10px; }
+        .modal-hijo-content::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        
+        .modal-hijo-header {
+            padding: 22px 28px 16px 28px;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(16, 185, 129, 0.03);
+        }
+        
+        .modal-hijo-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #34d399;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-hijo-header h2 i { color: #10b981; }
+        
+        .modal-hijo-close {
+            background: none;
+            border: none;
+            color: #34d399;
+            opacity: 0.5;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .modal-hijo-close:hover {
+            background: rgba(16, 185, 129, 0.05);
+            color: #34d399;
+            transform: rotate(90deg);
+        }
+        
+        .modal-hijo-body { padding: 24px 28px 28px 28px; }
+        
+        .hijo-form-group { margin-bottom: 18px; }
+        
+        .hijo-form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #34d399;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+        
+        .hijo-form-group label .required { color: #f87171; margin-left: 3px; }
+        
+        .hijo-form-group .hint {
+            font-size: 0.65rem;
+            color: #34d399;
+            opacity: 0.5;
+            margin-top: 4px;
+        }
+        
+        .hijo-input,
+        .hijo-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(10, 26, 10, 0.05) !important;
+            border: 1px solid rgba(16, 185, 129, 0.05) !important;
+            border-radius: 12px;
+            color: #34d399 !important;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hijo-input:focus,
+        .hijo-select:focus {
+            outline: none;
+            border-color: rgba(16,185,129,0.1) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.02);
+            background: rgba(10, 26, 10, 0.08) !important;
+        }
+        
+        .hijo-input::placeholder {
+            color: #34d399;
+            opacity: 0.3;
+        }
+        
+        .hijo-select option {
+            background: #0a1a0a;
+            color: #34d399;
+        }
+        
+        .hijo-input[readonly],
+        .hijo-input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: rgba(10, 26, 10, 0.02) !important;
+        }
+        
+        .hijo-combustible-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .hijo-combustible-btn {
+            padding: 10px 12px;
+            background: rgba(10, 26, 10, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.05);
+            border-radius: 10px;
+            color: #34d399;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hijo-combustible-btn:hover {
+            background: rgba(10, 26, 10, 0.08);
+            border-color: rgba(16, 185, 129, 0.08);
+        }
+        
+        .hijo-combustible-btn.active {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.15));
+            border-color: rgba(16,185,129,0.08);
+            color: #34d399;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.02);
+        }
+        
+        .hijo-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .hijo-total-preview {
+            background: rgba(10, 26, 10, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.05);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin: 10px 0 5px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hijo-total-preview .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 0;
+        }
+        
+        .hijo-total-preview .total-row .label {
+            font-size: 0.75rem;
+            color: #34d399;
+            opacity: 0.5;
+        }
+        
+        .hijo-total-preview .total-row .value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #34d399;
+        }
+        
+        .hijo-total-preview .total-row.total-final {
+            border-top: 1px solid rgba(16, 185, 129, 0.05);
+            margin-top: 6px;
+            padding-top: 8px;
+        }
+        
+        .hijo-total-preview .total-row.total-final .label {
+            font-weight: 600;
+            color: #10b981;
+        }
+        
+        .hijo-total-preview .total-row.total-final .value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+        
+        .hijo-credito-status {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(10, 26, 10, 0.05);
+            border-left: 3px solid rgba(16,185,129,0.05);
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hijo-credito-status .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            padding: 2px 0;
+        }
+        
+        .hijo-credito-status .status-row .label {
+            color: #34d399;
+            opacity: 0.5;
+        }
+        
+        .hijo-credito-status .status-row .value {
+            color: #34d399;
+            font-weight: 500;
+        }
+        
+        .badge-credito-hijo {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-credito-hijo.ok { background: rgba(16, 185, 129, 0.05); color: #34d399; }
+        .badge-credito-hijo.warning { background: rgba(245, 158, 11, 0.05); color: #fbbf24; }
+        .badge-credito-hijo.danger { background: rgba(239, 68, 68, 0.05); color: #f87171; }
+        
+        .modal-hijo-footer {
+            padding: 16px 28px 24px 28px;
+            border-top: 1px solid rgba(16, 185, 129, 0.05);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .btn-hijo-outline {
+            background: transparent;
+            border: 1px solid rgba(16, 185, 129, 0.05);
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: #34d399;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-hijo-outline:hover {
+            background: rgba(10, 26, 10, 0.05);
+            border-color: rgba(16, 185, 129, 0.08);
+            color: #34d399;
+        }
+        
+        .btn-hijo-success {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.15));
+            border: none;
+            padding: 10px 28px;
+            border-radius: 40px;
+            color: #34d399;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-hijo-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.02);
+        }
+        
+        .toast-message {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: rgba(10, 26, 10, 0.05);
+            backdrop-filter: blur(30px);
+            padding: 12px 24px;
+            border-radius: 60px;
+            z-index: 10001;
+            border-left: 4px solid #10b981;
+            font-size: 0.85rem;
+            color: #34d399;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(16, 185, 129, 0.05);
+            border-top-color: rgba(16,185,129,0.3);
+            border-radius: 50%;
+            margin: 30px auto;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        .modal-observacion {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(30px);
+            z-index: 20001;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-observacion-content {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 28px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85%;
+            overflow: hidden;
+            border: 1px solid rgba(16,185,129,0.05);
+        }
+        .modal-observacion-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-observacion-header h3 { color: #34d399; display: flex; align-items: center; gap: 10px; font-size: 1rem; }
+        .modal-observacion-header h3 i { color: #10b981; }
+        .modal-observacion-close {
+            background: none;
+            border: none;
+            color: #34d399;
+            opacity: 0.5;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-observacion-body { padding: 20px; }
+        .modal-observacion-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 15px 20px;
+            border-top: 1px solid rgba(16,185,129,0.05);
+        }
+        textarea.observacion-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(10, 26, 10, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.05);
+            border-radius: 12px;
+            color: #34d399;
+            font-size: 0.8rem;
+            resize: vertical;
+            min-height: 100px;
+            backdrop-filter: blur(10px);
+        }
+        textarea.observacion-input:focus {
+            outline: none;
+            border-color: rgba(16,185,129,0.1);
+        }
+
+        /* ========== SUB-VENTANA DE MÓDULOS ========== */
+        .subventana-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            z-index: 50000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .subventana-overlay.active { display: flex; }
+        .subventana-container {
+            background: rgba(10, 26, 10, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 28px;
+            width: 92%;
+            max-width: 1400px;
+            height: 88vh;
+            max-height: 90vh;
+            border: 1px solid rgba(16,185,129,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+        }
+        .subventana-header {
+            padding: 14px 24px;
+            border-bottom: 1px solid rgba(16,185,129,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: rgba(16,185,129,0.03);
+        }
+        .subventana-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #34d399;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subventana-header h2 i { color: #10b981; }
+        .subventana-close {
+            background: none;
+            border: none;
+            color: #34d399;
+            opacity: 0.5;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0 8px;
+        }
+        .subventana-close:hover {
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+        .subventana-body {
+            flex: 1;
+            overflow: hidden;
+            padding: 4px;
+            background: rgba(0,0,0,0.2);
+        }
+        .subventana-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* ========== BOTONES DE MÓDULOS EN HEADER ========== */
+        .btn-modulo-flota {
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05));
+            border: 1px solid rgba(16,185,129,0.08);
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #34d399;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-modulo-flota:hover {
+            background: rgba(16,185,129,0.15);
+            border-color: rgba(16,185,129,0.2);
+            transform: translateY(-1px);
+        }
+        .btn-modulo-gps {
+            background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(37,99,235,0.05));
+            border: 1px solid rgba(59,130,246,0.08);
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #60a5fa;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-modulo-gps:hover {
+            background: rgba(59,130,246,0.15);
+            border-color: rgba(59,130,246,0.2);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .btn-modulo-flota span, .btn-modulo-gps span { display: none; }
+            .btn-modulo-flota, .btn-modulo-gps { padding: 4px 10px; font-size: 0.6rem; }
+            .subventana-container { width: 98%; height: 92vh; }
+            .subventana-header { padding: 10px 16px; }
+            .subventana-header h2 { font-size: 0.9rem; }
+        }
+        @media (max-width: 480px) {
+            .subventana-container { width: 100%; height: 100vh; border-radius: 0; max-height: 100vh; }
+            .subventana-header { padding: 8px 12px; }
+            .subventana-header h2 { font-size: 0.8rem; }
+        }
+
+        /* ========== NUEVOS ESTILOS PARA BONOS/VIÁTICOS ========== */
+        .badge-origen {
+            font-size: 0.5rem;
+            background: rgba(16,185,129,0.05);
+            color: #34d399;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+            opacity: 0.6;
+        }
+        .check-label-with-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: #1a2e1a;
+            opacity: 0.6;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .check-label-with-badge .badge-origen {
+            font-size: 0.45rem;
+            padding: 1px 6px;
+            background: rgba(16,185,129,0.08);
+            color: #10b981;
+        }
+        .info-field .field-value.bono-valor {
+            font-weight: 600;
+            color: #0d9488;
+        }
+        .info-field .field-value.viatico-valor {
+            font-weight: 600;
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+<div class="operaciones-modulo">
+    <!-- HEADER -->
+    <div class="operaciones-header-sticky" id="headerOperaciones">
+        <div class="header-titulo">
+            <i class="fas fa-truck"></i>
+            <span>Operaciones</span>
+            <span class="badge-version">v2.0</span>
+        </div>
+        <div class="header-buttons">
+            <button class="btn-modulo-flota" onclick="abrirSubVentana('flota')">
+                <i class="fas fa-users"></i>
+                <span>Flota</span>
+            </button>
+            <button class="btn-modulo-gps" onclick="abrirSubVentana('gps')">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>GPS</span>
+            </button>
+            <button id="recargarBtn" class="btn-recargar">
+                <i class="fas fa-sync-alt"></i>
+                <span>Recargar</span>
+            </button>
+            <button id="crearPedidoManualBtn" class="btn-nuevo-pedido">
+                <i class="fas fa-plus-circle"></i>
+                <span>Nuevo Pedido</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- GALONES -->
+    <div class="etapa1-title">
+        <i class="fas fa-chart-simple"></i>
+        <span>Estado de Galones</span>
+    </div>
+    <div class="galones-grid">
+        <div class="galon-card espera"><div class="galon-icon"><i class="fas fa-clock"></i></div><div class="galon-valor" id="galonesEspera">0</div><div class="galon-label">Galones en Espera</div></div>
+        <div class="galon-card comprobante"><div class="galon-icon"><i class="fas fa-file-invoice"></i></div><div class="galon-valor" id="galonesComprobante">0</div><div class="galon-label">Galones en Comprobante</div></div>
+        <div class="galon-card trasladando"><div class="galon-icon"><i class="fas fa-truck"></i></div><div class="galon-valor" id="galonesTrasladando">0</div><div class="galon-label">Galones Trasladando</div></div>
+        <div class="galon-card entregado"><div class="galon-icon"><i class="fas fa-check-circle"></i></div><div class="galon-valor" id="galonesEntregado">0</div><div class="galon-label">Galones Entregados</div></div>
+    </div>
+
+    <!-- LAYOUT PRINCIPAL -->
+    <div class="operaciones-layout">
+        <div class="col-pedidos">
+            <div class="col-pedidos-header">
+                <h3><i class="fas fa-clipboard-list"></i> Pedidos Pendientes</h3>
+                <div class="header-actions">
+                    <span class="pedidos-count" id="pendientesCount">0 pedidos</span>
+                    <button class="btn-vaciar" onclick="vaciarListaPendientes()"><i class="fas fa-trash-alt"></i> Vaciar</button>
+                </div>
+            </div>
+            <div class="pedidos-container">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="updateProgressFill"></div>
+                </div>
+                <div class="pedidos-scroll" id="pedidosPendientesList">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA ASIGNACIÓN -->
+        <div class="col-asignacion">
+            <div class="col-asignacion-header">
+                <h3><i class="fas fa-truck"></i> Asignación de Flota</h3>
+            </div>
+            <div class="col-asignacion-body" id="asignacionBody">
+                <div class="comprobante-section">
+                    <div class="section-title"><i class="fas fa-building"></i> Datos del Cliente</div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Empresa</label><div class="field-value" id="infoEmpresa">-</div></div>
+                        <div class="info-field"><label>RUC</label><div class="field-value" id="infoRuc">-</div></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Origen</label><div class="field-value" id="infoOrigen">-</div></div>
+                        <div class="info-field"><label>Destino</label><div class="field-value" id="infoDestino">-</div></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Distancia</label><div class="field-value" id="infoDistancia">0 km</div></div>
+                        <div class="info-field"><label>Costo Traslado</label><div class="field-value" id="infoCostoTraslado">C$0.00</div></div>
+                    </div>
+                </div>
+
+                <!-- CONDUCTORES CON CHECKBOX -->
+                <div class="comprobante-section">
+                    <div class="section-title"><i class="fas fa-users"></i> Conductores</div>
+                    <div class="conductor-row">
+                        <div class="info-field">
+                            <label>Conductor Principal *</label>
+                            <select id="selectConductor" class="select-moderno" onchange="actualizarInfoConductor()">
+                                <option value="">-- Seleccionar Conductor --</option>
+                            </select>
+                        </div>
+                        <div class="checkbox-group">
+                            <label class="check-label-with-badge">
+                                <input type="checkbox" id="checkBono1" class="input-checkbox" checked onchange="toggleBonoViatico()">
+                                Bono <span class="badge-origen">desde cliente</span>
+                            </label>
+                            <label class="check-label-with-badge">
+                                <input type="checkbox" id="checkViatico1" class="input-checkbox" checked onchange="toggleBonoViatico()">
+                                Viático <span class="badge-origen">desde cliente</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Licencia</label><div class="field-value" id="conductorLicencia">-</div></div>
+                        <div class="info-field"><label>Teléfono</label><div class="field-value" id="conductorTelefono">-</div></div>
+                    </div>
+
+                    <div class="conductor-row" style="margin-top:10px;">
+                        <div class="info-field">
+                            <label>Conductor Secundario</label>
+                            <select id="selectConductor2" class="select-moderno" onchange="actualizarInfoConductor2()">
+                                <option value="">-- Ninguno --</option>
+                            </select>
+                        </div>
+                        <div class="checkbox-group">
+                            <label class="check-label-with-badge">
+                                <input type="checkbox" id="checkBono2" class="input-checkbox" checked onchange="toggleBonoViatico()">
+                                Bono <span class="badge-origen">desde cliente</span>
+                            </label>
+                            <label class="check-label-with-badge">
+                                <input type="checkbox" id="checkViatico2" class="input-checkbox" checked onchange="toggleBonoViatico()">
+                                Viático <span class="badge-origen">desde cliente</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Teléfono Conductor 2</label><div class="field-value" id="conductor2Telefono">-</div></div>
+                        <div class="info-field"><label>Licencia Conductor 2</label><div class="field-value" id="conductor2Licencia">-</div></div>
+                    </div>
+                </div>
+
+                <!-- CAMIONES -->
+                <div class="comprobante-section">
+                    <div class="section-title"><i class="fas fa-truck"></i> Camiones</div>
+                    <div class="vehiculos-grid">
+                        <div class="info-field"><label>Camión Principal *</label>
+                            <select id="selectCamion" class="select-moderno" onchange="actualizarInfoCamion()">
+                                <option value="">-- Seleccionar Camión --</option>
+                            </select>
+                        </div>
+                        <div class="info-field"><label>Capacidad</label><div class="field-value" id="camionCapacidad">0 gal</div></div>
+                    </div>
+                    <div class="vehiculos-grid">
+                        <div class="info-field"><label>Camión Secundario</label>
+                            <select id="selectCamion2" class="select-moderno" onchange="actualizarInfoCamion2()">
+                                <option value="">-- Ninguno --</option>
+                            </select>
+                        </div>
+                        <div class="info-field"><label>Placa</label><div class="field-value" id="camionPlaca">-</div></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Placa Camión 2</label><div class="field-value" id="camion2Placa">-</div></div>
+                    </div>
+                </div>
+
+                <!-- BONOS / CUPONES - AHORA CON DATOS DE GESTIÓN CLIENTES -->
+                <div class="comprobante-section" id="bonosSection">
+                    <div class="section-title">
+                        <i class="fas fa-ticket-alt"></i> Bonos / Cupones 
+                        <span class="badge-auto">desde Gestión Clientes</span>
+                    </div>
+                    <div class="bonos-grid">
+                        <div class="info-field" id="bono1Container">
+                            <label>Bono/Cupón 1 <span class="badge-origen">desde cliente</span></label>
+                            <input type="text" id="bono1" class="input-readonly bono-valor" readonly disabled>
+                        </div>
+                        <div class="info-field" id="bono2Container">
+                            <label>Bono/Cupón 2 <span class="badge-origen">desde cliente</span></label>
+                            <input type="text" id="bono2" class="input-readonly bono-valor" readonly disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIÁTICOS - AHORA CON DATOS DE GESTIÓN CLIENTES -->
+                <div class="comprobante-section" id="viaticosSection">
+                    <div class="section-title">
+                        <i class="fas fa-money-bill"></i> Viáticos 
+                        <span class="badge-auto">desde Gestión Clientes</span>
+                    </div>
+                    <div class="viaticos-grid">
+                        <div class="info-field" id="viatico1Container">
+                            <label>Viático 1 (C$) <span class="badge-origen">desde cliente</span></label>
+                            <input type="number" id="viatico1" class="input-readonly viatico-valor" readonly disabled step="10">
+                        </div>
+                        <div class="info-field" id="viatico2Container">
+                            <label>Viático 2 (C$) <span class="badge-origen">desde cliente</span></label>
+                            <input type="number" id="viatico2" class="input-readonly viatico-valor" readonly disabled step="10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comprobante-section">
+                    <div class="section-title"><i class="fas fa-file-invoice-dollar"></i> Detalle del Pedido</div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Tipo Combustible</label><div class="field-value" id="detalleTipo">-</div></div>
+                        <div class="info-field"><label>Galones</label><div class="field-value" id="detalleGalones">0 gal</div></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Precio por Galón</label><div class="field-value" id="detallePrecio">C$0.00</div></div>
+                        <div class="info-field"><label>Costo Combustible</label><div class="field-value" id="detalleCostoComb">C$0.00</div></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-field"><label>Costo Traslado</label><div class="field-value" id="detalleCostoTras">C$0.00</div></div>
+                        <div class="info-field"><label>Distancia</label><div class="field-value" id="detalleDistancia">0 km</div></div>
+                    </div>
+                    <div class="totales-row">
+                        <span class="total-label">TOTAL DEL PEDIDO:</span>
+                        <span class="total-value" id="detalleTotal">C$0.00</span>
+                    </div>
+                </div>
+
+                <div class="acciones-buttons">
+                    <button class="btn-enviar-factura" id="btnEnviarFactura" disabled><i class="fas fa-file-invoice"></i> Enviar a Facturación</button>
+                    <button class="btn-limpiar" onclick="limpiarSeleccion()"><i class="fas fa-eraser"></i> Limpiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMNAS DE ESTADOS -->
+    <div class="estados-container">
+        <div class="columna-estado">
+            <div class="columna-header comprobante">
+                <h3><i class="fas fa-file-invoice"></i> COMPROBANTE RECIBIDO</h3>
+                <div class="header-actions">
+                    <span class="badge-count" id="comprobanteCount">0</span>
+                    <button class="btn-vaciar" onclick="vaciarListaComprobante()"><i class="fas fa-trash-alt"></i> Vaciar</button>
+                </div>
+            </div>
+            <div class="columna-lista" id="comprobanteList"><div class="loading-spinner"></div></div>
+        </div>
+        <div class="columna-estado">
+            <div class="columna-header camino">
+                <h3><i class="fas fa-truck"></i> PEDIDO EN CAMINO</h3>
+                <div class="header-actions">
+                    <span class="badge-count" id="caminoCount">0</span>
+                    <button class="btn-vaciar" onclick="vaciarListaCamino()"><i class="fas fa-trash-alt"></i> Vaciar</button>
+                </div>
+            </div>
+            <div class="columna-lista" id="caminoList"><div class="loading-spinner"></div></div>
+        </div>
+        <div class="columna-estado">
+            <div class="columna-header entregado">
+                <h3><i class="fas fa-check-circle"></i> ENTREGADO</h3>
+                <div class="header-actions">
+                    <span class="badge-count" id="entregadoCount">0</span>
+                    <button class="btn-vaciar" onclick="vaciarListaEntregado()"><i class="fas fa-trash-alt"></i> Vaciar</button>
+                </div>
+            </div>
+            <div class="columna-lista" id="entregadoList"><div class="loading-spinner"></div></div>
+        </div>
+    </div>
+
+    <!-- TABLA DE ENTREGADOS -->
+    <div class="tabla-entregados-section">
+        <div class="tabla-entregados-header">
+            <h3><i class="fas fa-table"></i> HISTORIAL DE FACTURAS ENTREGADAS</h3>
+            <button class="btn-vaciar" onclick="vaciarTablaEntregados()" style="background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.05); color: #f87171;">
+                <i class="fas fa-trash-alt"></i> Vaciar Tabla
+            </button>
+        </div>
+        <div class="tabla-entregados" id="tablaEntregados">
+            <div class="empty-state"><i class="fas fa-inbox"></i><p>No hay facturas entregadas</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== SUB-VENTANA PARA MÓDULOS ========== -->
+<div class="subventana-overlay" id="subVentanaOverlay">
+    <div class="subventana-container">
+        <div class="subventana-header">
+            <h2 id="subVentanaTitulo"><i class="fas fa-cube"></i> Módulo</h2>
+            <button class="subventana-close" onclick="cerrarSubVentana()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="subventana-body">
+            <iframe id="subVentanaIframe" src="about:blank"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- MODALES -->
+<div id="modalPedidoHijo" class="modal-hijo">
+    <div class="modal-hijo-content">
+        <div class="modal-hijo-header">
+            <h2><i class="fas fa-plus-circle"></i> Nuevo Pedido</h2>
+            <button class="modal-hijo-close" onclick="cerrarModalPedido()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-hijo-body">
+            <div class="hijo-form-group">
+                <label>Cliente <span class="required">*</span></label>
+                <select id="empresaSelect" class="hijo-select" onchange="window.cargarDatosEmpresa()">
+                    <option value="">-- Seleccione --</option>
+                </select>
+            </div>
+            <div class="hijo-form-group">
+                <label>Nombre</label>
+                <input id="empresaNombreManual" class="hijo-input" readonly>
+            </div>
+            <div class="hijo-row-2">
+                <div class="hijo-form-group">
+                    <label>RUC</label>
+                    <input id="empresaRucManual" class="hijo-input" readonly>
+                </div>
+                <div class="hijo-form-group">
+                    <label>ID Cliente</label>
+                    <input id="empresaIdManual" class="hijo-input" readonly>
+                </div>
+            </div>
+            <div class="hijo-row-2">
+                <div class="hijo-form-group">
+                    <label>Origen</label>
+                    <input id="origenManual" class="hijo-input" placeholder="Managua">
+                </div>
+                <div class="hijo-form-group">
+                    <label>Destino</label>
+                    <input id="destinoManual" class="hijo-input" placeholder="León">
+                </div>
+            </div>
+            <div class="hijo-row-2">
+                <div class="hijo-form-group">
+                    <label>Distancia (km)</label>
+                    <input id="distanciaManual" class="hijo-input" type="number" step="0.01" value="0" oninput="actualizarPreviewTotalHijo()">
+                </div>
+                <div class="hijo-form-group">
+                    <label>Costo Traslado (C$)</label>
+                    <input id="costoTrasladoManual" class="hijo-input" type="number" step="0.01" value="0" oninput="actualizarPreviewTotalHijo()">
+                </div>
+            </div>
+            <div class="hijo-form-group">
+                <label>Tipo de Combustible</label>
+                <div class="hijo-combustible-grid">
+                    <button class="hijo-combustible-btn active" onclick="window.seleccionarCombustibleHijo(this, 'DIESEL')">DIESEL</button>
+                    <button class="hijo-combustible-btn" onclick="window.seleccionarCombustibleHijo(this, 'DIESEL PREMIUM')">DIESEL PREMIUM</button>
+                    <button class="hijo-combustible-btn" onclick="window.seleccionarCombustibleHijo(this, 'GASOLINA REGULAR')">GASOLINA REGULAR</button>
+                    <button class="hijo-combustible-btn" onclick="window.seleccionarCombustibleHijo(this, 'GASOLINA SUPER')">GASOLINA SUPER</button>
+                </div>
+                <input type="hidden" id="tipoCombustibleManual" value="DIESEL">
+            </div>
+            <div class="hijo-row-2">
+                <div class="hijo-form-group">
+                    <label>Galones <span class="required">*</span></label>
+                    <input id="galonesManual" class="hijo-input" type="number" step="0.01" value="0" oninput="actualizarPreviewTotalHijo()">
+                </div>
+                <div class="hijo-form-group">
+                    <label>Precio por Galón (C$) <span class="required">*</span></label>
+                    <input id="precioManual" class="hijo-input" type="number" step="0.01" value="0" oninput="actualizarPreviewTotalHijo()">
+                </div>
+            </div>
+            <!-- BONOS Y VIÁTICOS EN MODAL -->
+            <div class="hijo-row-2">
+                <div class="hijo-form-group">
+                    <label>Bono 1</label>
+                    <input id="modalBono1" class="hijo-input" placeholder="Bono 1">
+                </div>
+                <div class="hijo-form-group">
+                    <label>Bono 2</label>
+                    <input id="modalBono2" class="hijo-input" placeholder="Bono 2">
+                </div>
+            </div>
+            <div class="hijo-row-2">
+                <div class="hijo-form-group">
+                    <label>Viático 1 (C$)</label>
+                    <input id="modalViatico1" class="hijo-input" type="number" step="0.01" value="0">
+                </div>
+                <div class="hijo-form-group">
+                    <label>Viático 2 (C$)</label>
+                    <input id="modalViatico2" class="hijo-input" type="number" step="0.01" value="0">
+                </div>
+            </div>
+            <div class="hijo-total-preview">
+                <div class="total-row"><span class="label">Combustible</span><span class="value" id="calcCombustible">C$0.00</span></div>
+                <div class="total-row"><span class="label">Traslado</span><span class="value" id="calcTraslado">C$0.00</span></div>
+                <div class="total-row total-final"><span class="label">TOTAL</span><span class="value" id="calcTotal">C$0.00</span></div>
+            </div>
+            <div class="hijo-credito-status" id="creditoStatusHijo">
+                <div class="status-row"><span class="label">Crédito Disponible</span><span class="value" id="modalCreditoDisponible">C$0.00</span></div>
+                <div class="status-row"><span class="label">Límite</span><span class="value" id="modalCreditoLimite">C$0.00</span></div>
+                <div class="status-row"><span class="label">Estado</span><span class="value" id="creditoStatusBadge"><span class="badge-credito-hijo ok"><i class="fas fa-check-circle"></i> Suficiente</span></span></div>
+            </div>
+        </div>
+        <div class="modal-hijo-footer">
+            <button class="btn-hijo-outline" onclick="cerrarModalPedido()">Cancelar</button>
+            <button class="btn-hijo-success" id="guardarPedidoManualBtn"><i class="fas fa-save"></i> Guardar Pedido</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalVerDetalle" class="modal-detalle">
+    <div class="modal-detalle-content">
+        <div class="modal-detalle-header">
+            <h3><i class="fas fa-file-pdf"></i> Detalle de Factura</h3>
+            <button class="close-modal-detalle" onclick="cerrarModalDetalle()">&times;</button>
+        </div>
+        <div class="modal-detalle-body" id="detalleBody"></div>
+    </div>
+</div>
+
+<div id="modalObservacion" class="modal-observacion">
+    <div class="modal-observacion-content">
+        <div class="modal-observacion-header">
+            <h3><i class="fas fa-comment"></i> Observación</h3>
+            <button class="modal-observacion-close" onclick="cerrarModalObservacion()">&times;</button>
+        </div>
+        <div class="modal-observacion-body">
+            <p style="font-size:0.7rem; color:#34d399; opacity:0.5; margin-bottom:12px;">
+                Factura: <strong id="observacionPedidoId">-</strong> · Empresa: <strong id="observacionEmpresa">-</strong>
+                <span id="observacionObligatoria" style="display:none; color:#f87171; margin-left:10px;">⚠️ Obligatoria (+24h)</span>
+            </p>
+            <textarea id="observacionTexto" class="observacion-input" placeholder="Escribe tu observación aquí..."></textarea>
+        </div>
+        <div class="modal-observacion-footer">
+            <button class="btn-hijo-outline" onclick="cerrarModalObservacion()">Cancelar</button>
+            <button class="btn-hijo-success" id="btnGuardarObservacion"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    "use strict";
+    console.log("🚛 Módulo Operaciones v2.0 - Con Gestión Clientes");
+
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTransparenciaModulo(t) {
+        var defaultTransparencia = {
+            fondo: 0.05,
+            tarjetas: 0.05,
+            bordes: 0.05,
+            blur: 30
+        };
+        
+        if (!t) {
+            var usuarioKey = obtenerUsuarioKey();
+            var transparenciaGuardada = localStorage.getItem(usuarioKey + '_transparencia');
+            if (transparenciaGuardada) {
+                try {
+                    t = JSON.parse(transparenciaGuardada);
+                } catch(e) {
+                    t = defaultTransparencia;
+                }
+            } else {
+                t = defaultTransparencia;
+            }
+        }
+        
+        var fondo = t.fondo || defaultTransparencia.fondo;
+        var tarjetas = t.tarjetas || defaultTransparencia.tarjetas;
+        var bordes = t.bordes || defaultTransparencia.bordes;
+        var blur = t.blur || defaultTransparencia.blur;
+        
+        console.log('🎨 Aplicando transparencia EXTREMA en Operaciones:', { fondo, tarjetas, bordes, blur });
+
+        var cards = document.querySelectorAll('.galon-card, .pedido-card-pendiente, .factura-card, .col-pedidos, .columna-estado, .tabla-entregados-section');
+        cards.forEach(function(el) {
+            el.style.backgroundColor = 'rgba(10, 26, 10, ' + tarjetas + ') !important';
+            el.style.backdropFilter = 'blur(' + blur + 'px)';
+            el.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+            el.style.borderColor = 'rgba(16,185,129, 0.05)';
+            el.style.transition = 'all 0.3s ease';
+        });
+
+        var header = document.querySelector('.operaciones-header-sticky');
+        if (header) {
+            header.style.background = 'rgba(10, 26, 10, ' + fondo + ') !important';
+            header.style.backdropFilter = 'blur(' + blur + 'px)';
+            header.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+            header.style.borderBottomColor = 'rgba(16,185,129, 0.05)';
+        }
+
+        var panels = document.querySelectorAll('.pedidos-container');
+        panels.forEach(function(el) {
+            el.style.backgroundColor = 'rgba(10, 26, 10, ' + fondo + ')';
+            el.style.backdropFilter = 'blur(' + blur + 'px)';
+            el.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+        });
+
+        var modals = document.querySelectorAll('.modal-hijo-content, .modal-detalle-content, .modal-observacion-content');
+        modals.forEach(function(el) {
+            el.style.background = 'rgba(10, 26, 10, ' + fondo + ') !important';
+            el.style.backdropFilter = 'blur(' + blur + 'px)';
+            el.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+            el.style.borderColor = 'rgba(16,185,129, 0.05)';
+        });
+
+        var usuarioKey = obtenerUsuarioKey();
+        localStorage.setItem(usuarioKey + '_transparencia', JSON.stringify({ fondo, tarjetas, bordes, blur }));
+
+        console.log('✅ Transparencia EXTREMA aplicada en Operaciones (excepto Asignación)');
+    }
+
+    function cargarTransparenciaGuardada() {
+        var usuarioKey = obtenerUsuarioKey();
+        var transparenciaGuardada = localStorage.getItem(usuarioKey + '_transparencia');
+        
+        if (transparenciaGuardada) {
+            try {
+                var t = JSON.parse(transparenciaGuardada);
+                aplicarTransparenciaModulo(t);
+                return t;
+            } catch(e) {
+                console.warn('Error cargando transparencia guardada:', e);
+            }
+        }
+        
+        aplicarTransparenciaModulo(null);
+        return null;
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        body.style.background = 'transparent !important';
+        body.style.backgroundColor = 'transparent !important';
+        body.style.backgroundImage = 'none !important';
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+        } else {
+            body.classList.add(tema + '-theme');
+        }
+        
+        setTimeout(cargarTransparenciaGuardada, 200);
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else if (temaGuardado !== 'image') {
+                aplicarTema(temaGuardado);
+            }
+        }
+        
+        cargarTransparenciaGuardada();
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            var msg = event.data;
+            if (!msg) return;
+            
+            if (msg.type === 'CAMBIAR_TEMA') {
+                var tema = msg.tema;
+                var imagen = msg.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else if (tema !== 'image') {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+            
+            if (msg.type === 'APLICAR_TRANSPARENCIA') {
+                var transparencia = msg.transparencia;
+                if (transparencia) {
+                    console.log("🔍 Aplicando transparencia EXTREMA desde mensaje del padre:", transparencia);
+                    aplicarTransparenciaModulo(transparencia);
+                }
+            }
+        });
+    }
+
+    // ==================== SUB-VENTANA ====================
+    var subVentanaAbierta = false;
+
+    window.abrirSubVentana = function(modulo) {
+        var overlay = document.getElementById('subVentanaOverlay');
+        var iframe = document.getElementById('subVentanaIframe');
+        var titulo = document.getElementById('subVentanaTitulo');
+        
+        var rutas = {
+            flota: '/modulos/flota.html',
+            gps: '/modulos/ubicacion.html'
+        };
+        
+        var iconos = {
+            flota: 'fa-users',
+            gps: 'fa-map-marked-alt'
+        };
+        
+        var nombres = {
+            flota: 'Gestión de Flota',
+            gps: 'GPS - Ubicación'
+        };
+        
+        if (rutas[modulo]) {
+            iframe.src = rutas[modulo] + '?_=' + Date.now();
+            titulo.innerHTML = '<i class="fas ' + iconos[modulo] + '"></i> ' + nombres[modulo];
+            overlay.classList.add('active');
+            subVentanaAbierta = true;
+            document.body.style.overflow = 'hidden';
+        } else {
+            mostrarToast('Módulo no disponible', 'error');
+        }
+    };
+
+    window.cerrarSubVentana = function() {
+        var overlay = document.getElementById('subVentanaOverlay');
+        var iframe = document.getElementById('subVentanaIframe');
+        overlay.classList.remove('active');
+        iframe.src = 'about:blank';
+        subVentanaAbierta = false;
+        document.body.style.overflow = '';
+    };
+
+    // Cerrar sub-ventana con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && subVentanaAbierta) {
+            cerrarSubVentana();
+        }
+    });
+
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    let pedidosLista = [];
+    let facturasLista = [];
+    let conductoresLista = [];
+    let camionesLista = [];
+    let pedidoSeleccionado = null;
+    let empresasData = [];
+    let facturaSeleccionada = null;
+    let selectedPedidoId = null;
+    let observacionActual = { facturaId: null, empresa: null, pedidoId: null };
+    let facturasEditadas = new Set();
+    let isUpdating = false;
+    
+    let progressInterval = null;
+    let progressStep = 0;
+    const REFRESH_TIME_MS = 5000;
+    const PROGRESS_STEPS = 50;
+    let refreshInterval = null;
+    let progressBar = document.getElementById('updateProgressFill');
+    
+    const ESTADO_ESPERA = 'espera';
+    const ESTADO_FACTURA_COMPROBANTE = 'comprobante';
+    const ESTADO_FACTURA_CAMINO = 'camino';
+    const ESTADO_FACTURA_ENTREGADO = 'entregado';
+    
+    var bonosViaticosCache = {
+        bono1: '',
+        bono2: '',
+        viatico1: 0,
+        viatico2: 0
+    };
+    
+    function formatearMoneda(valor) { 
+        if (valor === undefined || valor === null) return 'C$0.00'; 
+        return 'C$' + parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+    }
+    
+    function formatearNumero(valor) { 
+        if (valor === undefined || valor === null) return '0'; 
+        return parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); 
+    }
+    
+    function escapeHtml(text) { 
+        if (!text) return ''; 
+        return String(text).replace(/[&<>]/g, function(m) { return m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m; }); 
+    }
+    
+    function calcularTotal(pedido) { 
+        return ((pedido.galones || 0) * (pedido.precio_por_galon || 0) + (pedido.costo_traslado || 0)); 
+    }
+    
+    function mostrarToast(mensaje, tipo) {
+        tipo = tipo || 'success';
+        var old = document.querySelector('.toast-message');
+        if (old) old.remove();
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icon = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + mensaje;
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3500);
+    }
+    
+    // ==================== OBTENER BONOS/VIÁTICOS DESDE GESTIÓN CLIENTES ====================
+    async function obtenerBonosViaticosDesdeGestion(clienteId) {
+        if (!clienteId) return null;
+        try {
+            console.log('🔍 Obteniendo bonos/viáticos para cliente:', clienteId);
+            var response = await fetch('/api/operaciones/obtener_bonos_viaticos?cliente_id=' + encodeURIComponent(clienteId) + '&_=' + Date.now());
+            var data = await response.json();
+            if (data.ok) {
+                console.log('✅ Bonos/viáticos obtenidos:', data);
+                return {
+                    bono1: data.bono1 || '',
+                    bono2: data.bono2 || '',
+                    viatico1: data.viatico1 || 0,
+                    viatico2: data.viatico2 || 0
+                };
+            }
+            console.warn('⚠️ No se pudieron obtener bonos/viáticos:', data.error);
+            return null;
+        } catch(e) {
+            console.error('❌ Error obteniendo bonos/viáticos:', e);
+            return null;
+        }
+    }
+
+    // ==================== OBTENER DATOS CLIENTE DESDE GESTIÓN ====================
+    async function obtenerDatosClienteDesdeGestion(clienteId) {
+        if (!clienteId) return null;
+        try {
+            console.log('🔍 Obteniendo datos del cliente:', clienteId);
+            var response = await fetch('/api/operaciones/obtener_datos_cliente?cliente_id=' + encodeURIComponent(clienteId) + '&_=' + Date.now());
+            var data = await response.json();
+            if (data.ok && data.datos) {
+                console.log('✅ Datos del cliente obtenidos:', data.datos);
+                return data.datos;
+            }
+            console.warn('⚠️ No se pudieron obtener datos del cliente:', data.error);
+            return null;
+        } catch(e) {
+            console.error('❌ Error obteniendo datos del cliente:', e);
+            return null;
+        }
+    }
+
+    // ==================== ACTUALIZAR BONOS/VIÁTICOS EN LA UI ====================
+    function actualizarBonosViaticosUI(datos) {
+        if (!datos) return;
+        
+        bonosViaticosCache.bono1 = datos.bono1 || '';
+        bonosViaticosCache.bono2 = datos.bono2 || '';
+        bonosViaticosCache.viatico1 = datos.viatico1 || 0;
+        bonosViaticosCache.viatico2 = datos.viatico2 || 0;
+        
+        document.getElementById('bono1').value = datos.bono1 || '';
+        document.getElementById('bono2').value = datos.bono2 || '';
+        document.getElementById('viatico1').value = datos.viatico1 || 0;
+        document.getElementById('viatico2').value = datos.viatico2 || 0;
+        
+        // Aplicar checkboxes
+        window.toggleBonoViatico();
+        
+        console.log('✅ Bonos/viáticos actualizados en UI:', bonosViaticosCache);
+    }
+
+    // ==================== TOGGLE BONOS/VIÁTICOS ====================
+    window.toggleBonoViatico = function() {
+        var checkBono1 = document.getElementById('checkBono1').checked;
+        var checkViatico1 = document.getElementById('checkViatico1').checked;
+        var checkBono2 = document.getElementById('checkBono2').checked;
+        var checkViatico2 = document.getElementById('checkViatico2').checked;
+        
+        var bono1Container = document.getElementById('bono1Container');
+        var bono1Input = document.getElementById('bono1');
+        if (checkBono1) {
+            bono1Container.style.display = 'block';
+            bono1Input.value = bonosViaticosCache.bono1 || '';
+        } else {
+            bono1Container.style.display = 'none';
+            bono1Input.value = '';
+        }
+        
+        var bono2Container = document.getElementById('bono2Container');
+        var bono2Input = document.getElementById('bono2');
+        if (checkBono2) {
+            bono2Container.style.display = 'block';
+            bono2Input.value = bonosViaticosCache.bono2 || '';
+        } else {
+            bono2Container.style.display = 'none';
+            bono2Input.value = '';
+        }
+        
+        var viatico1Container = document.getElementById('viatico1Container');
+        var viatico1Input = document.getElementById('viatico1');
+        if (checkViatico1) {
+            viatico1Container.style.display = 'block';
+            viatico1Input.value = bonosViaticosCache.viatico1 || 0;
+        } else {
+            viatico1Container.style.display = 'none';
+            viatico1Input.value = 0;
+        }
+        
+        var viatico2Container = document.getElementById('viatico2Container');
+        var viatico2Input = document.getElementById('viatico2');
+        if (checkViatico2) {
+            viatico2Container.style.display = 'block';
+            viatico2Input.value = bonosViaticosCache.viatico2 || 0;
+        } else {
+            viatico2Container.style.display = 'none';
+            viatico2Input.value = 0;
+        }
+        
+        if (pedidoSeleccionado) {
+            localStorage.setItem('checkBono1_' + pedidoSeleccionado.id, checkBono1);
+            localStorage.setItem('checkViatico1_' + pedidoSeleccionado.id, checkViatico1);
+            localStorage.setItem('checkBono2_' + pedidoSeleccionado.id, checkBono2);
+            localStorage.setItem('checkViatico2_' + pedidoSeleccionado.id, checkViatico2);
+        }
+        
+        console.log('🔄 Toggle bonos/viáticos:', { checkBono1, checkViatico1, checkBono2, checkViatico2 });
+    };
+    
+    // ==================== OBTENER COSTOS COMPLETOS EMPRESA ====================
+    async function obtenerCostosCompletosEmpresa(empresaId) {
+        if (!empresaId) return null;
+        try {
+            // Primero intentar obtener desde Gestión Clientes
+            var datosGestion = await obtenerDatosClienteDesdeGestion(empresaId);
+            if (datosGestion) {
+                return {
+                    bono1: datosGestion.bono1 || '',
+                    bono2: datosGestion.bono2 || '',
+                    viatico1: parseFloat(datosGestion.viatico1) || 0,
+                    viatico2: parseFloat(datosGestion.viatico2) || 0,
+                    distancia: parseFloat(datosGestion.distancia) || 0,
+                    costo_traslado: parseFloat(datosGestion.traslado) || 0,
+                    costo_total: parseFloat(datosGestion.costo_total) || 0,
+                    diesel: parseFloat(datosGestion.diesel) || 0,
+                    diesel_max: parseFloat(datosGestion.diesel_max) || 0,
+                    gasolina: parseFloat(datosGestion.gasolina) || 0,
+                    gasolina_max: parseFloat(datosGestion.gasolina_max) || 0
+                };
+            }
+            
+            // Fallback: intentar desde la API de costos
+            var response = await fetch('/api/costo_empresa/' + empresaId + '?_=' + Date.now());
+            var data = await response.json();
+            if (data.ok && data.costo) {
+                var costo = data.costo;
+                var distancia = parseFloat(costo.distancia_km) || 0;
+                if (!distancia && costo.destino) {
+                    var match = costo.destino.match(/(\d+\.?\d*)\s*km/i);
+                    if (match) distancia = parseFloat(match[1]);
+                }
+                return {
+                    bono1: costo.bono1 || '',
+                    bono2: costo.bono2 || '',
+                    viatico1: parseFloat(costo.viatico1) || 0,
+                    viatico2: parseFloat(costo.viatico2) || 0,
+                    distancia: distancia,
+                    costo_traslado: parseFloat(costo.costo_total) || 0,
+                    costo_total: parseFloat(costo.costo_total) || 0,
+                    precio_diesel: parseFloat(costo.precio_diesel) || 0,
+                    precio_diesel_max: parseFloat(costo.precio_diesel_max) || 0,
+                    precio_gasolina: parseFloat(costo.precio_gasolina) || 0,
+                    precio_gasolina_max: parseFloat(costo.precio_gasolina_max) || 0
+                };
+            }
+        } catch(e) {
+            console.error('Error obteniendo costos completos:', e);
+        }
+        return null;
+    }
+
+    // ==================== CARGAR PEDIDOS ====================
+    async function cargarPedidos() {
+        try {
+            var response = await fetch('/api/pedidos_combustible?_=' + Date.now());
+            var data = await response.json();
+            pedidosLista = (data.pedidos || []).map(function(p) {
+                return {
+                    ...p,
+                    facturado: p.facturado || false,
+                    estado_operacion: p.estado_operacion || ESTADO_ESPERA,
+                    conductor_asignado: p.conductor_asignado || '',
+                    conductor2_asignado: p.conductor2_asignado || '',
+                    camion_asignado: p.camion_asignado || '',
+                    camion2_asignado: p.camion2_asignado || '',
+                    bono1: p.bono1 || '',
+                    bono2: p.bono2 || '',
+                    viatico1: p.viatico1 || 0,
+                    viatico2: p.viatico2 || 0,
+                    origen: p.origen || 'Managua',
+                    destino: p.destino || 'León',
+                    distancia_km: p.distancia_km || 0,
+                    fecha_obj: new Date(p.fecha || p.fecha_str || 0),
+                    fecha_recepcion: p.fecha_recepcion || p.fecha || p.fecha_str,
+                    observacion: p.observacion || ''
+                };
+            });
+            pedidosLista.sort(function(a, b) { return b.fecha_obj - a.fecha_obj; });
+            return pedidosLista;
+        } catch (error) { 
+            console.error('Error cargando pedidos:', error); 
+            pedidosLista = []; 
+            return []; 
+        }
+    }
+    
+    // ==================== CARGAR FACTURAS ====================
+    async function cargarFacturas() {
+        try {
+            var response = await fetch('/api/facturas_lista?_=' + Date.now());
+            var data = await response.json();
+            var facturas = data.facturas || [];
+            
+            try {
+                var estadosResponse = await fetch('/api/obtener_estados_facturas?_=' + Date.now());
+                var estadosData = await estadosResponse.json();
+                var estadosGuardados = estadosData.ok ? estadosData.estados : {};
+                facturas = facturas.map(function(f) { return { ...f, estado_factura: estadosGuardados[f.id] || ESTADO_FACTURA_COMPROBANTE }; });
+            } catch(e) {
+                facturas = facturas.map(function(f) { return { ...f, estado_factura: ESTADO_FACTURA_COMPROBANTE }; });
+            }
+            
+            facturasEditadas.clear();
+            for (var i = 0; i < facturas.length; i++) {
+                var f = facturas[i];
+                if (f.fecha_actualizacion || (f.filas && f.filas.length > 1) || 
+                    (f.datos_editados && Object.keys(f.datos_editados).length > 0)) {
+                    facturasEditadas.add(f.id);
+                }
+            }
+            
+            facturasLista = facturas;
+            return facturasLista;
+        } catch (error) { 
+            console.error('Error cargando facturas:', error); 
+            facturasLista = []; 
+            return []; 
+        }
+    }
+    
+    // ==================== CARGAR CONDUCTORES ====================
+    async function cargarConductores() { 
+        try { 
+            var r = await fetch('/api/conductores'); 
+            conductoresLista = (await r.json()).conductores || []; 
+        } catch(e) { 
+            conductoresLista = []; 
+        } 
+    }
+    
+    // ==================== CARGAR CAMIONES ====================
+    async function cargarCamiones() { 
+        try { 
+            var r = await fetch('/api/camiones'); 
+            camionesLista = (await r.json()).camiones || []; 
+        } catch(e) { 
+            camionesLista = []; 
+        } 
+    }
+    
+    function iniciarBarraProgreso() {
+        if (progressInterval) clearInterval(progressInterval);
+        progressStep = 0;
+        if (progressBar) progressBar.style.width = '0%';
+        
+        var stepTime = REFRESH_TIME_MS / PROGRESS_STEPS;
+        progressInterval = setInterval(function() {
+            progressStep++;
+            var percent = (progressStep / PROGRESS_STEPS) * 100;
+            if (progressBar) progressBar.style.width = percent + '%';
+            
+            if (progressStep >= PROGRESS_STEPS) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }, stepTime);
+    }
+    
+    function finalizarBarraProgreso() {
+        if (progressBar) { 
+            progressBar.style.width = '100%'; 
+            setTimeout(function() { 
+                if (progressBar) progressBar.style.width = '0%'; 
+            }, 200);
+        }
+    }
+    
+    // ==================== RENDERIZAR PEDIDOS PENDIENTES ====================
+    function renderizarPedidosPendientes() {
+        var pendientes = pedidosLista.filter(function(p) { return !p.facturado && p.estado_operacion !== 'entregado'; });
+        var container = document.getElementById('pedidosPendientesList');
+        var countSpan = document.getElementById('pendientesCount');
+        
+        if (countSpan) countSpan.innerText = pendientes.length + ' pedido' + (pendientes.length !== 1 ? 's' : '');
+        
+        if (pendientes.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay pedidos pendientes</p></div>';
+            return;
+        }
+        
+        container.innerHTML = pendientes.map(function(p) {
+            return '<div class="pedido-card-pendiente" data-pedido-id="' + p.id + '" onclick="window.seleccionarPedido(\'' + p.id + '\')">' +
+                '<div class="pedido-header-pendiente">' +
+                    '<span class="pedido-empresa-pendiente"><i class="fas fa-building"></i> ' + escapeHtml(p.nombre || p.empresa_nombre || 'Cliente') + '</span>' +
+                    '<span class="pedido-id-pendiente">' + escapeHtml(p.id) + '</span>' +
+                '</div>' +
+                '<div class="pedido-header-pendiente" style="margin-top: -5px;">' +
+                    '<span class="estado-badge-pendiente"><i class="fas fa-clock"></i> PENDIENTE</span>' +
+                '</div>' +
+                '<div class="pedido-ruta-pendiente"><i class="fas fa-route"></i> ' + escapeHtml(p.origen || 'Managua') + ' → ' + escapeHtml(p.destino || 'Leon') + ' (' + (p.distancia_km || 0) + ' km)</div>' +
+                '<div class="pedido-detalles-pendiente">' +
+                    '<div class="pedido-detalle-pendiente"><i class="fas fa-gas-pump"></i> ' + escapeHtml(p.tipo_combustible || 'N/A') + '</div>' +
+                    '<div class="pedido-detalle-pendiente"><i class="fas fa-chart-line"></i> ' + formatearNumero(p.galones) + ' gal</div>' +
+                    '<div class="pedido-detalle-pendiente"><i class="fas fa-tag"></i> ' + formatearMoneda(p.precio_por_galon) + '/gal</div>' +
+                '</div>' +
+                '<div class="pedido-valor-pendiente"><span class="label-total">TOTAL</span><span class="monto">' + formatearMoneda(calcularTotal(p)) + '</span></div>' +
+                '<div class="pedido-fecha-pendiente"><i class="far fa-calendar-alt"></i> ' + (p.fecha_str || '') + '</div>' +
+            '</div>';
+        }).join('');
+        
+        if (selectedPedidoId) {
+            document.querySelectorAll('.pedido-card-pendiente').forEach(function(card) {
+                if (card.dataset.pedidoId === selectedPedidoId) card.classList.add('selected');
+            });
+        }
+    }
+    
+    // ==================== RENDERIZAR ASIGNACIÓN ====================
+    function renderizarAsignacion(pedido) {
+        if (!pedido) {
+            limpiarAsignacion();
+            return;
+        }
+        
+        var galones = pedido.galones || 0;
+        var precioPorGalon = pedido.precio_por_galon || 0;
+        var costoTraslado = pedido.costo_traslado || 0;
+        var total = (galones * precioPorGalon) + costoTraslado;
+        
+        document.getElementById('infoEmpresa').innerHTML = escapeHtml(pedido.nombre || pedido.empresa_nombre || 'Cliente');
+        document.getElementById('infoRuc').innerHTML = escapeHtml(pedido.cedula || '-');
+        document.getElementById('infoOrigen').innerHTML = escapeHtml(pedido.origen || 'Managua');
+        document.getElementById('infoDestino').innerHTML = escapeHtml(pedido.destino || 'León');
+        document.getElementById('infoDistancia').innerHTML = (pedido.distancia_km || 0) + ' km';
+        document.getElementById('infoCostoTraslado').innerHTML = formatearMoneda(costoTraslado);
+        document.getElementById('detalleTipo').innerHTML = escapeHtml(pedido.tipo_combustible || 'N/A');
+        document.getElementById('detalleGalones').innerHTML = formatearNumero(galones) + ' gal';
+        document.getElementById('detallePrecio').innerHTML = formatearMoneda(precioPorGalon);
+        document.getElementById('detalleCostoComb').innerHTML = formatearMoneda(galones * precioPorGalon);
+        document.getElementById('detalleDistancia').innerHTML = (pedido.distancia_km || 0) + ' km';
+        document.getElementById('detalleCostoTras').innerHTML = formatearMoneda(costoTraslado);
+        document.getElementById('detalleTotal').innerHTML = formatearMoneda(total);
+        
+        // Cargar bonos/viáticos desde Gestión Clientes
+        cargarDatosCostosAsignacion(pedido.empresa_id);
+        
+        var checkBono1 = localStorage.getItem('checkBono1_' + pedido.id);
+        var checkViatico1 = localStorage.getItem('checkViatico1_' + pedido.id);
+        var checkBono2 = localStorage.getItem('checkBono2_' + pedido.id);
+        var checkViatico2 = localStorage.getItem('checkViatico2_' + pedido.id);
+        
+        document.getElementById('checkBono1').checked = checkBono1 !== null ? checkBono1 === 'true' : true;
+        document.getElementById('checkViatico1').checked = checkViatico1 !== null ? checkViatico1 === 'true' : true;
+        document.getElementById('checkBono2').checked = checkBono2 !== null ? checkBono2 === 'true' : true;
+        document.getElementById('checkViatico2').checked = checkViatico2 !== null ? checkViatico2 === 'true' : true;
+        
+        window.toggleBonoViatico();
+        
+        var conductoresOptions = '<option value="">-- Seleccionar Conductor --</option>';
+        conductoresLista.forEach(function(c) { 
+            conductoresOptions += '<option value="' + escapeHtml(c.nombre) + '" ' + (c.nombre === (pedido.conductor_asignado || '') ? 'selected' : '') + '>' + escapeHtml(c.nombre) + ' (Lic: ' + escapeHtml(c.licencia || 'N/A') + ')</option>'; 
+        });
+        document.getElementById('selectConductor').innerHTML = conductoresOptions;
+        
+        var conductores2Options = '<option value="">-- Ninguno --</option>';
+        conductoresLista.forEach(function(c) { 
+            conductores2Options += '<option value="' + escapeHtml(c.nombre) + '" ' + (c.nombre === (pedido.conductor2_asignado || '') ? 'selected' : '') + '>' + escapeHtml(c.nombre) + ' (Lic: ' + escapeHtml(c.licencia || 'N/A') + ')</option>'; 
+        });
+        document.getElementById('selectConductor2').innerHTML = conductores2Options;
+        
+        var camionesOptions = '<option value="">-- Seleccionar Camión --</option>';
+        camionesLista.forEach(function(c) { 
+            camionesOptions += '<option value="' + escapeHtml(c.placa) + '" ' + (c.placa === (pedido.camion_asignado || '') ? 'selected' : '') + '>' + escapeHtml(c.placa) + ' - ' + escapeHtml(c.marca) + ' ' + escapeHtml(c.modelo) + ' (' + (c.capacidad_galones || 0) + ' gal)</option>'; 
+        });
+        document.getElementById('selectCamion').innerHTML = camionesOptions;
+        
+        var camiones2Options = '<option value="">-- Ninguno --</option>';
+        camionesLista.forEach(function(c) { 
+            camiones2Options += '<option value="' + escapeHtml(c.placa) + '" ' + (c.placa === (pedido.camion2_asignado || '') ? 'selected' : '') + '>' + escapeHtml(c.placa) + ' - ' + escapeHtml(c.marca) + ' ' + escapeHtml(c.modelo) + ' (' + (c.capacidad_galones || 0) + ' gal)</option>'; 
+        });
+        document.getElementById('selectCamion2').innerHTML = camiones2Options;
+        
+        var conductorSel = conductoresLista.find(function(c) { return c.nombre === pedido.conductor_asignado; });
+        if (conductorSel) {
+            document.getElementById('conductorLicencia').innerHTML = conductorSel.licencia || '-';
+            document.getElementById('conductorTelefono').innerHTML = conductorSel.telefono || '-';
+        } else {
+            document.getElementById('conductorLicencia').innerHTML = '-';
+            document.getElementById('conductorTelefono').innerHTML = '-';
+        }
+        
+        var conductor2Sel = conductoresLista.find(function(c) { return c.nombre === pedido.conductor2_asignado; });
+        if (conductor2Sel) {
+            document.getElementById('conductor2Telefono').innerHTML = conductor2Sel.telefono || '-';
+            document.getElementById('conductor2Licencia').innerHTML = conductor2Sel.licencia || '-';
+        } else {
+            document.getElementById('conductor2Telefono').innerHTML = '-';
+            document.getElementById('conductor2Licencia').innerHTML = '-';
+        }
+        
+        var camionSel = camionesLista.find(function(c) { return c.placa === pedido.camion_asignado; });
+        if (camionSel) {
+            document.getElementById('camionCapacidad').innerHTML = formatearNumero(camionSel.capacidad_galones) + ' gal';
+            document.getElementById('camionPlaca').innerHTML = camionSel.placa;
+        } else {
+            document.getElementById('camionCapacidad').innerHTML = '0 gal';
+            document.getElementById('camionPlaca').innerHTML = '-';
+        }
+        
+        var camion2Sel = camionesLista.find(function(c) { return c.placa === pedido.camion2_asignado; });
+        if (camion2Sel) {
+            document.getElementById('camion2Placa').innerHTML = camion2Sel.placa;
+        } else {
+            document.getElementById('camion2Placa').innerHTML = '-';
+        }
+        
+        document.getElementById('btnEnviarFactura').disabled = false;
+    }
+    
+    // ==================== CARGAR DATOS COSTOS ASIGNACIÓN ====================
+    async function cargarDatosCostosAsignacion(empresaId) {
+        if (!empresaId) {
+            console.warn('⚠️ No hay empresaId para cargar costos');
+            return;
+        }
+        try {
+            var datos = await obtenerCostosCompletosEmpresa(empresaId);
+            
+            if (datos) {
+                // Actualizar bonos/viáticos
+                actualizarBonosViaticosUI({
+                    bono1: datos.bono1 || '',
+                    bono2: datos.bono2 || '',
+                    viatico1: datos.viatico1 || 0,
+                    viatico2: datos.viatico2 || 0
+                });
+                
+                if (datos.distancia > 0) {
+                    document.getElementById('infoDistancia').innerHTML = datos.distancia + ' km';
+                    document.getElementById('detalleDistancia').innerHTML = datos.distancia + ' km';
+                }
+                if (datos.costo_traslado > 0) {
+                    document.getElementById('infoCostoTraslado').innerHTML = formatearMoneda(datos.costo_traslado);
+                    document.getElementById('detalleCostoTras').innerHTML = formatearMoneda(datos.costo_traslado);
+                }
+                
+                window.toggleBonoViatico();
+                console.log('✅ Datos cargados desde Gestión Clientes:', datos);
+            } else {
+                console.warn('⚠️ No se encontraron datos para la empresa:', empresaId);
+            }
+        } catch(e) {
+            console.error('Error cargando datos de costos:', e);
+        }
+    }
+    
+    // ==================== LIMPIAR ASIGNACIÓN ====================
+    function limpiarAsignacion() {
+        document.getElementById('infoEmpresa').innerHTML = '-';
+        document.getElementById('infoRuc').innerHTML = '-';
+        document.getElementById('infoOrigen').innerHTML = '-';
+        document.getElementById('infoDestino').innerHTML = '-';
+        document.getElementById('infoDistancia').innerHTML = '0 km';
+        document.getElementById('infoCostoTraslado').innerHTML = 'C$0.00';
+        document.getElementById('conductorLicencia').innerHTML = '-';
+        document.getElementById('conductorTelefono').innerHTML = '-';
+        document.getElementById('conductor2Telefono').innerHTML = '-';
+        document.getElementById('conductor2Licencia').innerHTML = '-';
+        document.getElementById('camionCapacidad').innerHTML = '0 gal';
+        document.getElementById('camionPlaca').innerHTML = '-';
+        document.getElementById('camion2Placa').innerHTML = '-';
+        document.getElementById('detalleTipo').innerHTML = '-';
+        document.getElementById('detalleGalones').innerHTML = '0 gal';
+        document.getElementById('detallePrecio').innerHTML = 'C$0.00';
+        document.getElementById('detalleCostoComb').innerHTML = 'C$0.00';
+        document.getElementById('detalleDistancia').innerHTML = '0 km';
+        document.getElementById('detalleCostoTras').innerHTML = 'C$0.00';
+        document.getElementById('detalleTotal').innerHTML = 'C$0.00';
+        document.getElementById('selectConductor').innerHTML = '<option value="">-- Seleccionar Conductor --</option>';
+        document.getElementById('selectConductor2').innerHTML = '<option value="">-- Ninguno --</option>';
+        document.getElementById('selectCamion').innerHTML = '<option value="">-- Seleccionar Camión --</option>';
+        document.getElementById('selectCamion2').innerHTML = '<option value="">-- Ninguno --</option>';
+        document.getElementById('bono1').value = '';
+        document.getElementById('bono2').value = '';
+        document.getElementById('viatico1').value = '0';
+        document.getElementById('viatico2').value = '0';
+        document.getElementById('btnEnviarFactura').disabled = true;
+        
+        document.getElementById('bono1Container').style.display = 'block';
+        document.getElementById('bono2Container').style.display = 'block';
+        document.getElementById('viatico1Container').style.display = 'block';
+        document.getElementById('viatico2Container').style.display = 'block';
+    }
+    
+    // ==================== ACTUALIZAR GALONES ====================
+    function actualizarGalones() {
+        var galonesEspera = pedidosLista.filter(function(p) { return !p.facturado && p.estado_operacion !== 'entregado'; }).reduce(function(s, p) { return s + (p.galones || 0); }, 0);
+        var galonesComprobante = facturasLista.filter(function(f) { return f.estado_factura === ESTADO_FACTURA_COMPROBANTE; }).reduce(function(s, f) { return s + (f.galones || 0); }, 0);
+        var galonesTrasladando = facturasLista.filter(function(f) { return f.estado_factura === ESTADO_FACTURA_CAMINO; }).reduce(function(s, f) { return s + (f.galones || 0); }, 0);
+        var galonesEntregado = facturasLista.filter(function(f) { return f.estado_factura === ESTADO_FACTURA_ENTREGADO; }).reduce(function(s, f) { return s + (f.galones || 0); }, 0);
+        document.getElementById('galonesEspera').innerText = formatearNumero(galonesEspera);
+        document.getElementById('galonesComprobante').innerText = formatearNumero(galonesComprobante);
+        document.getElementById('galonesTrasladando').innerText = formatearNumero(galonesTrasladando);
+        document.getElementById('galonesEntregado').innerText = formatearNumero(galonesEntregado);
+    }
+    
+    // ==================== CERRAR MODAL PEDIDO ====================
+    window.cerrarModalPedido = function() { 
+        document.getElementById('modalPedidoHijo').style.display = 'none'; 
+    };
+    
+    // ==================== ABRIR MODAL PEDIDO ====================
+    window.abrirModalPedido = async function() { 
+        await cargarEmpresasSelect();
+        await cargarConductores();
+        await cargarCamiones();
+        document.getElementById('modalPedidoHijo').style.display = 'flex';
+        actualizarPreviewTotalHijo();
+    };
+    
+    // ==================== CARGAR EMPRESAS SELECT ====================
+    async function cargarEmpresasSelect() {
+        try {
+            var response = await fetch('/api/empresas_activas?_=' + Date.now());
+            var data = await response.json();
+            empresasData = data.empresas || [];
+            var select = document.getElementById('empresaSelect');
+            if (select) {
+                select.innerHTML = '<option value="">-- Seleccione --</option>';
+                empresasData.forEach(function(emp) {
+                    select.innerHTML += '<option value="' + emp.id + '">' + escapeHtml(emp.nombre) + '</option>';
+                });
+            }
+        } catch(e) {
+            console.error('Error cargando empresas:', e);
+        }
+    }
+    
+    // ==================== OBTENER COSTOS EMPRESA ====================
+    async function obtenerCostosEmpresa(empresaId) {
+        if (!empresaId) return null;
+        try {
+            // Usar la nueva API que obtiene desde Gestión Clientes
+            var datosGestion = await obtenerDatosClienteDesdeGestion(empresaId);
+            if (datosGestion) {
+                return {
+                    bono1: datosGestion.bono1 || '',
+                    bono2: datosGestion.bono2 || '',
+                    viatico1: parseFloat(datosGestion.viatico1) || 0,
+                    viatico2: parseFloat(datosGestion.viatico2) || 0,
+                    distancia_km: parseFloat(datosGestion.distancia) || 0,
+                    costo_total: parseFloat(datosGestion.traslado) || 0,
+                    precio_diesel: parseFloat(datosGestion.diesel) || 0,
+                    precio_diesel_max: parseFloat(datosGestion.diesel_max) || 0,
+                    precio_gasolina: parseFloat(datosGestion.gasolina) || 0,
+                    precio_gasolina_max: parseFloat(datosGestion.gasolina_max) || 0
+                };
+            }
+            
+            // Fallback
+            var response = await fetch('/api/costo_empresa/' + empresaId + '?_=' + Date.now());
+            var data = await response.json();
+            if (data.ok && data.costo) {
+                return data.costo;
+            }
+            return null;
+        } catch(e) {
+            console.error('Error cargando costos:', e);
+            return null;
+        }
+    }
+    
+    // ==================== OBTENER PRECIO COMBUSTIBLE ====================
+    function obtenerPrecioCombustible(costos, tipoCombustible) {
+        if (!costos) return 0;
+        
+        switch(tipoCombustible) {
+            case 'DIESEL': return parseFloat(costos.precio_diesel) || 0;
+            case 'DIESEL PREMIUM': return parseFloat(costos.precio_diesel_max) || 0;
+            case 'GASOLINA SUPER': return parseFloat(costos.precio_gasolina_max) || 0;
+            case 'GASOLINA REGULAR': return parseFloat(costos.precio_gasolina) || 0;
+            default: return parseFloat(costos.precio_diesel) || 0;
+        }
+    }
+    
+    // ==================== CARGAR DATOS EMPRESA (MODAL) ====================
+    window.cargarDatosEmpresa = async function() {
+        var empresaId = document.getElementById('empresaSelect').value;
+        if (!empresaId) {
+            document.getElementById('empresaNombreManual').value = '';
+            document.getElementById('empresaRucManual').value = '';
+            document.getElementById('empresaIdManual').value = '';
+            document.getElementById('distanciaManual').value = '0';
+            document.getElementById('costoTrasladoManual').value = '0';
+            document.getElementById('precioManual').value = '0';
+            document.getElementById('modalBono1').value = '';
+            document.getElementById('modalBono2').value = '';
+            document.getElementById('modalViatico1').value = '0';
+            document.getElementById('modalViatico2').value = '0';
+            document.getElementById('creditoStatusHijo').style.display = 'none';
+            actualizarPreviewTotalHijo();
+            return;
+        }
+        
+        try {
+            // Obtener datos desde Gestión Clientes
+            var datosGestion = await obtenerDatosClienteDesdeGestion(empresaId);
+            
+            if (datosGestion) {
+                document.getElementById('empresaNombreManual').value = datosGestion.nombre || '';
+                document.getElementById('empresaRucManual').value = datosGestion.cedula || '';
+                document.getElementById('empresaIdManual').value = empresaId;
+                document.getElementById('origenManual').value = datosGestion.origen || '';
+                document.getElementById('destinoManual').value = datosGestion.destino || '';
+                document.getElementById('distanciaManual').value = datosGestion.distancia || 0;
+                document.getElementById('costoTrasladoManual').value = datosGestion.traslado || 0;
+                document.getElementById('modalBono1').value = datosGestion.bono1 || '';
+                document.getElementById('modalBono2').value = datosGestion.bono2 || '';
+                document.getElementById('modalViatico1').value = datosGestion.viatico1 || 0;
+                document.getElementById('modalViatico2').value = datosGestion.viatico2 || 0;
+                
+                // Precios
+                var tipoCombustible = document.getElementById('tipoCombustibleManual').value || 'DIESEL';
+                var precios = {
+                    'DIESEL': datosGestion.diesel || 0,
+                    'DIESEL PREMIUM': datosGestion.diesel_max || 0,
+                    'GASOLINA REGULAR': datosGestion.gasolina || 0,
+                    'GASOLINA SUPER': datosGestion.gasolina_max || 0
+                };
+                var precio = precios[tipoCombustible] || 0;
+                document.getElementById('precioManual').value = precio;
+            } else {
+                // Fallback: intentar con la API de costos
+                var costos = await obtenerCostosEmpresa(empresaId);
+                
+                if (costos) {
+                    var tipoCombustible = document.getElementById('tipoCombustibleManual').value || 'DIESEL';
+                    var precio = obtenerPrecioCombustible(costos, tipoCombustible);
+                    if (precio > 0) document.getElementById('precioManual').value = precio;
+                    else document.getElementById('precioManual').value = 0;
+                    
+                    var distancia = parseFloat(costos.distancia_km) || 0;
+                    var costoTraslado = parseFloat(costos.costo_total) || 0;
+                    document.getElementById('distanciaManual').value = distancia;
+                    document.getElementById('costoTrasladoManual').value = costoTraslado;
+                    
+                    document.getElementById('modalBono1').value = costos.bono1 || '';
+                    document.getElementById('modalBono2').value = costos.bono2 || '';
+                    document.getElementById('modalViatico1').value = parseFloat(costos.viatico1) || 0;
+                    document.getElementById('modalViatico2').value = parseFloat(costos.viatico2) || 0;
+                } else {
+                    document.getElementById('precioManual').value = 0;
+                    document.getElementById('distanciaManual').value = '0';
+                    document.getElementById('costoTrasladoManual').value = '0';
+                    document.getElementById('modalBono1').value = '';
+                    document.getElementById('modalBono2').value = '';
+                    document.getElementById('modalViatico1').value = '0';
+                    document.getElementById('modalViatico2').value = '0';
+                }
+            }
+            
+            // Obtener crédito
+            try {
+                var credResponse = await fetch('/api/operaciones/obtener_credito?cliente_id=' + encodeURIComponent(empresaId) + '&_=' + Date.now());
+                var credData = await credResponse.json();
+                if (credData.ok && credData.credito) {
+                    document.getElementById('creditoStatusHijo').style.display = 'block';
+                    document.getElementById('modalCreditoDisponible').innerHTML = formatearMoneda(credData.credito.disponible);
+                    document.getElementById('modalCreditoLimite').innerHTML = formatearMoneda(credData.credito.limite_credito);
+                    actualizarCreditoStatusHijo(credData.credito.disponible);
+                }
+            } catch(e) {
+                console.warn('Error obteniendo crédito:', e);
+            }
+            
+            actualizarPreviewTotalHijo();
+        } catch(e) {
+            console.error('Error cargando datos empresa:', e);
+        }
+    };
+    
+    // ==================== ACTUALIZAR CRÉDITO STATUS HIJO ====================
+    function actualizarCreditoStatusHijo(disponible) {
+        var badge = document.getElementById('creditoStatusBadge');
+        var totalText = document.getElementById('calcTotal')?.innerHTML || 'C$0.00';
+        var total = parseFloat(totalText.replace(/[C$,\s]/g, '')) || 0;
+        if (disponible >= total) {
+            badge.innerHTML = '<span class="badge-credito-hijo ok"><i class="fas fa-check-circle"></i> Suficiente</span>';
+        } else if (disponible > 0) {
+            badge.innerHTML = '<span class="badge-credito-hijo warning"><i class="fas fa-exclamation-triangle"></i> Limitado (' + formatearMoneda(disponible) + ')</span>';
+        } else {
+            badge.innerHTML = '<span class="badge-credito-hijo danger"><i class="fas fa-times-circle"></i> Sin Crédito</span>';
+        }
+    }
+    
+    // ==================== SELECCIONAR COMBUSTIBLE HIJO ====================
+    window.seleccionarCombustibleHijo = async function(btn, tipo) {
+        document.querySelectorAll('.hijo-combustible-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tipoCombustibleManual').value = tipo;
+        
+        var empresaId = document.getElementById('empresaSelect').value;
+        if (empresaId) {
+            var datosGestion = await obtenerDatosClienteDesdeGestion(empresaId);
+            if (datosGestion) {
+                var precios = {
+                    'DIESEL': datosGestion.diesel || 0,
+                    'DIESEL PREMIUM': datosGestion.diesel_max || 0,
+                    'GASOLINA REGULAR': datosGestion.gasolina || 0,
+                    'GASOLINA SUPER': datosGestion.gasolina_max || 0
+                };
+                var precio = precios[tipo] || 0;
+                if (precio > 0) document.getElementById('precioManual').value = precio;
+            }
+            actualizarPreviewTotalHijo();
+        }
+    };
+    
+    // ==================== ACTUALIZAR PREVIEW TOTAL HIJO ====================
+    function actualizarPreviewTotalHijo() {
+        var galones = parseFloat(document.getElementById('galonesManual')?.value) || 0;
+        var precio = parseFloat(document.getElementById('precioManual')?.value) || 0;
+        var costoTraslado = parseFloat(document.getElementById('costoTrasladoManual')?.value) || 0;
+        var costoCombustible = galones * precio;
+        var total = costoCombustible + costoTraslado;
+        
+        document.getElementById('calcCombustible').innerHTML = formatearMoneda(costoCombustible);
+        document.getElementById('calcTraslado').innerHTML = formatearMoneda(costoTraslado);
+        document.getElementById('calcTotal').innerHTML = formatearMoneda(total);
+        
+        // Actualizar crédito status
+        var disponibleText = document.getElementById('modalCreditoDisponible')?.innerHTML || 'C$0.00';
+        var disponible = parseFloat(disponibleText.replace(/[C$,\s]/g, '')) || 0;
+        if (disponible > 0) {
+            actualizarCreditoStatusHijo(disponible);
+        }
+    }
+    
+    window.actualizarPreviewTotalHijo = actualizarPreviewTotalHijo;
+    
+    // ==================== GUARDAR PEDIDO MANUAL ====================
+    window.guardarPedidoManual = async function() {
+        var empresaId = document.getElementById('empresaSelect')?.value;
+        if (!empresaId) { mostrarToast('Seleccione una empresa', 'error'); return; }
+        var galones = parseFloat(document.getElementById('galonesManual')?.value) || 0;
+        var precio = parseFloat(document.getElementById('precioManual')?.value) || 0;
+        var costoTraslado = parseFloat(document.getElementById('costoTrasladoManual')?.value) || 0;
+        var distancia = parseFloat(document.getElementById('distanciaManual')?.value) || 0;
+        
+        if (galones <= 0 || precio <= 0) {
+            mostrarToast('Ingrese galones y precio válidos', 'error');
+            return;
+        }
+        
+        var btn = document.getElementById('guardarPedidoManualBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+        
+        var bono1 = document.getElementById('modalBono1').value || '';
+        var bono2 = document.getElementById('modalBono2').value || '';
+        var viatico1 = parseFloat(document.getElementById('modalViatico1').value) || 0;
+        var viatico2 = parseFloat(document.getElementById('modalViatico2').value) || 0;
+        
+        try {
+            var response = await fetch('/api/operaciones/crear_pedido_manual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    empresa_id: empresaId,
+                    nombre: document.getElementById('empresaNombreManual')?.value || 'Cliente',
+                    galones: galones,
+                    precio_por_galon: precio,
+                    tipo_combustible: document.getElementById('tipoCombustibleManual')?.value || 'DIESEL',
+                    origen: document.getElementById('origenManual')?.value || 'Managua',
+                    destino: document.getElementById('destinoManual')?.value || 'León',
+                    costo_traslado: costoTraslado,
+                    distancia_km: distancia,
+                    bono1: bono1,
+                    bono2: bono2,
+                    viatico1: viatico1,
+                    viatico2: viatico2,
+                    check_bono1: true,
+                    check_viatico1: true,
+                    check_bono2: true,
+                    check_viatico2: true,
+                    usuario: 'sistema'
+                })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('✅ Pedido creado. Total: ' + formatearMoneda(galones * precio + costoTraslado), 'success');
+                window.cerrarModalPedido();
+                await recargarDatosCompletos();
+            } else {
+                mostrarToast(data.error || 'Error al crear pedido', 'error');
+            }
+        } catch(e) {
+            console.error('Error guardando pedido:', e);
+            mostrarToast('Error de conexión', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Guardar Pedido';
+        }
+    };
+    
+    // ==================== SELECCIONAR PEDIDO ====================
+    window.seleccionarPedido = function(pedidoId) {
+        document.querySelectorAll('.pedido-card-pendiente').forEach(function(card) { card.classList.remove('selected'); });
+        var selectedCard = document.querySelector('.pedido-card-pendiente[data-pedido-id="' + pedidoId + '"]');
+        if (selectedCard) selectedCard.classList.add('selected');
+        pedidoSeleccionado = pedidosLista.find(function(p) { return p.id === pedidoId; });
+        selectedPedidoId = pedidoId;
+        localStorage.setItem('selected_pedido_id', selectedPedidoId);
+        if (pedidoSeleccionado) renderizarAsignacion(pedidoSeleccionado);
+    };
+    
+    // ==================== LIMPIAR SELECCIÓN ====================
+    window.limpiarSeleccion = function() { 
+        pedidoSeleccionado = null; 
+        selectedPedidoId = null;
+        localStorage.removeItem('selected_pedido_id');
+        limpiarAsignacion(); 
+        document.querySelectorAll('.pedido-card-pendiente').forEach(function(card) { card.classList.remove('selected'); }); 
+        mostrarToast('Selección limpiada', 'info');
+    };
+    
+    // ==================== ENVIAR A FACTURACIÓN ====================
+    window.enviarAFacturacion = async function() {
+        if (!pedidoSeleccionado) { mostrarToast('Seleccione un pedido', 'error'); return; }
+        
+        var pedidoIdActual = pedidoSeleccionado.id;
+        var conductorAsignado = document.getElementById('selectConductor')?.value || '';
+        var conductor2Asignado = document.getElementById('selectConductor2')?.value || '';
+        var camionAsignado = document.getElementById('selectCamion')?.value || '';
+        var camion2Asignado = document.getElementById('selectCamion2')?.value || '';
+        
+        var checkBono1 = document.getElementById('checkBono1').checked;
+        var checkViatico1 = document.getElementById('checkViatico1').checked;
+        var checkBono2 = document.getElementById('checkBono2').checked;
+        var checkViatico2 = document.getElementById('checkViatico2').checked;
+        
+        localStorage.setItem('checkBono1_' + pedidoIdActual, checkBono1);
+        localStorage.setItem('checkViatico1_' + pedidoIdActual, checkViatico1);
+        localStorage.setItem('checkBono2_' + pedidoIdActual, checkBono2);
+        localStorage.setItem('checkViatico2_' + pedidoIdActual, checkViatico2);
+        
+        var bono1 = checkBono1 ? (document.getElementById('bono1')?.value || '') : '';
+        var bono2 = checkBono2 ? (document.getElementById('bono2')?.value || '') : '';
+        var viatico1 = checkViatico1 ? (parseFloat(document.getElementById('viatico1')?.value) || 0) : 0;
+        var viatico2 = checkViatico2 ? (parseFloat(document.getElementById('viatico2')?.value) || 0) : 0;
+        
+        console.log('📦 Enviando a facturación con checkboxes:');
+        console.log('  Bono1:', checkBono1 ? '✅' : '❌', 'Valor:', bono1);
+        console.log('  Viatico1:', checkViatico1 ? '✅' : '❌', 'Valor:', viatico1);
+        console.log('  Bono2:', checkBono2 ? '✅' : '❌', 'Valor:', bono2);
+        console.log('  Viatico2:', checkViatico2 ? '✅' : '❌', 'Valor:', viatico2);
+        
+        if (!conductorAsignado) { mostrarToast('⚠️ Asigne un conductor principal', 'warning'); return; }
+        if (!camionAsignado) { mostrarToast('⚠️ Asigne un camión principal', 'warning'); return; }
+        
+        var btnEnviar = document.getElementById('btnEnviarFactura');
+        var textoOriginal = btnEnviar ? btnEnviar.innerHTML : '';
+        if (btnEnviar) { btnEnviar.disabled = true; btnEnviar.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Enviando...'; }
+        
+        try {
+            var updateResponse = await fetch('/api/actualizar_flota_pedido', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    pedido_id: pedidoIdActual,
+                    conductor: conductorAsignado,
+                    conductor2: conductor2Asignado,
+                    camion: camionAsignado,
+                    camion2: camion2Asignado,
+                    bono1: bono1,
+                    bono2: bono2,
+                    viatico1: viatico1,
+                    viatico2: viatico2,
+                    check_bono1: checkBono1,
+                    check_viatico1: checkViatico1,
+                    check_bono2: checkBono2,
+                    check_viatico2: checkViatico2
+                })
+            });
+            
+            var updateData = await updateResponse.json();
+            if (!updateData.ok) {
+                mostrarToast('Error al actualizar el pedido', 'error');
+                if (btnEnviar) { btnEnviar.disabled = false; btnEnviar.innerHTML = textoOriginal || '<i class="fas fa-file-invoice"></i> Enviar a Facturación'; }
+                return;
+            }
+            
+            var response = await fetch('/api/operaciones/enviar_facturacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    pedido_id: pedidoIdActual,
+                    check_bono1: checkBono1,
+                    check_viatico1: checkViatico1,
+                    check_bono2: checkBono2,
+                    check_viatico2: checkViatico2
+                })
+            });
+            
+            var data = await response.json();
+            
+            if (data.ok) {
+                mostrarToast('✅ Pedido ' + pedidoIdActual + ' enviado a facturación', 'success');
+                await actualizarSoloPendientes();
+                pedidoSeleccionado = null;
+                selectedPedidoId = null;
+                localStorage.removeItem('selected_pedido_id');
+                limpiarAsignacion();
+                
+                if (window.parent !== window) {
+                    window.parent.postMessage({ 
+                        type: 'PEDIDO_ENVIADO_FACTURACION', 
+                        pedido_id: pedidoIdActual,
+                        timestamp: Date.now() 
+                    }, '*');
+                }
+            } else {
+                mostrarToast(data.error || 'Error al enviar a facturación', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarToast('Error de conexión: ' + error.message, 'error');
+        } finally {
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.innerHTML = textoOriginal || '<i class="fas fa-file-invoice"></i> Enviar a Facturación';
+            }
+        }
+    };
+    
+    // ==================== ACTUALIZAR INFO CONDUCTOR ====================
+    window.actualizarInfoConductor = function() {
+        var conductorNombre = document.getElementById('selectConductor')?.value;
+        var conductor = conductoresLista.find(function(c) { return c.nombre === conductorNombre; });
+        if (conductor) {
+            document.getElementById('conductorLicencia').innerHTML = conductor.licencia || '-';
+            document.getElementById('conductorTelefono').innerHTML = conductor.telefono || '-';
+        } else {
+            document.getElementById('conductorLicencia').innerHTML = '-';
+            document.getElementById('conductorTelefono').innerHTML = '-';
+        }
+    };
+    
+    window.actualizarInfoConductor2 = function() {
+        var conductorNombre = document.getElementById('selectConductor2')?.value;
+        var conductor = conductoresLista.find(function(c) { return c.nombre === conductorNombre; });
+        if (conductor) {
+            document.getElementById('conductor2Telefono').innerHTML = conductor.telefono || '-';
+            document.getElementById('conductor2Licencia').innerHTML = conductor.licencia || '-';
+        } else {
+            document.getElementById('conductor2Telefono').innerHTML = '-';
+            document.getElementById('conductor2Licencia').innerHTML = '-';
+        }
+    };
+    
+    window.actualizarInfoCamion = function() {
+        var camionPlaca = document.getElementById('selectCamion')?.value;
+        var camion = camionesLista.find(function(c) { return c.placa === camionPlaca; });
+        if (camion) {
+            document.getElementById('camionCapacidad').innerHTML = formatearNumero(camion.capacidad_galones) + ' gal';
+            document.getElementById('camionPlaca').innerHTML = camion.placa;
+        } else {
+            document.getElementById('camionCapacidad').innerHTML = '0 gal';
+            document.getElementById('camionPlaca').innerHTML = '-';
+        }
+    };
+    
+    window.actualizarInfoCamion2 = function() {
+        var camionPlaca = document.getElementById('selectCamion2')?.value;
+        var camion = camionesLista.find(function(c) { return c.placa === camionPlaca; });
+        if (camion) {
+            document.getElementById('camion2Placa').innerHTML = camion.placa;
+        } else {
+            document.getElementById('camion2Placa').innerHTML = '-';
+        }
+    };
+    
+    // ==================== VACIAR LISTAS ====================
+    window.vaciarListaPendientes = function() { 
+        if (confirm('¿Vaciar la lista de Pedidos Pendientes? (Solo se limpia la vista)')) {
+            document.getElementById('pedidosPendientesList').innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>Lista vaciada temporalmente</p></div>';
+            mostrarToast('Lista de Pendientes vaciada (solo vista)', 'info');
+        }
+    };
+    
+    window.vaciarListaComprobante = function() {
+        if (confirm('¿Vaciar la lista de Comprobante? (Solo se limpia la vista)')) {
+            document.getElementById('comprobanteList').innerHTML = '<div class="empty-state"><i class="fas fa-file-invoice"></i><p>Lista vaciada temporalmente</p></div>';
+            mostrarToast('Lista de Comprobante vaciada (solo vista)', 'info');
+        }
+    };
+    
+    window.vaciarListaCamino = function() {
+        if (confirm('¿Vaciar la lista de En Camino? (Solo se limpia la vista)')) {
+            document.getElementById('caminoList').innerHTML = '<div class="empty-state"><i class="fas fa-truck"></i><p>Lista vaciada temporalmente</p></div>';
+            mostrarToast('Lista de En Camino vaciada (solo vista)', 'info');
+        }
+    };
+    
+    window.vaciarListaEntregado = function() {
+        if (confirm('¿Vaciar la lista de Entregados? (Solo se limpia la vista)')) {
+            document.getElementById('entregadoList').innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>Lista vaciada temporalmente</p></div>';
+            mostrarToast('Lista de Entregados vaciada (solo vista)', 'info');
+        }
+    };
+    
+    window.vaciarTablaEntregados = function() {
+        if (confirm('¿Vaciar la TABLA de Facturas Entregadas? (Solo se limpia la vista)')) {
+            document.getElementById('tablaEntregados').innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Tabla vaciada temporalmente</p></div>';
+            mostrarToast('Tabla de Entregados vaciada (solo vista)', 'info');
+        }
+    };
+    
+    // ==================== MODALES ====================
+    window.cerrarModalDetalle = function() { 
+        document.getElementById('modalVerDetalle').style.display = 'none'; 
+        facturaSeleccionada = null; 
+    };
+    
+    window.descargarFactura = function(facturaId) { 
+        window.open('/descargar_factura/' + facturaId, '_blank'); 
+    };
+    
+    window.verDetalleFactura = function(facturaId) {
+        var modal = document.getElementById('modalVerDetalle');
+        if (modal.style.display === 'flex') modal.style.display = 'none';
+        
+        var factura = facturasLista.find(function(f) { return f.id === facturaId; });
+        if (!factura) return;
+        facturaSeleccionada = factura;
+        var body = document.getElementById('detalleBody');
+        var estaEnComprobante = factura.estado_factura === ESTADO_FACTURA_COMPROBANTE;
+        var estaEnCamino = factura.estado_factura === ESTADO_FACTURA_CAMINO;
+        
+        var botonAccion = '';
+        if (estaEnComprobante) {
+            botonAccion = '<button class="btn-modal-camino" onclick="window.marcarComoCaminoDesdeModal()"><i class="fas fa-truck"></i> Mover a En Camino</button>';
+        } else if (estaEnCamino) {
+            botonAccion = '<button class="btn-entregado" onclick="window.marcarComoEntregadoDesdeModal()" style="background:rgba(16,185,129,0.05);color:#34d399;padding:12px 28px;border-radius:40px;border:none;font-weight:600;cursor:pointer;backdrop-filter:blur(10px);"><i class="fas fa-check-circle"></i> Marcar como Entregado</button>';
+        }
+        
+        var pdfUrl = '/descargar_factura/' + factura.id + '?_=' + Date.now();
+        
+        body.innerHTML = '<iframe src="' + pdfUrl + '" class="pdf-viewer"></iframe>' +
+            '<div class="modal-actions">' +
+                botonAccion +
+                '<button class="btn-futurista-primary" onclick="window.descargarFactura(\'' + factura.id + '\')"><i class="fas fa-download"></i> Descargar PDF</button>' +
+                '<button class="btn-futurista-outline" onclick="window.cerrarModalDetalle()">Cerrar</button>' +
+            '</div>';
+        modal.style.display = 'flex';
+    };
+    
+    window.marcarComoCamino = async function(facturaId) {
+        if (!confirm('¿Marcar este pedido como EN CAMINO?')) return;
+        try {
+            mostrarToast('Procesando...', 'info');
+            var response = await fetch('/api/guardar_estado_factura', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ factura_id: facturaId, estado: ESTADO_FACTURA_CAMINO })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('🚛 Pedido marcado como EN CAMINO', 'success');
+                await recargarDatosCompletos();
+            } else {
+                mostrarToast(data.error || 'Error', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarToast('Error de conexión', 'error');
+        }
+    };
+    
+    window.marcarComoEntregadoFactura = async function(facturaId, pedidoId) {
+        if (!confirm('¿Marcar este pedido como ENTREGADO?')) return;
+        try {
+            mostrarToast('Procesando...', 'info');
+            var response = await fetch('/api/marcar_como_entregado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ factura_id: facturaId, pedido_id: pedidoId })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('✅ Pedido marcado como ENTREGADO', 'success');
+                await recargarDatosCompletos();
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'PEDIDO_ENTREGADO', factura_id: facturaId, timestamp: Date.now() }, '*');
+                }
+            } else {
+                mostrarToast(data.error || 'Error', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarToast('Error de conexión', 'error');
+        }
+    };
+    
+    window.marcarComoCaminoDesdeModal = function() { 
+        if (facturaSeleccionada) window.marcarComoCamino(facturaSeleccionada.id); 
+    };
+    
+    window.marcarComoEntregadoDesdeModal = function() { 
+        if (facturaSeleccionada) window.marcarComoEntregadoFactura(facturaSeleccionada.id, facturaSeleccionada.pedido_id); 
+    };
+    
+    window.abrirModalObservacionDesdeCard = function(facturaId, empresaNombre, pedidoId, fechaRecepcion) {
+        observacionActual = { facturaId: facturaId, empresa: empresaNombre, pedidoId: pedidoId, fechaRecepcion: fechaRecepcion };
+        document.getElementById('observacionPedidoId').innerHTML = facturaId;
+        document.getElementById('observacionEmpresa').innerHTML = empresaNombre;
+        
+        var fechaRecepcionDate = new Date(fechaRecepcion);
+        var ahora = new Date();
+        var horasDiff = (ahora - fechaRecepcionDate) / (1000 * 60 * 60);
+        var esObligatoria = horasDiff > 24;
+        
+        var obligatoriaSpan = document.getElementById('observacionObligatoria');
+        if (esObligatoria) obligatoriaSpan.style.display = 'inline';
+        else obligatoriaSpan.style.display = 'none';
+        
+        document.getElementById('observacionTexto').value = '';
+        document.getElementById('modalObservacion').style.display = 'flex';
+    };
+    
+    window.guardarObservacion = async function() {
+        var observacion = document.getElementById('observacionTexto').value.trim();
+        if (!observacion) { mostrarToast('La observación no puede estar vacía', 'error'); return; }
+        
+        try {
+            var response = await fetch('/api/guardar_observacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    factura_id: observacionActual.facturaId,
+                    pedido_id: observacionActual.pedidoId,
+                    observacion: observacion,
+                    usuario: 'sistema'
+                })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('Observación guardada correctamente', 'success');
+                document.getElementById('modalObservacion').style.display = 'none';
+                await recargarDatosCompletos();
+            } else {
+                mostrarToast(data.error || 'Error al guardar observación', 'error');
+            }
+        } catch(e) {
+            mostrarToast('Error de conexión', 'error');
+        }
+    };
+    
+    window.cerrarModalObservacion = function() {
+        document.getElementById('modalObservacion').style.display = 'none';
+        document.getElementById('observacionTexto').value = '';
+        observacionActual = { facturaId: null, empresa: null, pedidoId: null };
+    };
+    
+    // ==================== RECARGAR DATOS COMPLETOS ====================
+    async function recargarDatosCompletos() {
+        if (isUpdating) return;
+        isUpdating = true;
+        console.log('🔄 Recargando todos los datos...');
+        
+        var currentSelectedId = pedidoSeleccionado ? pedidoSeleccionado.id : selectedPedidoId;
+        
+        await Promise.all([cargarPedidos(), cargarFacturas()]);
+        await cargarConductores();
+        await cargarCamiones();
+        
+        renderizarPedidosPendientes();
+        await renderizarColumnas();
+        await renderizarTablaEntregados();
+        actualizarGalones();
+        
+        if (currentSelectedId) {
+            var pedidoActualizado = pedidosLista.find(function(p) { return p.id === currentSelectedId; });
+            if (pedidoActualizado && !pedidoActualizado.facturado && pedidoActualizado.estado_operacion !== 'entregado') {
+                pedidoSeleccionado = pedidoActualizado;
+                selectedPedidoId = currentSelectedId;
+                renderizarAsignacion(pedidoSeleccionado);
+                setTimeout(function() {
+                    document.querySelectorAll('.pedido-card-pendiente').forEach(function(card) {
+                        if (card.dataset.pedidoId === currentSelectedId) card.classList.add('selected');
+                    });
+                }, 100);
+            } else {
+                pedidoSeleccionado = null;
+                selectedPedidoId = null;
+                localStorage.removeItem('selected_pedido_id');
+                limpiarAsignacion();
+            }
+        }
+        
+        isUpdating = false;
+        console.log('✅ Datos recargados completamente');
+    }
+    
+    // ==================== RENDERIZAR COLUMNAS ====================
+    async function renderizarColumnas() {
+        var comprobante = facturasLista.filter(function(f) { return f.estado_factura === ESTADO_FACTURA_COMPROBANTE; });
+        var camino = facturasLista.filter(function(f) { return f.estado_factura === ESTADO_FACTURA_CAMINO; });
+        var entregado = facturasLista.filter(function(f) { return f.estado_factura === ESTADO_FACTURA_ENTREGADO; });
+        
+        document.getElementById('comprobanteCount').innerText = comprobante.length;
+        document.getElementById('caminoCount').innerText = camino.length;
+        document.getElementById('entregadoCount').innerText = entregado.length;
+        
+        var comprobanteContainer = document.getElementById('comprobanteList');
+        if (comprobante.length === 0) {
+            comprobanteContainer.innerHTML = '<div class="empty-state"><i class="fas fa-file-invoice"></i><p>No hay facturas</p></div>';
+        } else {
+            var comprobanteHtml = '';
+            for (var i = 0; i < comprobante.length; i++) {
+                var f = comprobante[i];
+                var observacion = '';
+                try {
+                    var obsResponse = await fetch('/api/obtener_observacion?factura_id=' + f.id);
+                    var obsData = await obsResponse.json();
+                    if (obsData.ok && obsData.observacion) observacion = obsData.observacion;
+                } catch(e) {}
+                
+                var fechaRecepcion = f.fecha_recepcion || f.fecha_emision || new Date().toISOString();
+                var fechaFormateada = new Date(fechaRecepcion).toLocaleString();
+                var esEditada = facturasEditadas.has(f.id);
+                
+                comprobanteHtml += '<div class="factura-card comprobante ' + (esEditada ? 'editada' : '') + '" onclick="window.verDetalleFactura(\'' + f.id + '\')">' +
+                    (esEditada ? '<div class="edit-icon"><i class="fas fa-pencil-alt"></i></div>' : '') +
+                    '<div class="factura-card-header">' +
+                        '<span class="factura-numero"><i class="fas fa-file-pdf"></i> ' + escapeHtml(f.id) + '</span>' +
+                        '<span class="badge-estado ' + (esEditada ? 'badge-editada' : 'badge-comprobante') + '">' + (esEditada ? '✏️ EDITADA' : 'COMPROBANTE') + '</span>' +
+                    '</div>' +
+                    '<div class="info-factura">' +
+                        '<span><i class="fas fa-building"></i> ' + escapeHtml(f.empresa_nombre || f.empresa_id || '-') + '</span>' +
+                        '<span><i class="fas fa-calendar"></i> Recibido: ' + fechaFormateada + '</span>' +
+                    '</div>' +
+                    '<div class="total-factura">Total: ' + formatearMoneda(f.total) + '</div>' +
+                    (observacion ? '<div class="observacion-texto visible"><i class="fas fa-comment"></i> ' + escapeHtml(observacion) + '</div>' : '') +
+                    '<div>' +
+                        '<button class="btn-estado-card btn-observacion" onclick="event.stopPropagation(); window.abrirModalObservacionDesdeCard(\'' + f.id + '\', \'' + escapeHtml(f.empresa_nombre || f.empresa_id || '-') + '\', \'' + (f.pedido_id || '') + '\', \'' + fechaRecepcion + '\')"><i class="fas fa-comment"></i> Observación</button>' +
+                        '<button class="btn-estado-card btn-entregado" onclick="event.stopPropagation(); window.marcarComoCamino(\'' + f.id + '\')"><i class="fas fa-truck"></i> En Camino</button>' +
+                        '<button class="btn-estado-card btn-ver-factura" onclick="event.stopPropagation(); window.verDetalleFactura(\'' + f.id + '\')"><i class="fas fa-eye"></i> Ver</button>' +
+                    '</div>' +
+                '</div>';
+            }
+            comprobanteContainer.innerHTML = comprobanteHtml;
+        }
+        
+        var caminoContainer = document.getElementById('caminoList');
+        if (camino.length === 0) {
+            caminoContainer.innerHTML = '<div class="empty-state"><i class="fas fa-truck"></i><p>No hay pedidos en camino</p></div>';
+        } else {
+            var caminoHtml = '';
+            for (var i = 0; i < camino.length; i++) {
+                var f = camino[i];
+                var observacion = '';
+                try {
+                    var obsResponse = await fetch('/api/obtener_observacion?factura_id=' + f.id);
+                    var obsData = await obsResponse.json();
+                    if (obsData.ok && obsData.observacion) observacion = obsData.observacion;
+                } catch(e) {}
+                
+                var fechaRecepcion = f.fecha_recepcion || f.fecha_emision || new Date().toISOString();
+                var fechaFormateada = new Date(fechaRecepcion).toLocaleString();
+                var esEditada = facturasEditadas.has(f.id);
+                
+                caminoHtml += '<div class="factura-card camino ' + (esEditada ? 'editada' : '') + '">' +
+                    (esEditada ? '<div class="edit-icon"><i class="fas fa-pencil-alt"></i></div>' : '') +
+                    '<div class="factura-card-header">' +
+                        '<span class="factura-numero"><i class="fas fa-file-pdf"></i> ' + escapeHtml(f.id) + '</span>' +
+                        '<span class="badge-estado ' + (esEditada ? 'badge-editada' : 'badge-camino') + '">' + (esEditada ? '✏️ EDITADA' : 'EN CAMINO') + '</span>' +
+                    '</div>' +
+                    '<div class="info-factura">' +
+                        '<span><i class="fas fa-building"></i> ' + escapeHtml(f.empresa_nombre || f.empresa_id || '-') + '</span>' +
+                        '<span><i class="fas fa-calendar"></i> Recibido: ' + fechaFormateada + '</span>' +
+                        '<span><i class="fas fa-user-tie"></i> ' + escapeHtml(f.conductor_asignado || '-') + '</span>' +
+                        '<span><i class="fas fa-truck"></i> ' + escapeHtml(f.camion_asignado || '-') + '</span>' +
+                    '</div>' +
+                    '<div class="total-factura">Total: ' + formatearMoneda(f.total) + '</div>' +
+                    (observacion ? '<div class="observacion-texto visible"><i class="fas fa-comment"></i> ' + escapeHtml(observacion) + '</div>' : '') +
+                    '<div>' +
+                        '<button class="btn-estado-card btn-observacion" onclick="event.stopPropagation(); window.abrirModalObservacionDesdeCard(\'' + f.id + '\', \'' + escapeHtml(f.empresa_nombre || f.empresa_id || '-') + '\', \'' + (f.pedido_id || '') + '\', \'' + fechaRecepcion + '\')"><i class="fas fa-comment"></i> Observación</button>' +
+                        '<button class="btn-estado-card btn-entregado" onclick="event.stopPropagation(); window.marcarComoEntregadoFactura(\'' + f.id + '\', \'' + (f.pedido_id || '') + '\')"><i class="fas fa-check-circle"></i> Entregado</button>' +
+                        '<button class="btn-estado-card btn-ver-factura" onclick="event.stopPropagation(); window.verDetalleFactura(\'' + f.id + '\')"><i class="fas fa-eye"></i> Ver</button>' +
+                    '</div>' +
+                '</div>';
+            }
+            caminoContainer.innerHTML = caminoHtml;
+        }
+        
+        var entregadoContainer = document.getElementById('entregadoList');
+        if (entregado.length === 0) {
+            entregadoContainer.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay pedidos entregados</p></div>';
+        } else {
+            var entregadoHtml = '';
+            for (var i = 0; i < entregado.length; i++) {
+                var f = entregado[i];
+                var observacion = '';
+                try {
+                    var obsResponse = await fetch('/api/obtener_observacion?factura_id=' + f.id);
+                    var obsData = await obsResponse.json();
+                    if (obsData.ok && obsData.observacion) observacion = obsData.observacion;
+                } catch(e) {}
+                
+                var fechaRecepcion = f.fecha_recepcion || f.fecha_emision || new Date().toISOString();
+                var fechaFormateada = new Date(fechaRecepcion).toLocaleString();
+                var esEditada = facturasEditadas.has(f.id);
+                
+                entregadoHtml += '<div class="factura-card entregado ' + (esEditada ? 'editada' : '') + '">' +
+                    (esEditada ? '<div class="edit-icon"><i class="fas fa-pencil-alt"></i></div>' : '') +
+                    '<div class="factura-card-header">' +
+                        '<span class="factura-numero"><i class="fas fa-file-pdf"></i> ' + escapeHtml(f.id) + '</span>' +
+                        '<span class="badge-estado ' + (esEditada ? 'badge-editada' : 'badge-entregado') + '">' + (esEditada ? '✏️ EDITADA' : 'ENTREGADO') + '</span>' +
+                    '</div>' +
+                    '<div class="info-factura">' +
+                        '<span><i class="fas fa-building"></i> ' + escapeHtml(f.empresa_nombre || f.empresa_id || '-') + '</span>' +
+                        '<span><i class="fas fa-calendar"></i> Recibido: ' + fechaFormateada + '</span>' +
+                    '</div>' +
+                    '<div class="total-factura">Total: ' + formatearMoneda(f.total) + '</div>' +
+                    (observacion ? '<div class="observacion-texto visible"><i class="fas fa-comment"></i> ' + escapeHtml(observacion) + '</div>' : '') +
+                    '<div>' +
+                        '<button class="btn-estado-card btn-observacion" onclick="event.stopPropagation(); window.abrirModalObservacionDesdeCard(\'' + f.id + '\', \'' + escapeHtml(f.empresa_nombre || f.empresa_id || '-') + '\', \'' + (f.pedido_id || '') + '\', \'' + fechaRecepcion + '\')"><i class="fas fa-comment"></i> Observación</button>' +
+                        '<button class="btn-estado-card btn-ver-factura" onclick="event.stopPropagation(); window.verDetalleFactura(\'' + f.id + '\')"><i class="fas fa-eye"></i> Ver</button>' +
+                    '</div>' +
+                '</div>';
+            }
+            entregadoContainer.innerHTML = entregadoHtml;
+        }
+    }
+    
+    // ==================== RENDERIZAR TABLA ENTREGADOS ====================
+    async function renderizarTablaEntregados() {
+        var entregados = facturasLista.filter(function(f) { return f.estado_factura === ESTADO_FACTURA_ENTREGADO; });
+        var container = document.getElementById('tablaEntregados');
+        
+        if (entregados.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay facturas entregadas</p></div>';
+            return;
+        }
+        
+        var html = '<table>' +
+                '<thead>' +
+                    '<tr>' +
+                        '<th>Factura</th><th>Empresa</th><th>Fecha</th><th>Total</th><th>Conductor 1</th><th>Conductor 2</th><th>Camión 1</th><th>Camión 2</th><th>Bono 1</th><th>Bono 2</th><th>Viático 1</th><th>Viático 2</th><th>Estado</th><th>PDF</th>' +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody>';
+        
+        for (var i = 0; i < entregados.length; i++) {
+            var f = entregados[i];
+            var observacion = '';
+            try {
+                var obsResponse = await fetch('/api/obtener_observacion?factura_id=' + f.id);
+                var obsData = await obsResponse.json();
+                if (obsData.ok && obsData.observacion) observacion = obsData.observacion;
+            } catch(e) {}
+            
+            var esEditada = facturasEditadas.has(f.id);
+            var estadoBadge = esEditada ? '<span class="edit-badge"><i class="fas fa-pencil-alt"></i> EDITADA</span>' : '<span class="edit-badge" style="background:rgba(16,185,129,0.05); color:#34d399;">ENTREGADO</span>';
+            
+            html += '<tr class="' + (esEditada ? 'editada' : '') + '">' +
+                '<td><strong>' + escapeHtml(f.id) + '</strong>' + (esEditada ? '<br><small style="color:#a78bfa;"><i class="fas fa-pencil-alt"></i> Modificada</small>' : '') + '</td>' +
+                '<td>' + escapeHtml(f.empresa_nombre || f.empresa_id || '-') + '</td>' +
+                '<td>' + (f.fecha_emision_str || new Date(f.fecha_emision).toLocaleDateString()) + '</td>' +
+                '<td style="color:#10b981; font-weight:bold;">' + formatearMoneda(f.total) + '</td>' +
+                '<td>' + escapeHtml(f.conductor_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(f.conductor2_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(f.camion_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(f.camion2_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(f.bono1 || '-') + '</td>' +
+                '<td>' + escapeHtml(f.bono2 || '-') + '</td>' +
+                '<td>' + formatearMoneda(f.viatico1 || 0) + '</td>' +
+                '<td>' + formatearMoneda(f.viatico2 || 0) + '</td>' +
+                '<td>' + estadoBadge + '</td>' +
+                '<td><button class="btn-ver-pdf" onclick="window.descargarFactura(\'' + f.id + '\')"><i class="fas fa-file-pdf"></i> Ver PDF</button></td>' +
+            '</tr>';
+        }
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    
+    // ==================== ACTUALIZAR SOLO PENDIENTES ====================
+    async function actualizarSoloPendientes() {
+        try {
+            var response = await fetch('/api/pedidos_combustible?_=' + Date.now());
+            var data = await response.json();
+            var nuevosPedidos = (data.pedidos || []).map(function(p) {
+                return {
+                    ...p,
+                    facturado: p.facturado || false,
+                    estado_operacion: p.estado_operacion || ESTADO_ESPERA,
+                    conductor_asignado: p.conductor_asignado || '',
+                    conductor2_asignado: p.conductor2_asignado || '',
+                    camion_asignado: p.camion_asignado || '',
+                    camion2_asignado: p.camion2_asignado || '',
+                    bono1: p.bono1 || '',
+                    bono2: p.bono2 || '',
+                    viatico1: p.viatico1 || 0,
+                    viatico2: p.viatico2 || 0,
+                    origen: p.origen || 'Managua',
+                    destino: p.destino || 'León',
+                    distancia_km: p.distancia_km || 0,
+                    fecha_obj: new Date(p.fecha || p.fecha_str || 0),
+                    fecha_recepcion: p.fecha_recepcion || p.fecha || p.fecha_str,
+                    observacion: p.observacion || ''
+                };
+            });
+            nuevosPedidos.sort(function(a, b) { return b.fecha_obj - a.fecha_obj; });
+            pedidosLista = nuevosPedidos;
+            renderizarPedidosPendientes();
+            actualizarGalones();
+            finalizarBarraProgreso();
+            iniciarBarraProgreso();
+        } catch (error) {
+            console.error('Error actualizando pedidos:', error);
+            finalizarBarraProgreso();
+            iniciarBarraProgreso();
+        }
+    }
+    
+    // ==================== INICIAR ACTUALIZACIÓN AUTOMÁTICA ====================
+    function iniciarActualizacionAutomatica() {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(function() {
+            actualizarSoloPendientes();
+        }, REFRESH_TIME_MS);
+        iniciarBarraProgreso();
+    }
+    
+    window.recargarDatos = recargarDatosCompletos;
+    
+    // ==================== EVENT LISTENERS ====================
+    document.getElementById('selectConductor')?.addEventListener('change', window.actualizarInfoConductor);
+    document.getElementById('selectConductor2')?.addEventListener('change', window.actualizarInfoConductor2);
+    document.getElementById('selectCamion')?.addEventListener('change', window.actualizarInfoCamion);
+    document.getElementById('selectCamion2')?.addEventListener('change', window.actualizarInfoCamion2);
+    document.getElementById('btnGuardarObservacion')?.addEventListener('click', window.guardarObservacion);
+    document.getElementById('recargarBtn')?.addEventListener('click', function() { recargarDatosCompletos(); });
+    document.getElementById('crearPedidoManualBtn')?.addEventListener('click', window.abrirModalPedido);
+    document.getElementById('btnEnviarFactura')?.addEventListener('click', window.enviarAFacturacion);
+    document.getElementById('guardarPedidoManualBtn')?.addEventListener('click', window.guardarPedidoManual);
+    document.getElementById('galonesManual')?.addEventListener('input', actualizarPreviewTotalHijo);
+    
+    document.getElementById('checkBono1')?.addEventListener('change', window.toggleBonoViatico);
+    document.getElementById('checkViatico1')?.addEventListener('change', window.toggleBonoViatico);
+    document.getElementById('checkBono2')?.addEventListener('change', window.toggleBonoViatico);
+    document.getElementById('checkViatico2')?.addEventListener('change', window.toggleBonoViatico);
+    
+    window.addEventListener('message', async function(event) {
+        var msg = event.data;
+        if (!msg) return;
+        
+        if (msg.type === 'CERRAR_MODAL_FACTURA') {
+            var modalDetalle = document.getElementById('modalVerDetalle');
+            if (modalDetalle && modalDetalle.style.display === 'flex') {
+                modalDetalle.style.display = 'none';
+                facturaSeleccionada = null;
+                console.log('🔒 Modal cerrado por solicitud de Facturación');
+            }
+        }
+        
+        if (msg.type === 'PEDIDO_ACTUALIZADO' || msg.type === 'FACTURA_GENERADA' || msg.type === 'FACTURA_ACTUALIZADA') {
+            console.log('📡 Recibido mensaje:', msg.type);
+            await recargarDatosCompletos();
+        }
+        
+        if (msg.type === 'APLICAR_TRANSPARENCIA') {
+            var transparencia = msg.transparencia;
+            if (transparencia) {
+                aplicarTransparenciaModulo(transparencia);
+            }
+        }
+    });
+    
+    // ==================== INICIO ====================
+    cargarTemaGuardado();
+    escucharMensajesTema();
+    recargarDatosCompletos();
+    iniciarActualizacionAutomatica();
+    
+    setTimeout(cargarTransparenciaGuardada, 500);
+    console.log('✅ Módulo Operaciones v2.0 inicializado - Con Gestión Clientes');
+    
+})();
+</script>
+</body>
+</html>

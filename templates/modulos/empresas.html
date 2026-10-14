@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Gestión de Empresas | Grupo GSN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            color: #f0f3fa;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        /* ========== TEMAS ========== */
+        body.default-theme {
+            background: radial-gradient(circle at 10% 20%, #0a0f1c, #03060c);
+        }
+        body.dark-theme {
+            background: #0a0e1a;
+            color: #ffffff;
+        }
+        body.light-theme {
+            background: #f5f7fa;
+            color: #1a1a2e;
+        }
+        body.light-theme .empresas-panel {
+            background: rgba(255,255,255,0.85);
+        }
+        body.light-theme .empresas-panel-header {
+            background: rgba(0,0,0,0.05);
+        }
+        body.light-theme .empresas-panel-header h3 {
+            background: linear-gradient(135deg, #1a1a2e, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        body.light-theme .empresas-table th {
+            color: #1a1a2e;
+            background: rgba(0,0,0,0.08);
+        }
+        body.light-theme .empresas-table td {
+            color: #1a1a2e;
+            background: rgba(255,255,255,0.5);
+        }
+        body.light-theme .empresas-table tr:hover td {
+            background: rgba(245,158,11,0.08);
+        }
+        body.light-theme .empresas-stat-card {
+            background: rgba(255,255,255,0.5);
+            border-color: rgba(0,0,0,0.05);
+        }
+        body.light-theme .empresas-stat-label { color: #4a4a6a; }
+        body.light-theme .empresas-btn-outline {
+            border-color: rgba(0,0,0,0.2);
+            color: #4a4a6a;
+        }
+        body.light-theme .empresas-modal-container {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+        body.light-theme .empresas-modal-header h3 { color: #1a1a2e; }
+        body.light-theme .empresas-modal-header { background: #f5f5f5; border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-theme .empresas-form-group label { color: #4a4a6a; }
+        body.light-theme .empresas-form-group input,
+        body.light-theme .empresas-form-group select {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.15);
+            color: #1a1a2e;
+        }
+        body.light-theme .empresas-btn-cancelar {
+            background: rgba(0,0,0,0.05);
+            color: #1a1a2e;
+        }
+        body.light-theme .text-orange { color: #d97706; }
+        body.light-theme .text-green { color: #059669; }
+
+        body.navy-theme {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb4d);
+            color: #ffffff;
+        }
+        body.nature-theme {
+            background: linear-gradient(135deg, #134e5e, #71b280);
+            color: #ffffff;
+        }
+        body.image-theme {
+            background: url('https://images.unsplash.com/photo-1508514177221-188f0d9d8c5f?q=80&w=2070&auto=format') center/cover no-repeat fixed;
+            position: relative;
+        }
+        body.image-theme::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: -1;
+        }
+
+        /* ========== ESTILOS DEL MÓDULO ========== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .empresas-modulo {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .empresas-panel {
+            background: rgba(15, 25, 35, 0.55);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .empresas-panel-header {
+            padding: 16px 24px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(0, 0, 0, 0.3));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .empresas-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .empresas-icon-glow {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .empresas-icon-glow i {
+            font-size: 20px;
+            color: #f59e0b;
+        }
+
+        .empresas-header-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+
+        .empresas-header-info p {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 2px 0 0;
+        }
+
+        .empresas-table-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empresas-btn-success, .empresas-btn-primary, .empresas-btn-outline, .empresas-btn-warning {
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .empresas-btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .empresas-btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .empresas-btn-outline { background: transparent; border: 1px solid rgba(245, 158, 11, 0.5); color: #f59e0b; }
+        .empresas-btn-outline:hover { background: rgba(245, 158, 11, 0.1); }
+        .empresas-btn-warning { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+        .empresas-btn-success:hover, .empresas-btn-primary:hover, .empresas-btn-warning:hover { transform: translateY(-1px); }
+
+        .empresas-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 16px 24px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .empresas-stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .empresas-stat-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(245, 158, 11, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .empresas-stat-card i {
+            font-size: 22px;
+            color: #f59e0b;
+        }
+
+        .empresas-stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .empresas-stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .empresas-stat-label {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empresas-table-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .empresas-table-vertical-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+        }
+
+        .empresas-table-vertical-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .empresas-table-vertical-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .empresas-table-vertical-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 10px;
+        }
+
+        .empresas-table-horizontal-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-shrink: 0;
+        }
+        .empresas-table-horizontal-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        .empresas-table-horizontal-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .empresas-table-horizontal-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 10px;
+        }
+
+        .empresas-table-container {
+            min-width: max-content;
+            padding: 16px 24px;
+        }
+
+        .empresas-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+            min-width: 1100px;
+        }
+
+        .empresas-table th {
+            padding: 12px 12px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(20, 30, 45, 0.9);
+            border-radius: 10px 10px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .empresas-table td {
+            padding: 10px 12px;
+            background: rgba(10, 20, 30, 0.4);
+            border-radius: 10px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.2s;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .empresas-table tr:hover td {
+            background: rgba(20, 40, 60, 0.6);
+        }
+
+        .editable-cell {
+            cursor: text;
+            transition: background 0.2s ease;
+            display: inline-block;
+            width: 100%;
+            min-height: 20px;
+            text-align: center;
+        }
+
+        .editable-cell:hover {
+            background: rgba(245, 158, 11, 0.15);
+            outline: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 4px;
+        }
+
+        .editable-cell:focus {
+            background: rgba(245, 158, 11, 0.25);
+            outline: 2px solid #f59e0b;
+            border-radius: 4px;
+        }
+
+        .credito-cell-readonly {
+            cursor: not-allowed;
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        .empresas-columna-credito {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.03));
+            border-left: 2px solid #f59e0b;
+            text-align: center;
+        }
+
+        .empresas-celda-credito {
+            background: rgba(245, 158, 11, 0.05);
+            text-align: center;
+        }
+
+        .empresas-credito-cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empresas-btn-credito {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 9px;
+            transition: all 0.2s;
+        }
+
+        .empresas-btn-credito:hover {
+            transform: scale(1.03);
+        }
+
+        .empresas-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .empresas-badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .empresas-badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .empresas-badge-info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+        .empresas-btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            border-radius: 6px;
+            padding: 4px 8px;
+            color: #ef4444;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 8px;
+        }
+
+        .empresas-btn-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .empresas-progress-row td {
+            background: transparent !important;
+            padding: 0 12px 4px !important;
+        }
+
+        .empresas-progress-bar {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .empresas-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .empresas-progress-text {
+            font-size: 8px;
+            color: #888;
+            margin-top: 2px;
+            text-align: center;
+        }
+
+        .credito-bloqueado td { background: rgba(239, 68, 68, 0.15); border-left: 3px solid #ef4444; }
+        .credito-critico td { background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444; }
+        .credito-alerta td { background: rgba(245, 158, 11, 0.08); border-left: 3px solid #f59e0b; }
+        .credito-normal td { background: rgba(16, 185, 129, 0.05); border-left: 3px solid #10b981; }
+
+        .empresas-loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .empresas-spinner {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: empresas-spin 1s linear infinite;
+        }
+
+        @keyframes empresas-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empresas-empty {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        /* Modales */
+        .empresas-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empresas-modal-container {
+            background: linear-gradient(135deg, #0f1520, #0a0e15);
+            border-radius: 24px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            animation: modalFadeIn 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .empresas-modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #0f1520, #0a0e15);
+            z-index: 1;
+        }
+
+        .empresas-modal-header h3 {
+            color: #f59e0b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .empresas-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .empresas-modal-close:hover {
+            color: #f59e0b;
+        }
+
+        .empresas-modal-body {
+            padding: 20px;
+        }
+
+        .empresas-form-group {
+            margin-bottom: 14px;
+        }
+
+        .empresas-form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #a0a0c0;
+        }
+
+        .empresas-form-group label i {
+            color: #f59e0b;
+            margin-right: 4px;
+        }
+
+        .empresas-form-group input,
+        .empresas-form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .empresas-form-group input:focus,
+        .empresas-form-group select:focus {
+            outline: none;
+            border-color: #f59e0b;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .empresas-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .empresas-modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .empresas-btn-cancelar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .empresas-btn-guardar {
+            flex: 1;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .empresas-btn-abonar {
+            flex: 1;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .empresas-btn-cargar {
+            flex: 1;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .empresas-btn-extender {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            border-radius: 20px;
+            padding: 6px 14px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+            font-size: 11px;
+        }
+
+        .credito-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+        }
+
+        .text-orange { color: #f59e0b; }
+        .text-green { color: #10b981; }
+        .text-red { color: #ef4444; }
+        .text-purple { color: #8b5cf6; }
+
+        .progress-modal {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill-modal {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .extensiones-container {
+            margin-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 12px;
+        }
+
+        .extension-item {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 6px;
+            font-size: 10px;
+        }
+
+        .extension-item .monto {
+            color: #8b5cf6;
+            font-weight: 700;
+        }
+
+        .dias-restantes {
+            font-size: 10px;
+            color: #888;
+            margin-top: 8px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .alerta-credito {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+            border-left: 4px solid #ef4444;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f172ae6;
+            backdrop-filter: blur(12px);
+            padding: 8px 18px;
+            border-radius: 40px;
+            z-index: 10000;
+            font-weight: 500;
+            border-left: 3px solid #f59e0b;
+            font-size: 0.7rem;
+        }
+
+        .saving-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            color: #10b981;
+            display: none;
+            align-items: center;
+            gap: 5px;
+            z-index: 10000;
+        }
+
+        .saving-indicator.show {
+            display: flex;
+        }
+
+        @media (max-width: 900px) {
+            .empresas-modulo { height: calc(100vh - 20px); }
+            .empresas-stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .empresas-panel-header { flex-direction: column; align-items: flex-start; }
+            .empresas-table-controls { width: 100%; }
+            .empresas-form-row { grid-template-columns: 1fr; gap: 8px; }
+        }
+
+        @media (max-width: 600px) {
+            .empresas-stats-bar { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="empresas-modulo">
+    <div class="empresas-panel">
+        <div class="empresas-panel-header">
+            <div class="empresas-header-info">
+                <div class="empresas-icon-glow"><i class="fas fa-building"></i></div>
+                <div>
+                    <h3>Gestión de Clientes</h3>
+                    <p>Edición directa - Cambios automáticos</p>
+                </div>
+            </div>
+            <div class="empresas-table-controls">
+                <button id="btnAgregarEmpresa" class="empresas-btn-success"><i class="fas fa-plus"></i> Nuevo</button>
+                <button id="btnExportarExcel" class="empresas-btn-outline"><i class="fas fa-download"></i> Exportar</button>
+                <button id="btnRecargar" class="empresas-btn-outline"><i class="fas fa-sync-alt"></i> Recargar</button>
+                <button id="btnMostrarResumen" class="empresas-btn-warning"><i class="fas fa-chart-line"></i> Resumen</button>
+                <button id="btnVerAlertas" class="empresas-btn-primary"><i class="fas fa-bell"></i> Alertas</button>
+            </div>
+        </div>
+
+        <div class="empresas-stats-bar">
+            <div class="empresas-stat-card"><i class="fas fa-building"></i><div class="empresas-stat-info"><span class="empresas-stat-value" id="empresasTotal">0</span><span class="empresas-stat-label">Empresas</span></div></div>
+            <div class="empresas-stat-card"><i class="fas fa-coins"></i><div class="empresas-stat-info"><span class="empresas-stat-value" id="empresasDeudaTotal">C$0</span><span class="empresas-stat-label">Deuda Total</span></div></div>
+            <div class="empresas-stat-card"><i class="fas fa-exclamation-triangle"></i><div class="empresas-stat-info"><span class="empresas-stat-value" id="empresasConDeuda">0</span><span class="empresas-stat-label">Con Deuda</span></div></div>
+            <div class="empresas-stat-card"><i class="fas fa-chart-line"></i><div class="empresas-stat-info"><span class="empresas-stat-value" id="empresasLimiteTotal">C$0</span><span class="empresas-stat-label">Límite Total</span></div></div>
+        </div>
+
+        <!-- Contenedor con scroll vertical y horizontal -->
+        <div class="empresas-table-wrapper">
+            <div class="empresas-table-vertical-container" id="empresasVerticalScroll">
+                <div class="empresas-table-horizontal-container" id="empresasHorizontalScroll">
+                    <div id="empresasContainer" class="empresas-table-container">
+                        <div class="empresas-loading"><div class="empresas-spinner"></div><p>Cargando empresas...</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="savingIndicator" class="saving-indicator">
+    <i class="fas fa-save"></i>
+    <span>Guardando...</span>
+</div>
+
+<!-- Modales -->
+<div id="modalNuevoCliente" class="empresas-modal-overlay" style="display: none;">
+    <div class="empresas-modal-container">
+        <div class="empresas-modal-header">
+            <h3><i class="fas fa-user-plus"></i> Nuevo Cliente</h3>
+            <button class="empresas-modal-close" onclick="cerrarModalNuevoCliente()">&times;</button>
+        </div>
+        <div class="empresas-modal-body">
+            <div class="empresas-form-group">
+                <label><i class="fas fa-id-card"></i> ID Empresa</label>
+                <input type="text" id="nuevoId" placeholder="Ej: NIC-001 (opcional)">
+                <small style="color: #888; font-size: 9px;">Dejar en blanco para generar automático</small>
+            </div>
+            <div class="empresas-form-group">
+                <label><i class="fas fa-building"></i> Nombre *</label>
+                <input type="text" id="nuevoNombre" placeholder="Nombre de la empresa">
+            </div>
+            <div class="empresas-form-row">
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-user"></i> Contacto</label>
+                    <input type="text" id="nuevoContacto" placeholder="Nombre">
+                </div>
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-id-card"></i> RUC/Cédula</label>
+                    <input type="text" id="nuevoCedula" placeholder="Número">
+                </div>
+            </div>
+            <div class="empresas-form-row">
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-phone"></i> Teléfono</label>
+                    <input type="text" id="nuevoTelefono" placeholder="Ej: 505 1234 5678">
+                </div>
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="nuevoEmail" placeholder="correo@empresa.com">
+                </div>
+            </div>
+            <div class="empresas-form-row">
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-truck"></i> Placa</label>
+                    <input type="text" id="nuevoPlaca" placeholder="Placa vehículo">
+                </div>
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Destino</label>
+                    <input type="text" id="nuevoDestino" placeholder="Destino habitual">
+                </div>
+            </div>
+            <div class="empresas-form-group">
+                <label><i class="fas fa-map-marker-alt"></i> Dirección</label>
+                <input type="text" id="nuevoDireccion" placeholder="Dirección completa">
+            </div>
+            <div class="empresas-form-group">
+                <label><i class="fas fa-user-tie"></i> Conductor</label>
+                <input type="text" id="nuevoConductor" placeholder="Conductor asignado">
+            </div>
+            <div class="empresas-form-row">
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-coins"></i> Crédito Inicial</label>
+                    <input type="number" id="nuevoCredito" step="0.01" placeholder="0.00" value="0">
+                </div>
+                <div class="empresas-form-group">
+                    <label><i class="fas fa-credit-card"></i> Límite Crédito</label>
+                    <input type="number" id="nuevoLimiteCredito" step="0.01" placeholder="0.00" value="0">
+                </div>
+            </div>
+            <div class="empresas-form-group">
+                <label><i class="fas fa-tag"></i> Tipo</label>
+                <select id="nuevoTipo">
+                    <option value="Cliente">Cliente</option>
+                    <option value="Proveedor">Proveedor</option>
+                    <option value="Distribuidor">Distribuidor</option>
+                </select>
+            </div>
+            <div class="empresas-modal-buttons">
+                <button class="empresas-btn-cancelar" onclick="cerrarModalNuevoCliente()">Cancelar</button>
+                <button class="empresas-btn-guardar" onclick="guardarNuevoCliente()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalCredito" class="empresas-modal-overlay" style="display: none;">
+    <div class="empresas-modal-container">
+        <div class="empresas-modal-header">
+            <h3><i class="fas fa-coins"></i> Gestionar Crédito</h3>
+            <button class="empresas-modal-close" onclick="cerrarModalCredito()">&times;</button>
+        </div>
+        <div class="empresas-modal-body">
+            <div class="empresas-info-empresa" id="modalEmpresaInfo"></div>
+            <div class="credito-item"><span>Crédito Actual:</span><strong class="text-orange" id="modalCreditoActual">C$0</strong></div>
+            <div class="credito-item"><span>Límite:</span><strong id="modalLimiteCredito">C$0</strong></div>
+            <div class="credito-item"><span>Disponible:</span><strong class="text-green" id="modalDisponible">C$0</strong></div>
+            <div class="progress-modal"><div class="progress-fill-modal" id="modalProgressFill" style="width: 0%;"></div></div>
+            
+            <div class="extensiones-container" id="extensionesContainer">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <strong style="font-size: 11px;"><i class="fas fa-chart-line"></i> Extensiones</strong>
+                    <button class="empresas-btn-extender" style="padding: 3px 10px; font-size: 10px; width: auto;" onclick="abrirModalExtender()">Extender</button>
+                </div>
+                <div id="extensionesList"></div>
+                <div class="dias-restantes" id="diasRenovacion"></div>
+            </div>
+            
+            <div class="empresas-monto-input" style="margin: 15px 0;">
+                <label style="font-size: 11px;">Monto (C$):</label>
+                <input type="number" id="modalMonto" step="0.01" placeholder="0.00" style="width:100%; padding:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:white; margin-top: 5px;">
+            </div>
+            <div class="empresas-modal-buttons">
+                <button class="empresas-btn-abonar" onclick="aplicarCredito(true)">Abonar</button>
+                <button class="empresas-btn-cargar" onclick="aplicarCredito(false)">Cargar</button>
+            </div>
+            <div id="modalMensaje" style="margin-top:12px; font-size:11px; text-align:center;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="modalExtender" class="empresas-modal-overlay" style="display: none;">
+    <div class="empresas-modal-container" style="max-width: 380px;">
+        <div class="empresas-modal-header">
+            <h3><i class="fas fa-chart-line"></i> Extender Límite</h3>
+            <button class="empresas-modal-close" onclick="cerrarModalExtender()">&times;</button>
+        </div>
+        <div class="empresas-modal-body">
+            <div class="empresas-form-group">
+                <label><i class="fas fa-building"></i> Empresa</label>
+                <input type="text" id="extenderEmpresaNombre" readonly style="background: rgba(0,0,0,0.6);">
+            </div>
+            <div class="empresas-form-group">
+                <label><i class="fas fa-credit-card"></i> Límite Actual</label>
+                <input type="text" id="extenderLimiteActual" readonly style="background: rgba(0,0,0,0.6);">
+            </div>
+            <div class="empresas-form-group">
+                <label><i class="fas fa-plus-circle"></i> Monto a Extender (C$)</label>
+                <input type="number" id="extenderMonto" step="1000" placeholder="Ej: 50000">
+            </div>
+            <div class="empresas-form-group">
+                <label><i class="fas fa-comment"></i> Motivo</label>
+                <input type="text" id="extenderMotivo" placeholder="Ej: Solicitud cliente">
+            </div>
+            <div class="empresas-modal-buttons">
+                <button class="empresas-btn-cancelar" onclick="cerrarModalExtender()">Cancelar</button>
+                <button class="empresas-btn-guardar" onclick="confirmarExtender()">Extender</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalAlertas" class="empresas-modal-overlay" style="display: none;">
+    <div class="empresas-modal-container" style="max-width: 450px;">
+        <div class="empresas-modal-header">
+            <h3><i class="fas fa-bell"></i> Alertas de Crédito</h3>
+            <button class="empresas-modal-close" onclick="cerrarModalAlertas()">&times;</button>
+        </div>
+        <div class="empresas-modal-body">
+            <div id="alertasList"></div>
+        </div>
+    </div>
+</div>
+
+<div id="resumenModal" class="empresas-modal-overlay" style="display: none;">
+    <div class="empresas-modal-container" style="max-width: 450px;">
+        <div class="empresas-modal-header">
+            <h3><i class="fas fa-chart-pie"></i> Resumen de Créditos</h3>
+            <button class="empresas-modal-close" onclick="cerrarResumen()">&times;</button>
+        </div>
+        <div class="empresas-modal-body">
+            <div id="resumenContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    console.log("Módulo Empresas cargado - Centrado");
+
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+            body.style.backgroundImage = 'url(' + imagenUrl + ')';
+        } else {
+            body.style.backgroundImage = '';
+            body.classList.add(tema + '-theme');
+        }
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else if (temaGuardado !== 'image') {
+                aplicarTema(temaGuardado);
+            }
+        }
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+                var tema = event.data.tema;
+                var imagen = event.data.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else if (tema !== 'image') {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+        });
+    }
+
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    let empresasData = [];
+    let usuarioRol = null;
+    let empresasColumnas = ['ID', 'Nombre', 'Contacto', 'Telefono', 'Email', 'Destino', 'Conductor', 'Tipo', 'Placa', 'Direccion', 'Credito', 'Limite Credito'];
+    let columnasNoEditables = ['ID'];
+    let columnasSoloAdmin = ['Limite Credito'];
+    let autoSaveTimeout = null;
+    let savingIndicator = document.getElementById('savingIndicator');
+    let empresaIdActual = null;
+
+    let verticalScrollContainer = document.getElementById('empresasVerticalScroll');
+    let horizontalScrollContainer = document.getElementById('empresasHorizontalScroll');
+
+    function sincronizarScrollHorizontal() {
+        if (!verticalScrollContainer || !horizontalScrollContainer) return;
+        
+        verticalScrollContainer.addEventListener('scroll', function() {
+            if (horizontalScrollContainer) {
+                horizontalScrollContainer.scrollLeft = verticalScrollContainer.scrollLeft;
+            }
+        });
+        
+        horizontalScrollContainer.addEventListener('scroll', function() {
+            if (verticalScrollContainer) {
+                verticalScrollContainer.scrollLeft = horizontalScrollContainer.scrollLeft;
+            }
+        });
+    }
+
+    function ajustarAnchoBarraHorizontal() {
+        if (!verticalScrollContainer || !horizontalScrollContainer) return;
+        
+        var contenido = document.getElementById('empresasContainer');
+        if (!contenido) return;
+        
+        var contenidoWidth = contenido.scrollWidth;
+        var contenedorWidth = verticalScrollContainer.clientWidth;
+        
+        if (contenidoWidth > contenedorWidth) {
+            horizontalScrollContainer.style.overflowX = 'auto';
+        } else {
+            horizontalScrollContainer.style.overflowX = 'hidden';
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatearMoneda(valor) {
+        if (valor === undefined || valor === null) return 'C$0.00';
+        return 'C$' + parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function mostrarToast(mensaje, tipo) {
+        tipo = tipo || 'success';
+        var existing = document.querySelector('.toast-message');
+        if (existing) existing.remove();
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icon = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + mensaje;
+        var bgColor = tipo === 'success' ? '#10b981' : (tipo === 'error' ? '#ef4444' : '#f59e0b');
+        toast.style.background = bgColor;
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3000);
+    }
+
+    function mostrarSaving(show) {
+        if (savingIndicator) {
+            if (show) savingIndicator.classList.add('show');
+            else savingIndicator.classList.remove('show');
+        }
+    }
+
+    function obtenerUsuarioRol() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                usuarioRol = usuario.rol || 'usuario';
+            } else {
+                usuarioRol = 'usuario';
+            }
+        } catch(e) {
+            usuarioRol = 'usuario';
+        }
+        return usuarioRol;
+    }
+
+    function puedeEditarCampo(campo) {
+        if (columnasNoEditables.indexOf(campo) !== -1) return false;
+        if (columnasSoloAdmin.indexOf(campo) !== -1) return usuarioRol === 'admin';
+        return true;
+    }
+
+    async function obtenerEmpresas() {
+        try {
+            var response = await fetch('/api/empresas');
+            var data = await response.json();
+            return data.empresas || [];
+        } catch (error) {
+            console.error('Error obteniendo empresas:', error);
+            return [];
+        }
+    }
+
+    async function guardarCampo(empresaId, campo, valor) {
+        mostrarSaving(true);
+        
+        try {
+            var empresa = empresasData.find(function(e) { return e.ID === empresaId; });
+            if (!empresa) return false;
+            
+            var bodyData = {
+                id: empresaId,
+                nombre: empresa.Nombre,
+                contacto: empresa.Contacto || '',
+                cedula: '',
+                telefono: empresa.Telefono || '',
+                direccion: empresa.Direccion || '',
+                destino: empresa.Destino || '',
+                conductor: empresa.Conductor || '',
+                tipo: empresa.Tipo || 'Cliente',
+                placa: empresa.Placa || '',
+                email: empresa.Email || '',
+                activo: true,
+                usuario: obtenerUsuarioRol()
+            };
+            
+            if (campo === 'Limite Credito') {
+                bodyData.limite_credito = parseFloat(valor) || 0;
+            } else if (campo === 'Credito') {
+                bodyData.credito = parseFloat(valor) || 0;
+            } else {
+                var fieldMap = {
+                    'Nombre': 'nombre', 'Contacto': 'contacto', 'Telefono': 'telefono',
+                    'Email': 'email', 'Direccion': 'direccion', 'Destino': 'destino',
+                    'Conductor': 'conductor', 'Tipo': 'tipo', 'Placa': 'placa'
+                };
+                if (fieldMap[campo]) bodyData[fieldMap[campo]] = valor;
+            }
+            
+            var response = await fetch('/api/actualizar_empresa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyData)
+            });
+            
+            if (!response.ok) throw new Error('Error al guardar');
+            var result = await response.json();
+            
+            if (result.ok) {
+                return true;
+            } else {
+                mostrarToast('Error: ' + (result.error || 'No se pudo guardar'), 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error guardando:', error);
+            mostrarToast('Error al guardar cambios', 'error');
+            return false;
+        } finally {
+            setTimeout(function() { mostrarSaving(false); }, 500);
+        }
+    }
+
+    async function actualizarCredito(empresaId, monto, esAbono) {
+        mostrarSaving(true);
+        
+        try {
+            var response = await fetch('/api/actualizar_credito', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    empresa_id: empresaId,
+                    monto: monto,
+                    es_abono: esAbono,
+                    usuario_rol: usuarioRol,
+                    usuario: obtenerUsuarioRol()
+                })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast(data.mensaje || (esAbono ? 'Abono aplicado' : 'Cargo aplicado'), 'success');
+                return true;
+            } else {
+                mostrarToast(data.error || 'Error al actualizar credito', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error actualizando credito:', error);
+            mostrarToast('Error de conexion', 'error');
+            return false;
+        } finally {
+            setTimeout(function() { mostrarSaving(false); }, 500);
+        }
+    }
+
+    async function extenderLimite(empresaId, monto, motivo) {
+        mostrarSaving(true);
+        
+        try {
+            var response = await fetch('/api/extender_limite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    empresa_id: empresaId,
+                    monto: monto,
+                    motivo: motivo,
+                    usuario_rol: usuarioRol,
+                    usuario: obtenerUsuarioRol()
+                })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast(data.mensaje, 'success');
+                return true;
+            } else {
+                mostrarToast(data.error || 'Error al extender limite', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error extendiendo limite:', error);
+            mostrarToast('Error de conexion', 'error');
+            return false;
+        } finally {
+            setTimeout(function() { mostrarSaving(false); }, 500);
+        }
+    }
+
+    function actualizarEmpresaLocal(empresaId, campo, nuevoValor) {
+        var index = -1;
+        for (var i = 0; i < empresasData.length; i++) {
+            if (empresasData[i].ID === empresaId) {
+                index = i;
+                break;
+            }
+        }
+        if (index !== -1) {
+            if (campo === 'Credito' || campo === 'Limite Credito') {
+                nuevoValor = parseFloat(nuevoValor) || 0;
+            }
+            empresasData[index][campo] = nuevoValor;
+            
+            if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(async function() {
+                var resultado = await guardarCampo(empresaId, campo, nuevoValor);
+                if (resultado && (campo === 'Credito' || campo === 'Limite Credito')) {
+                    actualizarFilaVisual(index, empresasData[index]);
+                }
+                actualizarStats();
+            }, 800);
+        }
+    }
+    
+    function actualizarFilaVisual(index, empresa) {
+        var credito = parseFloat(empresa.Credito) || 0;
+        var limite = parseFloat(empresa['Limite Credito']) || 0;
+        var porcentaje = limite > 0 ? Math.min(100, (credito / limite * 100)) : 0;
+        
+        var fila = document.querySelector('.empresas-table tbody tr[data-id="' + empresa.ID + '"]');
+        if (fila) {
+            var badgeCell = fila.querySelector('.badge-cell');
+            if (badgeCell) {
+                var badgeHtml = '';
+                if (credito >= limite && limite > 0) {
+                    badgeHtml = '<span class="empresas-badge empresas-badge-danger">BLOQUEADO</span>';
+                } else if (porcentaje >= 90) {
+                    badgeHtml = '<span class="empresas-badge empresas-badge-danger">CRITICO</span>';
+                } else if (porcentaje >= 70) {
+                    badgeHtml = '<span class="empresas-badge empresas-badge-warning">ALERTA</span>';
+                } else if (credito > 0) {
+                    badgeHtml = '<span class="empresas-badge empresas-badge-info">DEBE</span>';
+                }
+                badgeCell.innerHTML = badgeHtml;
+            }
+            
+            var progressRow = fila.nextElementSibling;
+            if (progressRow && progressRow.classList.contains('empresas-progress-row')) {
+                var fill = progressRow.querySelector('.empresas-progress-fill');
+                var text = progressRow.querySelector('.empresas-progress-text');
+                if (fill) {
+                    fill.style.width = porcentaje + '%';
+                    fill.style.background = porcentaje >= 90 ? '#ef4444' : (porcentaje >= 70 ? '#f59e0b' : '#10b981');
+                }
+                if (text) text.innerText = porcentaje.toFixed(1) + '% utilizado';
+            }
+            
+            var estadoClase = '';
+            if (credito >= limite && limite > 0) estadoClase = 'credito-bloqueado';
+            else if (porcentaje >= 90) estadoClase = 'credito-critico';
+            else if (porcentaje >= 70) estadoClase = 'credito-alerta';
+            else if (credito > 0) estadoClase = 'credito-normal';
+            
+            fila.className = estadoClase;
+        }
+    }
+
+    function actualizarStats() {
+        var total = empresasData.length;
+        var deuda = 0;
+        var conDeuda = 0;
+        var limiteTotal = 0;
+        
+        for (var i = 0; i < empresasData.length; i++) {
+            var cred = parseFloat(empresasData[i].Credito) || 0;
+            var lim = parseFloat(empresasData[i]['Limite Credito']) || 0;
+            deuda += cred;
+            if (cred > 0) conDeuda++;
+            limiteTotal += lim;
+        }
+
+        document.getElementById('empresasTotal').innerText = total;
+        document.getElementById('empresasDeudaTotal').innerHTML = formatearMoneda(deuda);
+        document.getElementById('empresasConDeuda').innerText = conDeuda;
+        document.getElementById('empresasLimiteTotal').innerHTML = formatearMoneda(limiteTotal);
+    }
+
+    function renderizarTabla() {
+        var container = document.getElementById('empresasContainer');
+        if (!container) return;
+
+        if (empresasData.length === 0) {
+            container.innerHTML = '<div class="empresas-empty"><i class="fas fa-building"></i><p>No hay empresas registradas</p></div>';
+            ajustarAnchoBarraHorizontal();
+            return;
+        }
+
+        var html = '<table class="empresas-table"><thead><tr>';
+        for (var c = 0; c < empresasColumnas.length; c++) {
+            var col = empresasColumnas[c];
+            var clase = (col === 'Credito' || col === 'Limite Credito') ? 'empresas-columna-credito' : '';
+            html += '<th class="' + clase + '">' + escapeHtml(col) + '</th>';
+        }
+        html += '<th>Acciones</th></tr></thead><tbody>';
+
+        for (var i = 0; i < empresasData.length; i++) {
+            var row = empresasData[i];
+            var credito = parseFloat(row.Credito) || 0;
+            var limite = parseFloat(row['Limite Credito']) || 0;
+            var porcentaje = limite > 0 ? Math.min(100, (credito / limite * 100)) : 0;
+
+            var estadoClase = '';
+            var badge = '';
+
+            if (credito >= limite && limite > 0) {
+                estadoClase = 'credito-bloqueado';
+                badge = '<span class="empresas-badge empresas-badge-danger">BLOQUEADO</span>';
+            } else if (porcentaje >= 90) {
+                estadoClase = 'credito-critico';
+                badge = '<span class="empresas-badge empresas-badge-danger">CRITICO</span>';
+            } else if (porcentaje >= 70) {
+                estadoClase = 'credito-alerta';
+                badge = '<span class="empresas-badge empresas-badge-warning">ALERTA</span>';
+            } else if (credito > 0) {
+                estadoClase = 'credito-normal';
+                badge = '<span class="empresas-badge empresas-badge-info">DEBE</span>';
+            }
+
+            html += '<tr class="' + estadoClase + '" data-id="' + row.ID + '">';
+
+            for (var c2 = 0; c2 < empresasColumnas.length; c2++) {
+                var col2 = empresasColumnas[c2];
+                var valor = row[col2];
+                var canEdit = puedeEditarCampo(col2);
+                
+                if (col2 === 'Credito') {
+                    valor = formatearMoneda(credito);
+                    html += '<td class="empresas-celda-credito">' +
+                        '<div class="empresas-credito-cell">' +
+                        '<span class="' + (canEdit ? 'editable-cell' : 'credito-cell-readonly') + '" ' +
+                        'data-id="' + row.ID + '" ' +
+                        'data-field="' + col2 + '" ' +
+                        (canEdit ? 'contenteditable="true"' : '') + ' ' +
+                        'onblur="handleCellEdit(this, \'' + row.ID + '\', \'' + col2 + '\')">' + escapeHtml(valor) + '</span>' +
+                        '<button class="empresas-btn-credito" onclick="abrirModalCredito(\'' + row.ID + '\', \'' + escapeHtml(row.Nombre) + '\', ' + credito + ', ' + limite + ')">' +
+                        '<i class="fas fa-coins"></i> Gestionar' +
+                        '</button>' +
+                        '</div>' +
+                        '</td>';
+                } else if (col2 === 'Limite Credito') {
+                    valor = formatearMoneda(limite);
+                    html += '<td>' +
+                        '<span class="' + (canEdit ? 'editable-cell' : 'credito-cell-readonly') + '" ' +
+                        'data-id="' + row.ID + '" ' +
+                        'data-field="' + col2 + '" ' +
+                        (canEdit ? 'contenteditable="true"' : '') + ' ' +
+                        'onblur="handleCellEdit(this, \'' + row.ID + '\', \'' + col2 + '\')">' + escapeHtml(valor) + '</span>' +
+                        '</td>';
+                } else {
+                    html += '<td>' +
+                        '<span class="editable-cell" ' +
+                        'data-id="' + row.ID + '" ' +
+                        'data-field="' + col2 + '" ' +
+                        'contenteditable="true" ' +
+                        'onblur="handleCellEdit(this, \'' + row.ID + '\', \'' + col2 + '\')">' + escapeHtml(valor || '') + '</span>' +
+                        '</td>';
+                }
+            }
+
+            html += '<td class="badge-cell">' +
+                '<button class="empresas-btn-delete" onclick="eliminarEmpresa(\'' + row.ID + '\')">' +
+                '<i class="fas fa-trash"></i>' +
+                '</button>' +
+                badge +
+                '</td>' +
+                '</tr>';
+
+            html += '<tr class="empresas-progress-row">' +
+                '<td colspan="' + (empresasColumnas.length + 1) + '" style="text-align:center;">' +
+                '<div class="empresas-progress-bar">' +
+                '<div class="empresas-progress-fill" style="width: ' + porcentaje + '%; background: ' + (porcentaje >= 90 ? '#ef4444' : (porcentaje >= 70 ? '#f59e0b' : '#10b981')) + ';"></div>' +
+                '</div>' +
+                '<div class="empresas-progress-text">' + porcentaje.toFixed(1) + '% utilizado</div>' +
+                '</td>' +
+                '</tr>';
+        }
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        actualizarStats();
+        
+        setTimeout(function() {
+            ajustarAnchoBarraHorizontal();
+        }, 50);
+    }
+
+    window.handleCellEdit = function(element, empresaId, campo) {
+        var nuevoValor = element.innerText.trim();
+        
+        if (campo === 'Credito' || campo === 'Limite Credito') {
+            nuevoValor = nuevoValor.replace(/[C$,\s]/g, '');
+            var numValor = parseFloat(nuevoValor);
+            if (!isNaN(numValor)) {
+                nuevoValor = numValor;
+                element.innerText = formatearMoneda(numValor);
+            } else {
+                element.innerText = formatearMoneda(0);
+                nuevoValor = 0;
+            }
+        }
+        
+        var empresa = null;
+        for (var i = 0; i < empresasData.length; i++) {
+            if (empresasData[i].ID === empresaId) {
+                empresa = empresasData[i];
+                break;
+            }
+        }
+        if (empresa && empresa[campo] != nuevoValor) {
+            element.classList.add('saving');
+            setTimeout(function() { element.classList.remove('saving'); }, 500);
+            actualizarEmpresaLocal(empresaId, campo, nuevoValor);
+        }
+    };
+
+    async function cargarEmpresas() {
+        var container = document.getElementById('empresasContainer');
+        if (container && empresasData.length === 0) {
+            container.innerHTML = '<div class="empresas-loading"><div class="empresas-spinner"></div><p>Cargando empresas...</p></div>';
+        }
+
+        var empresas = await obtenerEmpresas();
+        empresasData = [];
+        for (var i = 0; i < empresas.length; i++) {
+            var emp = empresas[i];
+            empresasData.push({
+                ID: emp.id || '',
+                Nombre: emp.nombre || '',
+                Contacto: emp.contacto || '',
+                Telefono: emp.telefono || '',
+                Email: emp.email || '',
+                Destino: emp.destino || '',
+                Conductor: emp.conductor || '',
+                Tipo: emp.tipo || 'Cliente',
+                Placa: emp.placa || '',
+                Direccion: emp.direccion || '',
+                Credito: emp.credito || 0,
+                'Limite Credito': emp.limite_credito || 0,
+                extensiones: emp.extensiones || [],
+                limite_original: emp.limite_original || emp.limite_credito || 0
+            });
+        }
+
+        renderizarTabla();
+        console.log('Cargadas ' + empresasData.length + ' empresas');
+    }
+
+    window.eliminarEmpresa = async function(empresaId) {
+        if (!confirm('¿Eliminar esta empresa? Esta acción no se puede deshacer.')) return;
+
+        try {
+            var response = await fetch('/api/eliminar_empresa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: empresaId, usuario: obtenerUsuarioRol() })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('Empresa eliminada', 'success');
+                cargarEmpresas();
+            } else {
+                mostrarToast(data.error || 'Error al eliminar', 'error');
+            }
+        } catch (error) {
+            mostrarToast('Error de conexión', 'error');
+        }
+    };
+
+    function abrirModalNuevoCliente() {
+        document.getElementById('nuevoId').value = '';
+        document.getElementById('nuevoNombre').value = '';
+        document.getElementById('nuevoContacto').value = '';
+        document.getElementById('nuevoCedula').value = '';
+        document.getElementById('nuevoTelefono').value = '';
+        document.getElementById('nuevoEmail').value = '';
+        document.getElementById('nuevoPlaca').value = '';
+        document.getElementById('nuevoDestino').value = '';
+        document.getElementById('nuevoDireccion').value = '';
+        document.getElementById('nuevoConductor').value = '';
+        document.getElementById('nuevoCredito').value = '0';
+        document.getElementById('nuevoLimiteCredito').value = '0';
+        document.getElementById('nuevoTipo').value = 'Cliente';
+        document.getElementById('modalNuevoCliente').style.display = 'flex';
+    }
+
+    window.cerrarModalNuevoCliente = function() {
+        document.getElementById('modalNuevoCliente').style.display = 'none';
+    };
+
+    window.guardarNuevoCliente = async function() {
+        var nombre = document.getElementById('nuevoNombre').value.trim();
+        if (!nombre) {
+            mostrarToast('El nombre de la empresa es obligatorio', 'error');
+            return;
+        }
+
+        var idPersonalizado = document.getElementById('nuevoId').value.trim().toUpperCase() || null;
+        var data = {
+            nombre: nombre,
+            contacto: document.getElementById('nuevoContacto').value.trim(),
+            cedula: document.getElementById('nuevoCedula').value.trim(),
+            telefono: document.getElementById('nuevoTelefono').value.trim(),
+            email: document.getElementById('nuevoEmail').value.trim(),
+            placa: document.getElementById('nuevoPlaca').value.trim(),
+            destino: document.getElementById('nuevoDestino').value.trim(),
+            direccion: document.getElementById('nuevoDireccion').value.trim(),
+            conductor: document.getElementById('nuevoConductor').value.trim(),
+            tipo: document.getElementById('nuevoTipo').value,
+            credito: parseFloat(document.getElementById('nuevoCredito').value) || 0,
+            limite_credito: parseFloat(document.getElementById('nuevoLimiteCredito').value) || 0,
+            usuario: obtenerUsuarioRol()
+        };
+        
+        if (idPersonalizado) data.id = idPersonalizado;
+
+        try {
+            var response = await fetch('/api/crear_empresa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            var result = await response.json();
+            
+            if (result.ok) {
+                mostrarToast('Cliente "' + nombre + '" creado', 'success');
+                cerrarModalNuevoCliente();
+                cargarEmpresas();
+            } else {
+                mostrarToast(result.error || 'Error al crear empresa', 'error');
+            }
+        } catch (error) {
+            mostrarToast('Error de conexión', 'error');
+        }
+    };
+
+    window.abrirModalCredito = function(id, nombre, credito, limite) {
+        if (usuarioRol !== 'admin') {
+            mostrarToast('Solo administradores pueden gestionar créditos', 'error');
+            return;
+        }
+
+        empresaIdActual = id;
+        var empresa = null;
+        for (var i = 0; i < empresasData.length; i++) {
+            if (empresasData[i].ID === id) {
+                empresa = empresasData[i];
+                break;
+            }
+        }
+        
+        document.getElementById('modalEmpresaInfo').innerHTML = '<p><strong>Empresa:</strong> ' + escapeHtml(nombre) + '</p><p><strong>ID:</strong> ' + escapeHtml(id) + '</p>';
+        document.getElementById('modalCreditoActual').innerHTML = formatearMoneda(credito);
+        document.getElementById('modalLimiteCredito').innerHTML = formatearMoneda(limite);
+        document.getElementById('modalDisponible').innerHTML = formatearMoneda(limite - credito);
+        document.getElementById('modalMonto').value = '';
+        document.getElementById('modalMensaje').innerHTML = '';
+
+        var porcentaje = limite > 0 ? Math.min(100, (credito / limite * 100)) : 0;
+        var progressFill = document.getElementById('modalProgressFill');
+        progressFill.style.width = porcentaje + '%';
+        progressFill.style.background = porcentaje >= 90 ? '#ef4444' : (porcentaje >= 70 ? '#f59e0b' : '#10b981');
+        
+        var extensionesContainer = document.getElementById('extensionesContainer');
+        var extensionesList = document.getElementById('extensionesList');
+        var diasRenovacion = document.getElementById('diasRenovacion');
+        
+        if (empresa && empresa.extensiones && empresa.extensiones.length > 0) {
+            extensionesContainer.style.display = 'block';
+            var extHtml = '';
+            for (var j = 0; j < empresa.extensiones.length; j++) {
+                var ext = empresa.extensiones[j];
+                extHtml += '<div class="extension-item">' +
+                    '<div><span class="monto">+' + formatearMoneda(ext.monto) + '</span> - Nuevo límite: ' + formatearMoneda(ext.nuevo_limite) + '</div>' +
+                    '<div style="font-size: 9px; color: #888;">' + new Date(ext.fecha).toLocaleString() + ' - ' + (ext.motivo || 'Sin motivo') + '</div>' +
+                    '</div>';
+            }
+            extensionesList.innerHTML = extHtml;
+        } else {
+            extensionesContainer.style.display = 'block';
+            extensionesList.innerHTML = '<div style="text-align:center; padding:15px; color:#888;">No hay extensiones</div>';
+        }
+        
+        diasRenovacion.innerHTML = '<i class="fas fa-infinity"></i> Sin límite de renovación';
+        diasRenovacion.style.color = '#888';
+
+        document.getElementById('modalCredito').style.display = 'flex';
+    };
+
+    window.cerrarModalCredito = function() {
+        document.getElementById('modalCredito').style.display = 'none';
+        empresaIdActual = null;
+    };
+
+    window.aplicarCredito = async function(esAbono) {
+        if (!empresaIdActual) return;
+
+        var monto = parseFloat(document.getElementById('modalMonto').value);
+        var msgDiv = document.getElementById('modalMensaje');
+
+        if (isNaN(monto) || monto <= 0) {
+            msgDiv.innerHTML = '<span style="color:#ef4444;">Ingrese un monto válido</span>';
+            return;
+        }
+
+        msgDiv.innerHTML = '<span style="color:#f59e0b;"><i class="fas fa-spinner fa-pulse"></i> Procesando...</span>';
+
+        var resultado = await actualizarCredito(empresaIdActual, monto, esAbono);
+        if (resultado) {
+            msgDiv.innerHTML = '<span style="color:#10b981;">✓ ' + (esAbono ? 'Abono aplicado' : 'Cargo aplicado') + '</span>';
+            setTimeout(function() {
+                cerrarModalCredito();
+                cargarEmpresas();
+            }, 1500);
+        } else {
+            msgDiv.innerHTML = '<span style="color:#ef4444;">Error al procesar</span>';
+        }
+    };
+
+    window.abrirModalExtender = function() {
+        if (!empresaIdActual) {
+            mostrarToast('Primero seleccione una empresa', 'error');
+            return;
+        }
+        var empresa = null;
+        for (var i = 0; i < empresasData.length; i++) {
+            if (empresasData[i].ID === empresaIdActual) {
+                empresa = empresasData[i];
+                break;
+            }
+        }
+        if (empresa) {
+            document.getElementById('extenderEmpresaNombre').value = empresa.Nombre;
+            document.getElementById('extenderLimiteActual').value = formatearMoneda(empresa['Limite Credito']);
+            document.getElementById('extenderMonto').value = '';
+            document.getElementById('extenderMotivo').value = '';
+            document.getElementById('modalExtender').style.display = 'flex';
+        }
+    };
+
+    window.cerrarModalExtender = function() {
+        document.getElementById('modalExtender').style.display = 'none';
+    };
+
+    window.confirmarExtender = async function() {
+        if (!empresaIdActual) return;
+        
+        var monto = parseFloat(document.getElementById('extenderMonto').value);
+        var motivo = document.getElementById('extenderMotivo').value;
+        
+        if (isNaN(monto) || monto <= 0) {
+            mostrarToast('Ingrese un monto válido', 'error');
+            return;
+        }
+        
+        var resultado = await extenderLimite(empresaIdActual, monto, motivo);
+        if (resultado) {
+            cerrarModalExtender();
+            cargarEmpresas();
+        }
+    };
+
+    async function verAlertas() {
+        try {
+            var response = await fetch('/api/alertas_credito');
+            var data = await response.json();
+            var alertasList = document.getElementById('alertasList');
+            
+            if (data.alertas && data.alertas.length > 0) {
+                var html = '';
+                for (var i = 0; i < data.alertas.length; i++) {
+                    var alerta = data.alertas[i];
+                    var clase = alerta.urgente ? 'alerta-credito' : 'credito-alerta';
+                    html += '<div class="' + clase + '" style="padding: 10px; margin-bottom: 8px; border-radius: 8px;">' +
+                        '<strong>' + alerta.empresa_nombre + '</strong><br>' +
+                        alerta.mensaje +
+                        '</div>';
+                }
+                alertasList.innerHTML = html;
+            } else {
+                alertasList.innerHTML = '<div style="text-align:center; padding:30px;"><i class="fas fa-check-circle"></i><p>No hay alertas activas</p></div>';
+            }
+            document.getElementById('modalAlertas').style.display = 'flex';
+        } catch (error) {
+            mostrarToast('Error cargando alertas', 'error');
+        }
+    }
+
+    window.cerrarModalAlertas = function() {
+        document.getElementById('modalAlertas').style.display = 'none';
+    };
+
+    function exportarExcel() {
+        if (empresasData.length === 0) {
+            mostrarToast('No hay datos para exportar', 'warning');
+            return;
+        }
+
+        var wsData = [empresasColumnas];
+        for (var i = 0; i < empresasData.length; i++) {
+            var row = empresasData[i];
+            var fila = [];
+            for (var j = 0; j < empresasColumnas.length; j++) {
+                var col = empresasColumnas[j];
+                var valor = row[col];
+                if (col === 'Credito' || col === 'Limite Credito') {
+                    valor = formatearMoneda(valor);
+                }
+                fila.push(valor !== undefined ? valor : '');
+            }
+            wsData.push(fila);
+        }
+
+        var ws = XLSX.utils.aoa_to_sheet(wsData);
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
+        XLSX.writeFile(wb, 'empresas_' + new Date().toISOString().slice(0,19) + '.xlsx');
+        mostrarToast('Exportado a Excel', 'success');
+    }
+
+    function mostrarResumen() {
+        var total = empresasData.length;
+        var deudaTotal = 0;
+        var conDeuda = 0;
+        var limiteTotal = 0;
+        var bloqueadas = 0;
+        
+        for (var i = 0; i < empresasData.length; i++) {
+            var cred = parseFloat(empresasData[i].Credito) || 0;
+            var lim = parseFloat(empresasData[i]['Limite Credito']) || 0;
+            deudaTotal += cred;
+            if (cred > 0) conDeuda++;
+            limiteTotal += lim;
+            if (cred >= lim && lim > 0) bloqueadas++;
+        }
+
+        var content = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 15px;">' +
+            '<div style="background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px; text-align: center;">' +
+            '<span style="display: block; font-size: 1.2rem; font-weight: 700; color: #f59e0b;">' + formatearMoneda(deudaTotal) + '</span>' +
+            '<span style="font-size: 0.6rem; color: #888;">Deuda Total</span>' +
+            '</div>' +
+            '<div style="background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px; text-align: center;">' +
+            '<span style="display: block; font-size: 1.2rem; font-weight: 700; color: #f59e0b;">' + conDeuda + '</span>' +
+            '<span style="font-size: 0.6rem; color: #888;">Con Deuda</span>' +
+            '</div>' +
+            '<div style="background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px; text-align: center;">' +
+            '<span style="display: block; font-size: 1.2rem; font-weight: 700; color: #ef4444;">' + bloqueadas + '</span>' +
+            '<span style="font-size: 0.6rem; color: #888;">Bloqueadas</span>' +
+            '</div>' +
+            '</div>' +
+            '<div style="background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px;">' +
+            '<span style="display: block; font-size: 0.7rem; color: #aaa;">Límite de Crédito Total:</span>' +
+            '<span style="display: block; font-size: 1rem; font-weight: 700; color: #10b981;">' + formatearMoneda(limiteTotal) + '</span>' +
+            '</div>' +
+            '<div style="background: rgba(0,0,0,0.3); border-radius: 14px; padding: 12px; margin-top: 12px;">' +
+            '<span style="display: block; font-size: 0.7rem; color: #aaa;">Total Empresas:</span>' +
+            '<span style="display: block; font-size: 1rem; font-weight: 700; color: #fff;">' + total + '</span>' +
+            '</div>';
+        
+        document.getElementById('resumenContent').innerHTML = content;
+        document.getElementById('resumenModal').style.display = 'flex';
+    }
+
+    window.cerrarResumen = function() {
+        document.getElementById('resumenModal').style.display = 'none';
+    };
+
+    async function init() {
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        obtenerUsuarioRol();
+        await cargarEmpresas();
+        sincronizarScrollHorizontal();
+
+        document.getElementById('btnAgregarEmpresa').onclick = abrirModalNuevoCliente;
+        document.getElementById('btnExportarExcel').onclick = exportarExcel;
+        document.getElementById('btnRecargar').onclick = function() {
+            cargarEmpresas();
+            mostrarToast('Recargando datos...', 'info');
+        };
+        document.getElementById('btnMostrarResumen').onclick = mostrarResumen;
+        document.getElementById('btnVerAlertas').onclick = verAlertas;
+
+        window.addEventListener('resize', function() {
+            setTimeout(ajustarAnchoBarraHorizontal, 100);
+        });
+
+        console.log('✅ Módulo Empresas inicializado (centrado)');
+    }
+
+    window.cerrarModalCredito = window.cerrarModalCredito;
+    window.cerrarModalNuevoCliente = window.cerrarModalNuevoCliente;
+    window.cerrarModalExtender = window.cerrarModalExtender;
+    window.cerrarResumen = window.cerrarResumen;
+    window.handleCellEdit = window.handleCellEdit;
+    window.cargarTemaGuardado = cargarTemaGuardado;
+
+    init();
+})();
+</script>
+</body>
+</html>

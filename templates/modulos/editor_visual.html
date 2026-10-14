@@ -1,0 +1,1038 @@
+<!-- MODULO EDITOR VISUAL - COMPLETO -->
+<div class="editor-modulo">
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-paint-brush"></i> Editor Visual de Paginas Hijo</h3>
+            <div class="panel-controls">
+                <select id="selectorPaginaEditar" class="input-moderno">
+                    <option value="">-- Seleccione pagina para editar --</option>
+                </select>
+                <button id="recargarPaginasBtn" class="btn-outline btn-sm">
+                    <i class="fas fa-sync-alt"></i> Recargar
+                </button>
+                <button id="guardarPaginaBtn" class="btn-success btn-sm">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+                <button id="previsualizarBtn" class="btn-primary btn-sm">
+                    <i class="fas fa-eye"></i> Previsualizar
+                </button>
+            </div>
+        </div>
+        <div class="editor-container">
+            <div class="editor-sidebar">
+                <div class="sidebar-header">
+                    <h4><i class="fas fa-palette"></i> Estilos de la Pagina</h4>
+                </div>
+                <div class="sidebar-body">
+                    <div class="color-row">
+                        <div class="color-group">
+                            <label><i class="fas fa-fill-drip"></i> Color Principal</label>
+                            <input type="color" id="editColorPrimario" class="color-picker" value="#f59e0b">
+                        </div>
+                        <div class="color-group">
+                            <label><i class="fas fa-fill"></i> Color Secundario</label>
+                            <input type="color" id="editColorSecundario" class="color-picker" value="#d97706">
+                        </div>
+                        <div class="color-group">
+                            <label><i class="fas fa-palette"></i> Color de Fondo</label>
+                            <input type="color" id="editColorFondo" class="color-picker" value="#0f0f1a">
+                        </div>
+                    </div>
+                    <div class="input-group-custom">
+                        <label><i class="fas fa-heading"></i> Titulo de la Pagina</label>
+                        <input type="text" id="editTitulo" class="input-moderno" placeholder="Titulo">
+                    </div>
+                    <div class="input-group-custom">
+                        <label><i class="fas fa-subscript"></i> Subtitulo</label>
+                        <input type="text" id="editSubtitulo" class="input-moderno" placeholder="Subtitulo">
+                    </div>
+                    
+                    <div class="separator"></div>
+                    
+                    <h4><i class="fas fa-list"></i> Elementos del Formulario</h4>
+                    <div id="editEditorElementos" class="elementos-container">
+                        <div class="empty-state">
+                            <i class="fas fa-info-circle"></i>
+                            <p>No hay elementos. Use el boton "+" para agregar.</p>
+                        </div>
+                    </div>
+                    <div class="add-elemento-row">
+                        <select id="editNuevoElementoTipo" class="input-moderno">
+                            <option value="select"> Seleccion (Combustible)</option>
+                            <option value="text"> Campo de Texto (Galones)</option>
+                        </select>
+                        <button id="editAgregarElementoBtn" class="btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div class="info-note">
+                        <i class="fas fa-info-circle"></i> Los elementos "Seleccion" y "Campo de Texto" se mostraran en la pagina hijo.
+                    </div>
+                </div>
+            </div>
+            <div class="editor-preview">
+                <div class="preview-header">
+                    <span><i class="fas fa-mobile-alt"></i> Vista Previa en Tiempo Real</span>
+                    <button id="recargarPreviewBtn" class="btn-outline btn-sm">
+                        <i class="fas fa-sync-alt"></i> Refrescar
+                    </button>
+                </div>
+                <div id="vistaPrevia" class="preview-frame">
+                    <div class="empty-state">
+                        <i class="fas fa-eye"></i>
+                        <p>Selecciona una pagina para comenzar a editar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== MODULO EDITOR VISUAL COMPLETO ====================
+(function() {
+    console.log("Editor Visual cargando...");
+    
+    var elementosEditorGlobal = [];
+    var paginaEditandoId = null;
+    var paginasListaVisual = [];
+    
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+            body.style.backgroundImage = 'url(' + imagenUrl + ')';
+        } else {
+            body.style.backgroundImage = '';
+            body.classList.add(tema + '-theme');
+        }
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else if (temaGuardado !== 'image') {
+                aplicarTema(temaGuardado);
+            }
+        }
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+                var tema = event.data.tema;
+                var imagen = event.data.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else if (tema !== 'image') {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+        });
+    }
+    
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    function mostrarToast(mensaje, tipo) {
+        var existingToast = document.querySelector('.toast-message');
+        if (existingToast) existingToast.remove();
+        
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icono = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        toast.innerHTML = '<i class="fas ' + icono + '"></i> ' + mensaje;
+        
+        var bgColor = '#10b981';
+        if (tipo === 'error') bgColor = '#ef4444';
+        if (tipo === 'warning') bgColor = '#f59e0b';
+        if (tipo === 'info') bgColor = '#3b82f6';
+        
+        toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:' + bgColor + ';color:white;padding:12px 20px;border-radius:8px;z-index:10000;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:fadeInOut 3s ease forwards;';
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3000);
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function actualizarPreview() {
+        var colorPrimario = document.getElementById('editColorPrimario')?.value || '#f59e0b';
+        var colorFondo = document.getElementById('editColorFondo')?.value || '#0f0f1a';
+        var titulo = document.getElementById('editTitulo')?.value || 'Titulo de la Pagina';
+        var subtitulo = document.getElementById('editSubtitulo')?.value || '';
+        
+        var elementosHtml = '';
+        for (var i = 0; i < elementosEditorGlobal.length; i++) {
+            var el = elementosEditorGlobal[i];
+            elementosHtml += '<div style="background: rgba(255,255,255,0.05); margin: 10px 0; padding: 15px; border-radius: 16px; border-left: 3px solid ' + colorPrimario + ';">' +
+                '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">' +
+                    '<strong style="color: white;">' + escapeHtml(el.texto || 'Elemento') + '</strong>' +
+                    '<button onclick="window.eliminarElementoPreview(' + i + ')" style="background: #ef4444; border: none; padding: 4px 10px; border-radius: 8px; color: white; cursor: pointer;">' +
+                        '<i class="fas fa-trash"></i> Eliminar' +
+                    '</button>' +
+                '</div>';
+            
+            if (el.tipo === 'select') {
+                elementosHtml += '<select style="width: 100%; padding: 10px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white;">' +
+                    '<option value="">Seleccione...</option>';
+                for (var j = 0; j < (el.opciones || []).length; j++) {
+                    elementosHtml += '<option value="' + escapeHtml(el.opciones[j]) + '">' + escapeHtml(el.opciones[j]) + '</option>';
+                }
+                elementosHtml += '</select>';
+            } else {
+                elementosHtml += '<input type="text" placeholder="' + escapeHtml(el.placeholder || 'Escriba aqui...') + '" ' +
+                    'style="width: 100%; padding: 10px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white;">';
+            }
+            elementosHtml += '</div>';
+        }
+        
+        if (elementosEditorGlobal.length === 0) {
+            elementosHtml = '<div style="text-align: center; padding: 40px; color: #666;"><i class="fas fa-info-circle"></i> No hay elementos. Use el boton "+" para agregar.</div>';
+        }
+        
+        var html = '<div style="background: ' + colorFondo + '; padding: 20px; border-radius: 20px;">' +
+            '<div style="text-align: center; margin-bottom: 25px;">' +
+                '<div style="font-size: 48px;"><i class="fas fa-gas-pump" style="color: ' + colorPrimario + ';"></i></div>' +
+                '<h3 style="color: ' + colorPrimario + ';">' + escapeHtml(titulo) + '</h3>' +
+                '<p style="color: #aaa;">' + escapeHtml(subtitulo) + '</p>' +
+            '</div>' +
+            elementosHtml +
+            '<div style="margin-top: 20px; padding: 15px; background: rgba(16,185,129,0.1); border-radius: 16px; text-align: center;">' +
+                '<div> Precio por galon: C$0.00 |  Distancia: 0 km</div>' +
+                '<div style="font-size: 18px; font-weight: bold; color: #10b981;">TOTAL: C$0.00</div>' +
+            '</div>' +
+            '<button style="width: 100%; margin-top: 15px; padding: 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 30px; cursor: pointer;"> Enviar Pedido</button>' +
+        '</div>';
+        
+        var preview = document.getElementById('vistaPrevia');
+        if (preview) preview.innerHTML = html;
+    }
+    
+    function renderizarElementos() {
+        var container = document.getElementById('editEditorElementos');
+        if (!container) return;
+        
+        if (elementosEditorGlobal.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-info-circle"></i><p>No hay elementos. Use el boton "+" para agregar.</p></div>';
+            actualizarPreview();
+            return;
+        }
+        
+        var html = '';
+        for (var idx = 0; idx < elementosEditorGlobal.length; idx++) {
+            var el = elementosEditorGlobal[idx];
+            html += '<div class="elemento-card" data-idx="' + idx + '">' +
+                '<div class="elemento-header">' +
+                    '<strong>' + (el.tipo === 'select' ? ' Seleccion' : ' Campo de Texto') + '</strong>' +
+                    '<button class="btn-delete-elemento" onclick="window.eliminarElementoEditor(' + idx + ')">Eliminar</button>' +
+                '</div>' +
+                '<div class="elemento-body">' +
+                    '<div class="input-group-small">' +
+                        '<label>Texto</label>' +
+                        '<input type="text" value="' + escapeHtml(el.texto) + '" onchange="window.actualizarTexto(' + idx + ', this.value)" class="input-moderno">' +
+                    '</div>';
+            
+            if (el.tipo === 'select') {
+                html += '<div class="opciones-container" id="opciones_' + idx + '">';
+                for (var optIdx = 0; optIdx < (el.opciones || []).length; optIdx++) {
+                    html += '<div class="opcion-row">' +
+                        '<input type="text" value="' + escapeHtml(el.opciones[optIdx]) + '" onchange="window.actualizarOpcion(' + idx + ', ' + optIdx + ', this.value)" class="input-moderno">' +
+                        '<button class="btn-delete-opcion" onclick="window.eliminarOpcion(' + idx + ', ' + optIdx + ')">X</button>' +
+                    '</div>';
+                }
+                html += '<button class="btn-add-opcion" onclick="window.agregarOpcionEditor(' + idx + ')">+ Agregar opcion</button>';
+                html += '</div>';
+            } else {
+                html += '<div class="input-group-small">' +
+                    '<label>Placeholder</label>' +
+                    '<input type="text" value="' + escapeHtml(el.placeholder || '') + '" onchange="window.actualizarPlaceholder(' + idx + ', this.value)" class="input-moderno">' +
+                '</div>';
+            }
+            
+            html += '</div></div>';
+        }
+        container.innerHTML = html;
+        actualizarPreview();
+    }
+    
+    window.eliminarElementoEditor = function(idx) {
+        elementosEditorGlobal.splice(idx, 1);
+        renderizarElementos();
+    };
+    
+    window.eliminarElementoPreview = function(idx) {
+        elementosEditorGlobal.splice(idx, 1);
+        renderizarElementos();
+    };
+    
+    window.actualizarTexto = function(idx, valor) {
+        if (elementosEditorGlobal[idx]) elementosEditorGlobal[idx].texto = valor;
+        actualizarPreview();
+    };
+    
+    window.actualizarPlaceholder = function(idx, valor) {
+        if (elementosEditorGlobal[idx]) elementosEditorGlobal[idx].placeholder = valor;
+        actualizarPreview();
+    };
+    
+    window.actualizarOpcion = function(idx, optIdx, valor) {
+        if (elementosEditorGlobal[idx] && elementosEditorGlobal[idx].opciones) {
+            elementosEditorGlobal[idx].opciones[optIdx] = valor;
+        }
+        actualizarPreview();
+    };
+    
+    window.eliminarOpcion = function(idx, optIdx) {
+        if (elementosEditorGlobal[idx] && elementosEditorGlobal[idx].opciones) {
+            elementosEditorGlobal[idx].opciones.splice(optIdx, 1);
+            renderizarElementos();
+        }
+    };
+    
+    window.agregarOpcionEditor = function(idx) {
+        if (elementosEditorGlobal[idx] && elementosEditorGlobal[idx].opciones) {
+            elementosEditorGlobal[idx].opciones.push('Nueva opcion');
+            renderizarElementos();
+        }
+    };
+    
+    function agregarElemento() {
+        var tipoSelect = document.getElementById('editNuevoElementoTipo');
+        var tipo = tipoSelect ? tipoSelect.value : 'select';
+        if (tipo === 'select') {
+            elementosEditorGlobal.push({ tipo: 'select', texto: 'Nueva seleccion', opciones: ['DIESEL MAXIMA', 'GASOLINA SUPER'] });
+        } else {
+            elementosEditorGlobal.push({ tipo: 'text', texto: 'Nuevo campo de texto', placeholder: 'Escriba aqui...' });
+        }
+        renderizarElementos();
+        mostrarToast('Elemento agregado', 'success');
+    }
+    
+    async function cargarListaPaginas() {
+        var selector = document.getElementById('selectorPaginaEditar');
+        if (!selector) return;
+        
+        selector.innerHTML = '<option value="">Cargando...</option>';
+        selector.disabled = true;
+        
+        try {
+            var response = await fetch('/api/paginas');
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var data = await response.json();
+            var paginas = data.paginas || [];
+            paginasListaVisual = paginas;
+            
+            if (paginas.length === 0) {
+                selector.innerHTML = '<option value="">-- No hay paginas --</option>';
+                mostrarToast('No hay paginas. Cree una en "Paginas Hijo"', 'warning');
+            } else {
+                var options = '<option value="">-- Seleccione pagina para editar --</option>';
+                for (var i = 0; i < paginas.length; i++) {
+                    var p = paginas[i];
+                    options += '<option value="' + p.id + '">' + escapeHtml(p.nombre) + ' (' + escapeHtml(p.url_id) + ')</option>';
+                }
+                selector.innerHTML = options;
+                mostrarToast(paginas.length + ' paginas disponibles', 'success');
+            }
+        } catch (error) {
+            console.error("Error cargando paginas:", error);
+            selector.innerHTML = '<option value="">Error al cargar</option>';
+            mostrarToast('Error: ' + error.message, 'error');
+        } finally {
+            selector.disabled = false;
+        }
+    }
+    
+    async function cargarPaginaEditar(id) {
+        mostrarToast('Cargando pagina...', 'info');
+        
+        try {
+            var response = await fetch('/api/obtener_pagina/' + id);
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var data = await response.json();
+            
+            if (data.ok && data.pagina) {
+                paginaEditandoId = id;
+                var p = data.pagina;
+                var estilos = p.estilos || {};
+                
+                var cp = document.getElementById('editColorPrimario');
+                var cs = document.getElementById('editColorSecundario');
+                var cf = document.getElementById('editColorFondo');
+                var tit = document.getElementById('editTitulo');
+                var sub = document.getElementById('editSubtitulo');
+                
+                if (cp) cp.value = estilos.color_primario || '#f59e0b';
+                if (cs) cs.value = estilos.color_secundario || '#d97706';
+                if (cf) cf.value = estilos.color_fondo || '#0f0f1a';
+                if (tit) tit.value = estilos.titulo || p.nombre || '';
+                if (sub) sub.value = estilos.subtitulo || '';
+                
+                elementosEditorGlobal = p.elementos || [];
+                renderizarElementos();
+                mostrarToast('Pagina "' + p.nombre + '" cargada', 'success');
+            } else {
+                mostrarToast(data.error || 'Error al cargar la pagina', 'error');
+            }
+        } catch (error) {
+            console.error("Error cargando pagina:", error);
+            mostrarToast('Error: ' + error.message, 'error');
+        }
+    }
+    
+    async function guardarPaginaEditada() {
+        if (!paginaEditandoId) {
+            mostrarToast('Seleccione una pagina para editar', 'warning');
+            return;
+        }
+        
+        var estilos = {
+            color_primario: document.getElementById('editColorPrimario')?.value || '#f59e0b',
+            color_secundario: document.getElementById('editColorSecundario')?.value || '#d97706',
+            color_fondo: document.getElementById('editColorFondo')?.value || '#0f0f1a',
+            titulo: document.getElementById('editTitulo')?.value || '',
+            subtitulo: document.getElementById('editSubtitulo')?.value || ''
+        };
+        
+        mostrarToast('Guardando pagina...', 'info');
+        
+        try {
+            var response = await fetch('/api/actualizar_pagina', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: paginaEditandoId,
+                    estilos: estilos,
+                    elementos: elementosEditorGlobal
+                })
+            });
+            var data = await response.json();
+            
+            if (data.ok) {
+                mostrarToast('Pagina guardada correctamente', 'success');
+            } else {
+                mostrarToast(data.error || 'Error al guardar', 'error');
+            }
+        } catch (error) {
+            console.error("Error guardando pagina:", error);
+            mostrarToast('Error: ' + error.message, 'error');
+        }
+    }
+    
+    function previsualizarPagina() {
+        if (!paginaEditandoId) {
+            mostrarToast('Seleccione una pagina primero', 'warning');
+            return;
+        }
+        var pagina = paginasListaVisual.find(function(p) { return p.id === paginaEditandoId; });
+        if (pagina) {
+            var urlBase = window.location.origin;
+            window.open(urlBase + '/p/' + pagina.url_id, '_blank');
+        } else {
+            mostrarToast('No se encontro la pagina', 'error');
+        }
+    }
+    
+    function inicializarEditor() {
+        console.log("Inicializando Editor Visual");
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        
+        setTimeout(function() {
+            var selector = document.getElementById('selectorPaginaEditar');
+            if (!selector) {
+                console.error("Selector no encontrado, reintentando...");
+                setTimeout(inicializarEditor, 500);
+                return;
+            }
+            
+            cargarListaPaginas();
+            
+            selector.onchange = function() {
+                if (this.value && this.value !== "") {
+                    cargarPaginaEditar(this.value);
+                } else {
+                    paginaEditandoId = null;
+                    elementosEditorGlobal = [];
+                    renderizarElementos();
+                    actualizarPreview();
+                }
+            };
+            
+            var recargarBtn = document.getElementById('recargarPaginasBtn');
+            if (recargarBtn) recargarBtn.onclick = function() { cargarListaPaginas(); };
+            
+            var guardarBtn = document.getElementById('guardarPaginaBtn');
+            if (guardarBtn) guardarBtn.onclick = function() { guardarPaginaEditada(); };
+            
+            var previsualizarBtn = document.getElementById('previsualizarBtn');
+            if (previsualizarBtn) previsualizarBtn.onclick = function() { previsualizarPagina(); };
+            
+            var agregarBtn = document.getElementById('editAgregarElementoBtn');
+            if (agregarBtn) agregarBtn.onclick = function() { agregarElemento(); };
+            
+            var recargarPreviewBtn = document.getElementById('recargarPreviewBtn');
+            if (recargarPreviewBtn) recargarPreviewBtn.onclick = function() { actualizarPreview(); };
+            
+            var cp = document.getElementById('editColorPrimario');
+            var cs = document.getElementById('editColorSecundario');
+            var cf = document.getElementById('editColorFondo');
+            var titulo = document.getElementById('editTitulo');
+            var subtitulo = document.getElementById('editSubtitulo');
+            
+            if (cp) cp.onchange = function() { actualizarPreview(); };
+            if (cs) cs.onchange = function() { actualizarPreview(); };
+            if (cf) cf.onchange = function() { actualizarPreview(); };
+            if (titulo) titulo.oninput = function() { actualizarPreview(); };
+            if (subtitulo) subtitulo.oninput = function() { actualizarPreview(); };
+            
+            console.log("Editor Visual inicializado correctamente");
+        }, 100);
+    }
+    
+    window.inicializarEditorVisual = inicializarEditor;
+    window.agregarElemento = agregarElemento;
+    window.eliminarElementoEditor = eliminarElementoEditor;
+    window.eliminarElementoPreview = eliminarElementoPreview;
+    window.actualizarTexto = actualizarTexto;
+    window.actualizarPlaceholder = actualizarPlaceholder;
+    window.actualizarOpcion = actualizarOpcion;
+    window.eliminarOpcion = eliminarOpcion;
+    window.agregarOpcionEditor = agregarOpcionEditor;
+    window.cargarTemaGuardado = cargarTemaGuardado;
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarEditor);
+    } else {
+        inicializarEditor();
+    }
+    
+    console.log("Editor Visual cargado");
+})();
+</script>
+
+<style>
+/* ==================== ESTILOS COMPLETOS ==================== */
+
+.editor-modulo {
+    animation: fadeInUp 0.5s ease;
+    padding: 20px;
+}
+
+/* ========== TEMAS ========== */
+body.default-theme .editor-modulo .panel {
+    background: rgba(15, 15, 25, 0.6);
+}
+body.dark-theme .editor-modulo .panel {
+    background: rgba(10, 14, 26, 0.8);
+}
+body.light-theme .editor-modulo .panel {
+    background: rgba(255, 255, 255, 0.85);
+}
+body.light-theme .editor-modulo .panel-header h3 { color: #1a1a2e; }
+body.light-theme .editor-modulo .panel-header { background: rgba(0,0,0,0.05); border-bottom-color: rgba(0,0,0,0.1); }
+body.light-theme .editor-modulo .input-moderno {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.15);
+    color: #1a1a2e;
+}
+body.light-theme .editor-modulo .sidebar-header h4 { color: #1a1a2e; }
+body.light-theme .editor-modulo .sidebar-header { background: rgba(0,0,0,0.05); border-bottom-color: rgba(0,0,0,0.1); }
+body.light-theme .editor-modulo .color-group label { color: #4a4a6a; }
+body.light-theme .editor-modulo .input-group-custom label { color: #4a4a6a; }
+body.light-theme .editor-modulo .btn-outline { border-color: rgba(0,0,0,0.2); color: #4a4a6a; }
+body.light-theme .editor-modulo .preview-header span { color: #4a4a6a; }
+body.light-theme .editor-modulo .preview-frame { background: #f0f0f0; }
+
+body.navy-theme .editor-modulo .panel {
+    background: rgba(26, 42, 108, 0.7);
+}
+body.nature-theme .editor-modulo .panel {
+    background: rgba(19, 78, 94, 0.7);
+}
+body.image-theme .editor-modulo .panel {
+    background: rgba(0,0,0,0.5);
+}
+
+.panel {
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.panel-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    margin: 0;
+}
+
+.panel-header h3 i {
+    color: #f59e0b;
+}
+
+.panel-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.editor-container {
+    display: flex;
+    gap: 25px;
+    padding: 20px;
+    min-height: 650px;
+}
+
+/* Sidebar */
+.editor-sidebar {
+    width: 420px;
+    background: rgba(10, 10, 20, 0.7);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.sidebar-header {
+    padding: 18px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-header h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    margin: 0;
+}
+
+.sidebar-header h4 i {
+    color: #f59e0b;
+}
+
+.sidebar-body {
+    padding: 20px;
+}
+
+.color-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.color-group {
+    flex: 1;
+    min-width: 100px;
+}
+
+.color-group label {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 6px;
+}
+
+.color-picker {
+    width: 100%;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    background: transparent;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 12px;
+}
+
+.input-group-custom {
+    margin-bottom: 20px;
+}
+
+.input-group-custom label {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 6px;
+}
+
+.input-group-custom label i {
+    color: #f59e0b;
+    margin-right: 6px;
+}
+
+.input-moderno {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: white;
+    width: 100%;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.input-moderno:focus {
+    outline: none;
+    border-color: #f59e0b;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.input-moderno::placeholder {
+    color: #666;
+}
+
+.separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 20px 0;
+}
+
+.elementos-container {
+    max-height: 350px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    min-height: 150px;
+}
+
+.elemento-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.elemento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.elemento-header strong {
+    color: #f59e0b;
+    font-size: 0.75rem;
+}
+
+.btn-delete-elemento {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: #ef4444;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-delete-elemento:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.elemento-body .input-group-small {
+    margin-bottom: 12px;
+}
+
+.elemento-body .input-group-small label {
+    display: block;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 4px;
+}
+
+.opciones-container {
+    margin-top: 10px;
+    padding-left: 10px;
+    border-left: 2px solid #f59e0b;
+}
+
+.opcion-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.opcion-row .input-moderno {
+    flex: 1;
+}
+
+.btn-delete-opcion {
+    background: rgba(239, 68, 68, 0.2);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 0.7rem;
+}
+
+.btn-delete-opcion:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-add-opcion {
+    background: rgba(16, 185, 129, 0.2);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: #10b981;
+    cursor: pointer;
+    font-size: 0.7rem;
+    margin-top: 5px;
+}
+
+.btn-add-opcion:hover {
+    background: rgba(16, 185, 129, 0.4);
+}
+
+.add-elemento-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.add-elemento-row select {
+    flex: 2;
+}
+
+.info-note {
+    margin-top: 20px;
+    padding: 12px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+    font-size: 0.7rem;
+    color: #60a5fa;
+    border-left: 3px solid #3b82f6;
+}
+
+.info-note i {
+    margin-right: 6px;
+}
+
+/* Preview */
+.editor-preview {
+    flex: 1;
+    background: rgba(10, 10, 20, 0.7);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.preview-header {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-header span {
+    font-size: 0.75rem;
+    color: #aaa;
+}
+
+.preview-frame {
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
+    background: #0f0f1a;
+    min-height: 500px;
+}
+
+body.light-theme .preview-frame {
+    background: #f0f0f0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+    color: #f59e0b;
+}
+
+.empty-state p {
+    font-size: 0.8rem;
+}
+
+/* Botones generales */
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #aaa;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 10px;
+}
+
+body.light-theme ::-webkit-scrollbar-track {
+    background: #e0e0e0;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(20px); }
+    15% { opacity: 1; transform: translateX(0); }
+    85% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(20px); }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .editor-container {
+        flex-direction: column;
+    }
+    
+    .editor-sidebar {
+        width: 100%;
+    }
+    
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .panel-controls {
+        width: 100%;
+    }
+    
+    .color-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .add-elemento-row {
+        flex-direction: column;
+    }
+}
+</style>

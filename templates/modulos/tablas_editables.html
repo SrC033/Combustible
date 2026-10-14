@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Bitácora de Datos | Visor Central GSN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* ========== ESTILOS BASE ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            color: #f0f3fa;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        /* ========== TEMAS ========== */
+        body.default-theme {
+            background: radial-gradient(circle at 20% 30%, #0b0f1c, #06080f);
+        }
+        body.dark-theme {
+            background: #0a0e1a;
+            color: #ffffff;
+        }
+        body.light-theme {
+            background: #f5f7fa;
+            color: #1a1a2e;
+        }
+        body.light-theme .bitacora-header h1 {
+            background: linear-gradient(135deg, #1a1a2e, #d97706);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        body.light-theme .bitacora-header p { color: #4a4a6a; }
+        body.light-theme .stat-badge {
+            background: rgba(0,0,0,0.05);
+            color: #4a4a6a;
+        }
+        body.light-theme .stat-badge i { color: #d97706; }
+        body.light-theme .control-bar {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.05);
+        }
+        body.light-theme .tab-btn {
+            color: #4a4a6a;
+            border-color: rgba(0,0,0,0.15);
+        }
+        body.light-theme .tab-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        body.light-theme .tab-btn:hover:not(.active) {
+            background: rgba(245,158,11,0.1);
+            border-color: rgba(245,158,11,0.3);
+            color: #d97706;
+        }
+        body.light-theme .btn-outline {
+            border-color: rgba(0,0,0,0.2);
+            color: #4a4a6a;
+        }
+        body.light-theme .btn-outline:hover {
+            background: rgba(0,0,0,0.05);
+            border-color: #d97706;
+            color: #d97706;
+        }
+        body.light-theme .table-panel {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.07);
+        }
+        body.light-theme .table-panel-header {
+            background: rgba(0,0,0,0.05);
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        body.light-theme .panel-title h3 { color: #1a1a2e; }
+        body.light-theme .panel-title p { color: #4a4a6a; }
+        body.light-theme .table-stats { color: #d97706; background: rgba(0,0,0,0.05); }
+        body.light-theme .data-table th {
+            color: #1a1a2e;
+            background: rgba(0,0,0,0.08);
+        }
+        body.light-theme .data-table td {
+            color: #1a1a2e;
+            border-bottom-color: rgba(0,0,0,0.05);
+        }
+        body.light-theme .data-table tr:hover td { background: rgba(245,158,11,0.08); }
+        body.light-theme .modal-clean-content {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+        body.light-theme .modal-clean-content h3 { color: #1a1a2e; }
+        body.light-theme .modal-clean-content label { color: #4a4a6a; }
+        body.light-theme .modal-clean-content input[type="date"] {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.15);
+            color: #1a1a2e;
+        }
+        body.light-theme .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        body.navy-theme {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb4d);
+            color: #ffffff;
+        }
+        body.nature-theme {
+            background: linear-gradient(135deg, #134e5e, #71b280);
+            color: #ffffff;
+        }
+        body.image-theme {
+            background: url('https://images.unsplash.com/photo-1508514177221-188f0d9d8c5f?q=80&w=2070&auto=format') center/cover no-repeat fixed;
+            position: relative;
+        }
+        body.image-theme::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: -1;
+        }
+
+        /* ========== ESTILOS DEL MÓDULO ========== */
+        .bitacora-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .bitacora-header {
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .bitacora-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24, #f97316);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bitacora-header p {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: rgba(245, 158, 11, 0.15);
+            backdrop-filter: blur(5px);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-badge i { color: #f59e0b; }
+
+        .control-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: rgba(15, 25, 35, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: transparent;
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #aaa;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+        .table-panel {
+            background: rgba(15, 25, 35, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .table-panel-header {
+            padding: 16px 24px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(0, 0, 0, 0.3));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .panel-icon i { font-size: 18px; color: #f59e0b; }
+
+        .panel-title h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .panel-title p {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 2px 0 0;
+        }
+
+        .table-stats {
+            font-size: 0.65rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: #fbbf24;
+        }
+
+        .table-container {
+            padding: 20px 24px;
+            overflow-x: auto;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+
+        .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+        .table-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 10px; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            min-width: 800px;
+        }
+
+        .data-table th {
+            padding: 12px 12px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #f59e0b;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+        }
+
+        .data-table tr:hover td { background: rgba(245, 158, 11, 0.08); }
+
+        .badge-estado {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: 500;
+        }
+
+        .badge-espera { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .badge-comprobante { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .badge-camino { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .badge-entregado { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-facturacion { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+        .loading-state, .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(245, 158, 11, 0.2);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .footer-note {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.6rem;
+            color: #555;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 20px;
+        }
+
+        /* MODAL LIMPIEZA */
+        .modal-clean {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-clean-content {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .modal-clean-content h3 {
+            color: #f59e0b;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal-clean-content h3 i { color: #ef4444; }
+
+        .modal-clean-content label {
+            display: block;
+            color: #aaa;
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+        }
+
+        .modal-clean-content input[type="date"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-clean-content .fecha-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-clean-content .fecha-row .campo {
+            flex: 1;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f172adb;
+            backdrop-filter: blur(12px);
+            padding: 10px 20px;
+            border-radius: 40px;
+            z-index: 10000;
+            font-weight: 500;
+            border-left: 3px solid #f59e0b;
+            font-size: 0.75rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .badge-camino-tab {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+
+        .badge-entregado-tab {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+
+        .fecha-hora-detalle {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            font-family: monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        body.light-theme .fecha-hora-detalle {
+            background: rgba(0,0,0,0.05);
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .table-container { padding: 15px; }
+            .tab-btn { padding: 6px 14px; font-size: 0.65rem; }
+            .data-table { font-size: 0.6rem; min-width: 700px; }
+            .data-table th, .data-table td { padding: 8px 8px; }
+            .modal-clean-content { padding: 20px; }
+            .fecha-row { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="bitacora-container">
+    
+    <div class="bitacora-header">
+        <div>
+            <h1><i class="fas fa-database"></i> Bitácora de Datos</h1>
+            <p><i class="fas fa-info-circle"></i> Visor central de información sincronizada desde todos los módulos del sistema</p>
+            <p id="fechaHoraSistema" style="font-size:0.7rem; color:#f59e0b; margin-top:4px;">
+                <i class="fas fa-clock"></i> <span id="fechaHoraActual"></span>
+            </p>
+        </div>
+        <div class="header-stats">
+            <div class="stat-badge"><i class="fas fa-sync-alt"></i> <span id="lastUpdate">Actualizando...</span></div>
+            <div class="stat-badge"><i class="fas fa-chart-line"></i> Datos en tiempo real</div>
+            <div class="stat-badge" id="totalRegistrosBadge"><i class="fas fa-cubes"></i> <span id="totalRegistrosCount">0</span> registros</div>
+        </div>
+    </div>
+
+    <div class="control-bar">
+        <div class="tab-selector">
+            <button class="tab-btn active" data-tab="empresas"><i class="fas fa-building"></i> Empresas</button>
+            <button class="tab-btn" data-tab="pedidos"><i class="fas fa-truck"></i> Pedidos</button>
+            <button class="tab-btn" data-tab="camino"><i class="fas fa-road"></i> En Camino</button>
+            <button class="tab-btn" data-tab="entregados"><i class="fas fa-check-circle"></i> Entregados</button>
+            <button class="tab-btn" data-tab="costos"><i class="fas fa-calculator"></i> Costos</button>
+            <button class="tab-btn" data-tab="conductores"><i class="fas fa-users"></i> Conductores</button>
+            <button class="tab-btn" data-tab="camiones"><i class="fas fa-truck-moving"></i> Camiones</button>
+            <button class="tab-btn" data-tab="facturas"><i class="fas fa-file-invoice"></i> Facturas</button>
+            <button class="tab-btn" data-tab="reportes"><i class="fas fa-chart-pie"></i> Reportes</button>
+        </div>
+        <div class="action-buttons">
+            <button id="refreshAllBtn" class="btn-primary"><i class="fas fa-sync-alt"></i> Actualizar</button>
+            <button id="exportExcelBtn" class="btn-outline"><i class="fas fa-file-excel"></i> Excel</button>
+            <button id="exportPdfBtn" class="btn-outline"><i class="fas fa-file-pdf"></i> PDF</button>
+        </div>
+    </div>
+
+    <!-- Paneles de tablas -->
+    <div id="panelEmpresas" class="table-panel" style="display: block;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-building"></i></div>
+                <div><h3>Registro de Empresas</h3><p>Clientes activos, créditos y datos de contacto</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="empresasCount">0</span> registros</div>
+        </div>
+        <div id="empresasContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando empresas...</p></div></div>
+    </div>
+
+    <div id="panelPedidos" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-truck"></i></div>
+                <div><h3>Historial de Pedidos</h3><p>Seguimiento completo desde Operaciones</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="pedidosCount">0</span> registros</div>
+        </div>
+        <div id="pedidosContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando pedidos...</p></div></div>
+    </div>
+
+    <!-- NUEVO PANEL: PEDIDOS EN CAMINO -->
+    <div id="panelCamino" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-road"></i></div>
+                <div><h3>Pedidos En Camino</h3><p>Pedidos que están en ruta hacia el destino</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="caminoCount">0</span> registros</div>
+        </div>
+        <div id="caminoContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando pedidos en camino...</p></div></div>
+    </div>
+
+    <!-- NUEVO PANEL: PEDIDOS ENTREGADOS -->
+    <div id="panelEntregados" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-check-circle"></i></div>
+                <div><h3>Pedidos Entregados</h3><p>Pedidos que ya han sido entregados</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="entregadosCount">0</span> registros</div>
+        </div>
+        <div id="entregadosContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando pedidos entregados...</p></div></div>
+    </div>
+
+    <div id="panelCostos" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-calculator"></i></div>
+                <div><h3>Configuración de Costos</h3><p>Precios por galón, distancias y costos de traslado</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="costosCount">0</span> registros</div>
+        </div>
+        <div id="costosContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando costos...</p></div></div>
+    </div>
+
+    <div id="panelConductores" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-users"></i></div>
+                <div><h3>Flota de Conductores</h3><p>Licencias, teléfonos y estado actual</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="conductoresCount">0</span> registros</div>
+        </div>
+        <div id="conductoresContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando conductores...</p></div></div>
+    </div>
+
+    <div id="panelCamiones" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-truck-moving"></i></div>
+                <div><h3>Flota de Camiones</h3><p>Placas, capacidades y asignaciones</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="camionesCount">0</span> registros</div>
+        </div>
+        <div id="camionesContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando camiones...</p></div></div>
+    </div>
+
+    <div id="panelFacturas" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-file-invoice"></i></div>
+                <div><h3>Facturas Emitidas</h3><p>Comprobantes generados desde Facturación</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="facturasCount">0</span> registros</div>
+        </div>
+        <div id="facturasContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando facturas...</p></div></div>
+    </div>
+
+    <div id="panelReportes" class="table-panel" style="display: none;">
+        <div class="table-panel-header">
+            <div class="panel-title">
+                <div class="panel-icon"><i class="fas fa-chart-pie"></i></div>
+                <div><h3>Datos de Reportes</h3><p>Estadísticas y métricas del módulo Reportes</p></div>
+            </div>
+            <div class="table-stats"><i class="fas fa-chart-simple"></i> <span id="reportesCount">0</span> registros</div>
+        </div>
+        <div id="reportesContainer" class="table-container"><div class="loading-state"><div class="spinner"></div><p>Cargando datos de reportes...</p></div></div>
+    </div>
+
+    <div class="footer-note">
+        <i class="fas fa-info-circle"></i> Esta información es de solo lectura y se sincroniza automáticamente desde los módulos del sistema. 
+        Los cambios deben realizarse en sus respectivos módulos.
+        <br><span id="footerTimestamp" style="font-size:0.5rem; opacity:0.5;"></span>
+    </div>
+</div>
+
+<!-- MODAL DE LIMPIEZA -->
+<div id="modalClean" class="modal-clean">
+    <div class="modal-clean-content">
+        <h3><i class="fas fa-trash-alt"></i> Limpiar Registros por Fecha</h3>
+        <p style="color:#94a3b8; font-size:0.8rem; margin-bottom:15px;">
+            Seleccione un rango de fechas para eliminar registros de la bitácora. 
+            <strong style="color:#ef4444;">Esta acción no se puede deshacer.</strong>
+        </p>
+        <div class="fecha-row">
+            <div class="campo">
+                <label><i class="fas fa-calendar-day"></i> Desde</label>
+                <input type="date" id="fechaDesde">
+            </div>
+            <div class="campo">
+                <label><i class="fas fa-calendar-day"></i> Hasta</label>
+                <input type="date" id="fechaHasta">
+            </div>
+        </div>
+        <div style="margin-top: 10px;">
+            <label><i class="fas fa-layer-group"></i> Módulo a limpiar</label>
+            <select id="moduloLimpiar" style="width:100%; padding:10px 14px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:white; font-size:0.85rem;">
+                <option value="todos">Todos los módulos</option>
+                <option value="pedidos">Pedidos</option>
+                <option value="pedidos_camino">Pedidos En Camino</option>
+                <option value="pedidos_entregados">Pedidos Entregados</option>
+                <option value="facturas">Facturas</option>
+                <option value="empresas">Empresas</option>
+                <option value="costos">Costos</option>
+                <option value="conductores">Conductores</option>
+                <option value="camiones">Camiones</option>
+                <option value="reportes">Reportes</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-outline" onclick="cerrarModalClean()">Cancelar</button>
+            <button class="btn-danger" onclick="confirmarLimpiar()"><i class="fas fa-trash-alt"></i> Limpiar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== BITÁCORA - VISOR DE DATOS ====================
+(function() {
+    console.log("📋 Bitácora de Datos - Inicializando");
+
+    // ==================== RELOJ EN TIEMPO REAL ====================
+    function actualizarReloj() {
+        var ahora = new Date();
+        var fechaStr = ahora.toLocaleDateString('es-NI', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        });
+        var el = document.getElementById('fechaHoraActual');
+        if (el) el.textContent = fechaStr;
+        
+        var footer = document.getElementById('footerTimestamp');
+        if (footer) footer.textContent = 'Última actualización: ' + fechaStr;
+    }
+    
+    actualizarReloj();
+    setInterval(actualizarReloj, 1000);
+
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+            body.style.backgroundImage = 'url(' + imagenUrl + ')';
+        } else {
+            body.style.backgroundImage = '';
+            body.classList.add(tema + '-theme');
+        }
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else if (temaGuardado !== 'image') {
+                aplicarTema(temaGuardado);
+            }
+        }
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+                var tema = event.data.tema;
+                var imagen = event.data.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else if (tema !== 'image') {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+        });
+    }
+
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    var empresasData = [];
+    var pedidosData = [];
+    var pedidosCaminoData = [];
+    var pedidosEntregadosData = [];
+    var costosData = [];
+    var conductoresData = [];
+    var camionesData = [];
+    var facturasData = [];
+    var reportesData = [];
+    var currentTab = 'empresas';
+    var isLoading = false;
+
+    function formatearMoneda(valor) {
+        if (valor === undefined || valor === null) return 'C$0.00';
+        var num = typeof valor === 'number' ? valor : parseFloat(String(valor).replace(/[C$,\s]/g, ''));
+        if (isNaN(num)) return 'C$0.00';
+        return 'C$' + num.toFixed(2);
+    }
+
+    function formatearNumero(valor) {
+        if (valor === undefined || valor === null) return '0';
+        return parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function formatearFechaHora(fechaStr) {
+        if (!fechaStr) return '-';
+        try {
+            var fecha = new Date(fechaStr);
+            if (isNaN(fecha.getTime())) return fechaStr;
+            return fecha.toLocaleDateString('es-NI', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+            });
+        } catch(e) {
+            return fechaStr;
+        }
+    }
+
+    function mostrarToast(mensaje, tipo) {
+        tipo = tipo || 'success';
+        var old = document.querySelector('.toast-message');
+        if (old) old.remove();
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icon = tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + mensaje;
+        toast.style.borderLeft = tipo === 'error' ? '3px solid #ef4444' : '3px solid #f59e0b';
+        toast.style.background = tipo === 'error' ? '#1a0f0fdb' : '#0f172adb';
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 4000);
+    }
+
+    function actualizarTimestamp() {
+        var span = document.getElementById('lastUpdate');
+        if (span) span.innerHTML = new Date().toLocaleTimeString('es-NI', { hour12: false });
+    }
+
+    function actualizarTotalRegistros() {
+        var total = empresasData.length + pedidosData.length + pedidosCaminoData.length + 
+                    pedidosEntregadosData.length + costosData.length + conductoresData.length + 
+                    camionesData.length + facturasData.length + reportesData.length;
+        var el = document.getElementById('totalRegistrosCount');
+        if (el) el.textContent = total;
+    }
+
+    // ==================== CARGA DE DATOS DESDE LA BITÁCORA ====================
+    
+    async function cargarDatosBitacora() {
+        try {
+            var response = await fetch('/api/obtener_bitacora?_=' + Date.now());
+            var data = await response.json();
+            if (data.ok && data.datos) {
+                empresasData = data.datos.empresas || [];
+                pedidosData = data.datos.pedidos || [];
+                pedidosCaminoData = data.datos.pedidos_camino || [];
+                pedidosEntregadosData = data.datos.pedidos_entregados || [];
+                costosData = data.datos.costos || [];
+                conductoresData = data.datos.conductores || [];
+                camionesData = data.datos.camiones || [];
+                facturasData = data.datos.facturas || [];
+                reportesData = data.datos.reportes || [];
+                
+                console.log('📊 Datos cargados: Empresas: ' + empresasData.length + ', Pedidos: ' + pedidosData.length + 
+                           ', En Camino: ' + pedidosCaminoData.length + ', Entregados: ' + pedidosEntregadosData.length +
+                           ', Facturas: ' + facturasData.length + ', Reportes: ' + reportesData.length);
+                
+                actualizarTotalRegistros();
+                return true;
+            }
+            return false;
+        } catch(e) {
+            console.error('Error cargando bitácora:', e);
+            return false;
+        }
+    }
+
+    async function sincronizarBitacora() {
+        try {
+            mostrarToast('🔄 Sincronizando datos desde módulos...', 'info');
+            var response = await fetch('/api/sincronizar_bitacora', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            var data = await response.json();
+            if (data.ok) {
+                console.log('✅ Bitácora sincronizada');
+                if (data.timestamp) {
+                    console.log('🕐 Sincronizada a las:', data.timestamp);
+                }
+                return true;
+            }
+            return false;
+        } catch(e) {
+            console.error('Error sincronizando bitácora:', e);
+            return false;
+        }
+    }
+
+    async function cargarTodosLosDatos() {
+        if (isLoading) return;
+        isLoading = true;
+        
+        mostrarToast('🔄 Cargando datos...', 'info');
+        
+        try {
+            await sincronizarBitacora();
+            await cargarDatosBitacora();
+            actualizarTimestamp();
+            renderizarTablaActual();
+            mostrarToast('✅ Datos actualizados - ' + new Date().toLocaleTimeString('es-NI', { hour12: false }), 'success');
+        } catch(e) {
+            console.error('Error cargando datos:', e);
+            mostrarToast('❌ Error al cargar datos', 'error');
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    // ==================== RENDERIZADO ====================
+    function getEstadoBadge(estado) {
+        var estados = {
+            'espera': '<span class="badge-estado badge-espera"><i class="fas fa-clock"></i> Espera</span>',
+            'comprobante': '<span class="badge-estado badge-comprobante"><i class="fas fa-file-invoice"></i> Comprobante</span>',
+            'camino': '<span class="badge-estado badge-camino"><i class="fas fa-truck"></i> En Camino</span>',
+            'entregado': '<span class="badge-estado badge-entregado"><i class="fas fa-check-circle"></i> Entregado</span>',
+            'facturacion': '<span class="badge-estado badge-facturacion"><i class="fas fa-file-invoice"></i> Facturación</span>',
+            'pendiente': '<span class="badge-estado badge-espera"><i class="fas fa-clock"></i> Pendiente</span>'
+        };
+        return estados[estado] || '<span class="badge-estado badge-espera">-</span>';
+    }
+
+    function renderizarEmpresas() {
+        var container = document.getElementById('empresasContainer');
+        var countSpan = document.getElementById('empresasCount');
+        if (!container) return;
+        
+        if (empresasData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-building"></i><p>No hay empresas registradas en la bitácora</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = empresasData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>ID</th><th>Nombre</th><th>Contacto</th><th>Teléfono</th><th>Email</th><th>Crédito</th><th>Límite</th><th>Estado</th><th>Fecha/Hora</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < empresasData.length; i++) {
+            var emp = empresasData[i];
+            var fechaHora = emp.fecha_actualizacion || emp.fecha_registro || emp.fecha_creacion || '';
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(emp.id || emp.ID || '-') + '</code></td>' +
+                '<td><strong>' + escapeHtml(emp.nombre || emp.Nombre || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(emp.contacto || emp.Contacto || '-') + '</td>' +
+                '<td>' + escapeHtml(emp.telefono || emp.Telefono || '-') + '</td>' +
+                '<td>' + escapeHtml(emp.email || emp.Email || '-') + '</td>' +
+                '<td>' + formatearMoneda(emp.credito || emp.Credito) + '</td>' +
+                '<td>' + formatearMoneda(emp.limite_credito || emp.LimiteCredito) + '</td>' +
+                '<td>' + (emp.activo !== false ? '<span style="color:#10b981;">✓ Activo</span>' : '<span style="color:#ef4444;">✗ Inactivo</span>') + '</td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(fechaHora) + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderizarPedidos() {
+        var container = document.getElementById('pedidosContainer');
+        var countSpan = document.getElementById('pedidosCount');
+        if (!container) return;
+        
+        if (pedidosData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-truck"></i><p>No hay pedidos registrados en la bitácora</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = pedidosData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>ID</th><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Combustible</th><th>Galones</th><th>Origen</th><th>Destino</th><th>Total</th><th>Estado</th><th>Conductor</th><th>Placa</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(pedidosData.length, 200); i++) {
+            var ped = pedidosData[i];
+            var conductor = ped.conductor_asignado || ped.conductor || ped.Conductor || '-';
+            var placa = ped.placa || ped.camion_asignado || ped.Placa || '-';
+            var fecha = ped.fecha_str || ped.fecha_entrega || ped.fecha_emision || ped.fecha || ped.Fecha || '';
+            var hora = '';
+            if (fecha && fecha.indexOf('T') !== -1) {
+                var partes = fecha.split('T');
+                fecha = partes[0];
+                hora = partes[1] ? partes[1].substring(0, 8) : '';
+            }
+            
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(ped.id || ped.ID || '-') + '</code></td>' +
+                '<td>' + escapeHtml(fecha || '-') + '</td>' +
+                '<td>' + escapeHtml(hora || '-') + '</td>' +
+                '<td><strong>' + escapeHtml(ped.nombre || ped.empresa_nombre || ped.Cliente || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(ped.tipo_combustible || ped.Combustible || '-') + '</td>' +
+                '<td>' + formatearNumero(ped.galones || ped.Galones || 0) + '</td>' +
+                '<td>' + escapeHtml(ped.origen || ped.Origen || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.destino || ped.Destino || '-') + '</td>' +
+                '<td style="color:#f59e0b; font-weight:600;">' + formatearMoneda(ped.importe || ped.costo_total || ped.Total) + '</td>' +
+                '<td>' + getEstadoBadge(ped.estado_operacion || ped.Estado) + '</td>' +
+                '<td>' + escapeHtml(conductor) + '</td>' +
+                '<td>' + escapeHtml(placa) + '</td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // RENDERIZAR PEDIDOS EN CAMINO
+    function renderizarCamino() {
+        var container = document.getElementById('caminoContainer');
+        var countSpan = document.getElementById('caminoCount');
+        if (!container) return;
+        
+        if (pedidosCaminoData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-road"></i><p>No hay pedidos en camino</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = pedidosCaminoData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>Factura</th><th>Cliente</th><th>Fecha</th><th>Hora</th><th>Galones</th><th>Total</th><th>Conductor 1</th><th>Conductor 2</th><th>Camión 1</th><th>Camión 2</th><th>Origen</th><th>Destino</th><th>Estado</th><th>Últ. Actualización</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < pedidosCaminoData.length; i++) {
+            var ped = pedidosCaminoData[i];
+            var fecha = ped.fecha_str || ped.fecha || '';
+            var hora = '';
+            if (fecha && fecha.indexOf('T') !== -1) {
+                var partes = fecha.split('T');
+                fecha = partes[0];
+                hora = partes[1] ? partes[1].substring(0, 8) : '';
+            }
+            
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(ped.factura_id || ped.id || '-') + '</code></td>' +
+                '<td><strong>' + escapeHtml(ped.nombre || ped.Cliente || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(fecha || '-') + '</td>' +
+                '<td>' + escapeHtml(hora || '-') + '</td>' +
+                '<td>' + formatearNumero(ped.galones || 0) + '</td>' +
+                '<td style="color:#f59e0b; font-weight:600;">' + formatearMoneda(ped.total || 0) + '</td>' +
+                '<td>' + escapeHtml(ped.conductor_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.conductor2_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.camion_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.camion2_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.origen || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.destino || '-') + '</td>' +
+                '<td><span class="badge-camino-tab"><i class="fas fa-truck"></i> En Camino</span></td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(ped.fecha_actualizacion || ped.fecha_hora || '') + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // RENDERIZAR PEDIDOS ENTREGADOS
+    function renderizarEntregados() {
+        var container = document.getElementById('entregadosContainer');
+        var countSpan = document.getElementById('entregadosCount');
+        if (!container) return;
+        
+        if (pedidosEntregadosData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay pedidos entregados</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = pedidosEntregadosData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>Factura</th><th>Cliente</th><th>Fecha</th><th>Hora</th><th>Fecha Entrega</th><th>Galones</th><th>Total</th><th>Conductor 1</th><th>Conductor 2</th><th>Camión 1</th><th>Camión 2</th><th>Estado</th><th>Últ. Actualización</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < pedidosEntregadosData.length; i++) {
+            var ped = pedidosEntregadosData[i];
+            var fecha = ped.fecha_str || ped.fecha || '';
+            var hora = '';
+            if (fecha && fecha.indexOf('T') !== -1) {
+                var partes = fecha.split('T');
+                fecha = partes[0];
+                hora = partes[1] ? partes[1].substring(0, 8) : '';
+            }
+            var fechaEntrega = ped.fecha_entrega || '';
+            if (fechaEntrega && fechaEntrega.indexOf('T') !== -1) {
+                fechaEntrega = fechaEntrega.split('T')[0];
+            }
+            
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(ped.factura_id || ped.id || '-') + '</code></td>' +
+                '<td><strong>' + escapeHtml(ped.nombre || ped.Cliente || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(fecha || '-') + '</td>' +
+                '<td>' + escapeHtml(hora || '-') + '</td>' +
+                '<td>' + escapeHtml(fechaEntrega || '-') + '</td>' +
+                '<td>' + formatearNumero(ped.galones || 0) + '</td>' +
+                '<td style="color:#10b981; font-weight:600;">' + formatearMoneda(ped.total || 0) + '</td>' +
+                '<td>' + escapeHtml(ped.conductor_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.conductor2_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.camion_asignado || '-') + '</td>' +
+                '<td>' + escapeHtml(ped.camion2_asignado || '-') + '</td>' +
+                '<td><span class="badge-entregado-tab"><i class="fas fa-check-circle"></i> Entregado</span></td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(ped.fecha_actualizacion || ped.fecha_hora || '') + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderizarCostos() {
+        var container = document.getElementById('costosContainer');
+        var countSpan = document.getElementById('costosCount');
+        if (!container) return;
+        
+        if (costosData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-calculator"></i><p>No hay configuración de costos en la bitácora</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = costosData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>Empresa ID</th><th>Precio por Galón</th><th>Distancia (km)</th><th>Costo por km</th><th>Costo Traslado</th><th>Fecha/Hora</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < costosData.length; i++) {
+            var cost = costosData[i];
+            var distancia = cost.distancia_km || cost.Distancia || 0;
+            var costoKm = cost.costo_km || cost.CostoKm || 0;
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(cost.empresa_id || cost.EmpresaId || '-') + '</code></td>' +
+                '<td>' + formatearMoneda(cost.precio_galon || cost.precio_diesel || cost.PrecioGalon || 0) + '</td>' +
+                '<td>' + formatearNumero(distancia) + ' km</td>' +
+                '<td>' + formatearMoneda(costoKm) + '</td>' +
+                '<td>' + formatearMoneda(distancia * costoKm) + '</td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(cost.fecha_actualizacion || cost.fecha_creacion || '') + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderizarConductores() {
+        var container = document.getElementById('conductoresContainer');
+        var countSpan = document.getElementById('conductoresCount');
+        if (!container) return;
+        
+        if (conductoresData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>No hay conductores registrados en la bitácora</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = conductoresData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>ID</th><th>Nombre</th><th>Cédula</th><th>Licencia</th><th>Teléfono</th><th>Dirección</th><th>Estado</th><th>Fecha/Hora</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < conductoresData.length; i++) {
+            var cond = conductoresData[i];
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(cond.id || cond.ID || '-') + '</code></td>' +
+                '<td><strong>' + escapeHtml(cond.nombre || cond.Nombre || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(cond.cedula || cond.Cedula || '-') + '</td>' +
+                '<td>' + escapeHtml(cond.licencia || cond.Licencia || '-') + '</td>' +
+                '<td>' + escapeHtml(cond.telefono || cond.Telefono || '-') + '</td>' +
+                '<td>' + escapeHtml(cond.direccion || cond.Direccion || '-') + '</td>' +
+                '<td>' + (cond.activo !== false ? '<span style="color:#10b981;">✓ Activo</span>' : '<span style="color:#ef4444;">✗ Inactivo</span>') + '</td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(cond.fecha_actualizacion || cond.fecha_creacion || '') + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderizarCamiones() {
+        var container = document.getElementById('camionesContainer');
+        var countSpan = document.getElementById('camionesCount');
+        if (!container) return;
+        
+        if (camionesData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-truck-moving"></i><p>No hay camiones registrados en la bitácora</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = camionesData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>ID</th><th>Placa</th><th>Marca</th><th>Modelo</th><th>Capacidad (gal)</th><th>Conductor Asignado</th><th>Estado</th><th>Fecha/Hora</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < camionesData.length; i++) {
+            var cam = camionesData[i];
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(cam.id || cam.ID || '-') + '</code></td>' +
+                '<td><strong>' + escapeHtml(cam.placa || cam.Placa || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(cam.marca || cam.Marca || '-') + '</td>' +
+                '<td>' + escapeHtml(cam.modelo || cam.Modelo || '-') + '</td>' +
+                '<td>' + formatearNumero(cam.capacidad_galones || cam.CapacidadGalones || 0) + ' gal</td>' +
+                '<td>' + escapeHtml(cam.conductor_asignado || cam.ConductorAsignado || '-') + '</td>' +
+                '<td>' + (cam.activo !== false ? '<span style="color:#10b981;">✓ Activo</span>' : '<span style="color:#ef4444;">✗ Inactivo</span>') + '</td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(cam.fecha_actualizacion || cam.fecha_creacion || '') + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderizarFacturas() {
+        var container = document.getElementById('facturasContainer');
+        var countSpan = document.getElementById('facturasCount');
+        if (!container) return;
+        
+        if (facturasData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-file-invoice"></i><p>No hay facturas registradas en la bitácora</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = facturasData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>ID</th><th>Cliente</th><th>Fecha</th><th>Hora</th><th>Total</th><th>Estado</th><th>Conductor</th><th>Placa</th><th>Últ. Actualización</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(facturasData.length, 200); i++) {
+            var fac = facturasData[i];
+            var estado = fac.estado_factura || fac.estado_operacion || fac.Estado || 'pendiente';
+            var fecha = fac.fecha_emision_str || fac.fecha_emision || fac.fecha || fac.Fecha || '';
+            var hora = '';
+            if (fecha && fecha.indexOf('T') !== -1) {
+                var partes = fecha.split('T');
+                fecha = partes[0];
+                hora = partes[1] ? partes[1].substring(0, 8) : '';
+            }
+            
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(fac.id || fac.ID || '-') + '</code></td>' +
+                '<td><strong>' + escapeHtml(fac.empresa_nombre || fac.nombre || fac.Cliente || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(fecha || '-') + '</td>' +
+                '<td>' + escapeHtml(hora || '-') + '</td>' +
+                '<td style="color:#f59e0b; font-weight:600;">' + formatearMoneda(fac.total || fac.costo_total || fac.Total || 0) + '</td>' +
+                '<td>' + getEstadoBadge(estado) + '</td>' +
+                '<td>' + escapeHtml(fac.conductor_asignado || fac.Conductor || '-') + '</td>' +
+                '<td>' + escapeHtml(fac.camion_asignado || fac.Placa || '-') + '</td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(fac.fecha_actualizacion || fac.fecha_emision || '') + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderizarReportes() {
+        var container = document.getElementById('reportesContainer');
+        var countSpan = document.getElementById('reportesCount');
+        if (!container) return;
+        
+        if (reportesData.length === 0) {
+            // Intentar obtener datos de reportes desde la API
+            fetch('/api/reportes/cargar_datos?_=' + Date.now())
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.ok && data.data && data.data.datos_tabla) {
+                        reportesData = data.data.datos_tabla || [];
+                        renderizarReportes();
+                    }
+                })
+                .catch(function() {});
+            
+            container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Cargando datos de reportes...</p></div>';
+            if (countSpan) countSpan.innerText = '0';
+            return;
+        }
+        
+        if (countSpan) countSpan.innerText = reportesData.length;
+        
+        var html = '<table class="data-table"><thead><tr>' +
+            '<th>Factura</th><th>Empresa</th><th>Fecha</th><th>Hora</th><th>Galones</th><th>Subtotal</th><th>TOTAL</th><th>Conductor</th><th>Placa</th><th>Fecha/Hora</th>' +
+        '</tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(reportesData.length, 200); i++) {
+            var rep = reportesData[i];
+            var total = rep.TOTAL || rep.total || 0;
+            var galones = rep.Galones || rep.galones || 0;
+            var subtotal = rep.Subtotal || rep.subtotal || 0;
+            var conductor = rep['Conductor 1'] || rep.conductor || rep.Conductor || '-';
+            var placa = rep['Camión 1'] || rep.placa || rep.Placa || '-';
+            var fecha = rep.Fecha || rep.fecha || '';
+            var hora = '';
+            if (fecha && fecha.indexOf('T') !== -1) {
+                var partes = fecha.split('T');
+                fecha = partes[0];
+                hora = partes[1] ? partes[1].substring(0, 8) : '';
+            }
+            
+            html += '<tr>' +
+                '<td><code>' + escapeHtml(rep.Factura || rep.factura || '-') + '</code></td>' +
+                '<td><strong>' + escapeHtml(rep.Empresa || rep.empresa || '-') + '</strong></td>' +
+                '<td>' + escapeHtml(fecha || '-') + '</td>' +
+                '<td>' + escapeHtml(hora || '-') + '</td>' +
+                '<td>' + formatearNumero(galones) + '</td>' +
+                '<td style="color:#fbbf24;">' + formatearMoneda(subtotal) + '</td>' +
+                '<td style="color:#10b981; font-weight:700;">' + formatearMoneda(total) + '</td>' +
+                '<td>' + escapeHtml(conductor) + '</td>' +
+                '<td>' + escapeHtml(placa) + '</td>' +
+                '<td><span class="fecha-hora-detalle">' + formatearFechaHora(rep.fecha_actualizacion || rep.Fecha || '') + '</span></td>' +
+            '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderizarTablaActual() {
+        switch(currentTab) {
+            case 'empresas': renderizarEmpresas(); break;
+            case 'pedidos': renderizarPedidos(); break;
+            case 'camino': renderizarCamino(); break;
+            case 'entregados': renderizarEntregados(); break;
+            case 'costos': renderizarCostos(); break;
+            case 'conductores': renderizarConductores(); break;
+            case 'camiones': renderizarCamiones(); break;
+            case 'facturas': renderizarFacturas(); break;
+            case 'reportes': renderizarReportes(); break;
+        }
+        actualizarTotalRegistros();
+    }
+
+    // ==================== EXPORTAR ====================
+    function guardarComoExcel() {
+        mostrarToast('📊 Generando archivo Excel completo con todos los módulos...', 'info');
+        try {
+            var url = '/api/tablas_editables/exportar_excel?_=' + Date.now();
+            window.open(url, '_blank');
+            mostrarToast('✅ Excel completo generado correctamente', 'success');
+        } catch(e) {
+            console.error('Error:', e);
+            mostrarToast('Error al generar el archivo Excel', 'error');
+        }
+    }
+
+    function guardarComoPDF() {
+        mostrarToast('📄 Generando archivo PDF completo con todos los módulos...', 'info');
+        try {
+            var url = '/api/tablas_editables/exportar_pdf?_=' + Date.now();
+            window.open(url, '_blank');
+            mostrarToast('✅ PDF completo generado correctamente', 'success');
+        } catch(e) {
+            console.error('Error:', e);
+            mostrarToast('Error al generar el archivo PDF', 'error');
+        }
+    }
+
+    // ==================== LIMPIEZA POR FECHAS ====================
+    function abrirModalClean() {
+        document.getElementById('modalClean').style.display = 'flex';
+        var hoy = new Date();
+        var hace30Dias = new Date();
+        hace30Dias.setDate(hoy.getDate() - 30);
+        
+        document.getElementById('fechaDesde').value = hace30Dias.toISOString().split('T')[0];
+        document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
+    }
+
+    function cerrarModalClean() {
+        document.getElementById('modalClean').style.display = 'none';
+    }
+
+    async function confirmarLimpiar() {
+        var fechaDesde = document.getElementById('fechaDesde').value;
+        var fechaHasta = document.getElementById('fechaHasta').value;
+        var modulo = document.getElementById('moduloLimpiar').value;
+
+        if (!fechaDesde || !fechaHasta) {
+            mostrarToast('⚠️ Seleccione ambas fechas', 'error');
+            return;
+        }
+
+        if (fechaDesde > fechaHasta) {
+            mostrarToast('⚠️ La fecha "Desde" no puede ser mayor que "Hasta"', 'error');
+            return;
+        }
+
+        var confirmar = confirm(
+            '⚠️ ¿Está seguro de eliminar los registros del módulo "' + modulo + '" entre ' + fechaDesde + ' y ' + fechaHasta + '?\n\n' +
+            'Esta acción NO se puede deshacer.'
+        );
+
+        if (!confirmar) return;
+
+        cerrarModalClean();
+        mostrarToast('🔄 Eliminando registros de la bitácora...', 'info');
+
+        try {
+            var response = await fetch('/api/limpiar_por_fechas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    modulo: modulo,
+                    fecha_desde: fechaDesde,
+                    fecha_hasta: fechaHasta
+                })
+            });
+
+            var data = await response.json();
+
+            if (data.ok) {
+                mostrarToast('✅ Eliminados ' + (data.eliminados || 0) + ' registros de la bitácora', 'success');
+                await cargarDatosBitacora();
+                renderizarTablaActual();
+                actualizarTimestamp();
+            } else {
+                mostrarToast('❌ Error: ' + (data.error || 'Desconocido'), 'error');
+            }
+        } catch(e) {
+            console.error('Error:', e);
+            mostrarToast('❌ Error de conexión', 'error');
+        }
+    }
+
+    // ==================== CAMBIO DE TAB ====================
+    function cambiarTab(tabId) {
+        currentTab = tabId;
+        
+        var panels = ['empresas', 'pedidos', 'camino', 'entregados', 'costos', 'conductores', 'camiones', 'facturas', 'reportes'];
+        for (var i = 0; i < panels.length; i++) {
+            var p = panels[i];
+            var panelName = 'panel' + p.charAt(0).toUpperCase() + p.slice(1);
+            var panel = document.getElementById(panelName);
+            if (panel) panel.style.display = 'none';
+        }
+        
+        var panelName = 'panel' + tabId.charAt(0).toUpperCase() + tabId.slice(1);
+        var selectedPanel = document.getElementById(panelName);
+        if (selectedPanel) selectedPanel.style.display = 'block';
+        
+        var btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(function(btn) {
+            if (btn.getAttribute('data-tab') === tabId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        renderizarTablaActual();
+    }
+
+    // ==================== INICIALIZACIÓN ====================
+    function init() {
+        console.log("🚀 Inicializando Bitácora de Datos");
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var tabId = btn.getAttribute('data-tab');
+                if (tabId) cambiarTab(tabId);
+            });
+        });
+        
+        document.getElementById('refreshAllBtn')?.addEventListener('click', cargarTodosLosDatos);
+        document.getElementById('exportExcelBtn')?.addEventListener('click', guardarComoExcel);
+        document.getElementById('exportPdfBtn')?.addEventListener('click', guardarComoPDF);
+        
+        var cleanBtn = document.getElementById('cleanDataBtn');
+        if (cleanBtn) {
+            cleanBtn.parentNode.removeChild(cleanBtn);
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') cerrarModalClean();
+        });
+        
+        document.getElementById('modalClean')?.addEventListener('click', function(e) {
+            if (e.target === e.currentTarget) cerrarModalClean();
+        });
+        
+        cargarTodosLosDatos();
+        setInterval(cargarTodosLosDatos, 60000);
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    window.cerrarModalClean = cerrarModalClean;
+    window.confirmarLimpiar = confirmarLimpiar;
+    window.abrirModalClean = abrirModalClean;
+    window.cargarTemaGuardado = cargarTemaGuardado;
+
+})();
+</script>
+</body>
+</html>

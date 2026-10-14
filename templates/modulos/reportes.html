@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Reportes GSN | Dashboard Central - Pedidos Entregados</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* ========== ESTILOS BASE ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            color: #f0f3fa;
+            min-height: 100vh;
+            min-height: 100dvh;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent !important;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: -1;
+        }
+
+        /* ========== TEMAS ========== */
+        body.default-theme {
+            background: transparent !important;
+        }
+        body.dark-theme {
+            background: transparent !important;
+            color: #ffffff;
+        }
+        body.light-theme {
+            background: transparent !important;
+            color: #1a1a2e;
+        }
+        body.light-theme .reportes-header {
+            background: rgba(255,255,255,0.85);
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        body.light-theme .reportes-header h1 {
+            background: linear-gradient(135deg, #1a1a2e, #d97706);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        body.light-theme .periodo-chip { color: #4a4a6a; }
+        body.light-theme .periodo-chip.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        body.light-theme .stat-card {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.05);
+        }
+        body.light-theme .stat-card .stat-value { color: #1a1a2e; }
+        body.light-theme .stat-card .stat-label { color: #4a4a6a; }
+        body.light-theme .stat-card:hover { background: rgba(245,158,11,0.1); }
+        body.light-theme .chart-card {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.07);
+        }
+        body.light-theme .chart-card .chart-header { color: #1a1a2e; }
+        body.light-theme .chart-header { border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-theme .table-wrapper {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.07);
+        }
+        body.light-theme .table-header h3 { color: #1a1a2e; }
+        body.light-theme .table-header { border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-theme .editable-table th {
+            color: #1a1a2e;
+            background: rgba(0,0,0,0.08);
+        }
+        body.light-theme .editable-table td {
+            color: #1a1a2e;
+            border-bottom-color: rgba(0,0,0,0.05);
+        }
+        body.light-theme .editable-table tr:hover { background: rgba(245,158,11,0.08); }
+        body.light-theme .search-box {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.1);
+        }
+        body.light-theme .search-box input { color: #1a1a2e; }
+        body.light-theme .btn-table-icon {
+            background: rgba(0,0,0,0.05);
+            color: #4a4a6a;
+        }
+        body.light-theme .btn-table-icon:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        body.light-theme .modal-detail-content {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+        body.light-theme .modal-detail-header h3 { color: #1a1a2e; }
+        body.light-theme .modal-detail-header { border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-theme .detail-table th {
+            color: #1a1a2e;
+            background: rgba(0,0,0,0.08);
+        }
+        body.light-theme .detail-table td {
+            color: #1a1a2e;
+            border-bottom-color: rgba(0,0,0,0.05);
+        }
+        body.light-theme .detail-stat-card { background: rgba(0,0,0,0.04); }
+        body.light-theme .detail-stat-label { color: #4a4a6a; }
+        body.light-theme .modal-pdf-content {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+        body.light-theme .modal-pdf-header h3 { color: #1a1a2e; }
+        body.light-theme .modal-pdf-header { border-bottom-color: rgba(0,0,0,0.1); }
+
+        body.navy-theme {
+            background: transparent !important;
+            color: #ffffff;
+        }
+        body.nature-theme {
+            background: transparent !important;
+            color: #ffffff;
+        }
+        body.image-theme {
+            background: transparent !important;
+            position: relative;
+        }
+        body.image-theme::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: -1;
+        }
+
+        /* ========== ESTILOS DEL MÓDULO ========== */
+        .reportes-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            animation: fadeInUp 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            height: calc(100dvh - 40px);
+            gap: 12px;
+            overflow: hidden;
+        }
+        
+        .reportes-header {
+            background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 20px;
+            border-bottom: 1px solid rgba(245,158,11,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .reportes-header h1 {
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .periodo-selector {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,27,0.6);
+            padding: 4px 6px;
+            border-radius: 60px;
+            flex-wrap: wrap;
+        }
+        .periodo-chip {
+            padding: 5px 14px;
+            border-radius: 40px;
+            background: transparent;
+            border: none;
+            color: #a0a0c0;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .periodo-chip.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        .periodo-chip:hover:not(.active) {
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(26,26,46,0.8), rgba(15,15,26,0.9));
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 12px 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .stat-card:hover { transform: translateY(-2px); background: rgba(245,158,11,0.1); }
+        .stat-card i { font-size: 20px; color: #f59e0b; margin-bottom: 6px; display: block; }
+        .stat-card .stat-value { font-size: 18px; font-weight: 800; color: white; }
+        .stat-card .stat-label { font-size: 10px; color: #a0a0c0; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .charts-scroll-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-shrink: 0;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+        }
+        .charts-scroll-container::-webkit-scrollbar { height: 6px; }
+        .charts-scroll-container::-webkit-scrollbar-track { background: rgba(245,158,11,0.08); border-radius: 10px; }
+        .charts-scroll-container::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 10px; }
+        
+        .charts-grid {
+            display: flex;
+            gap: 12px;
+            min-width: min-content;
+        }
+        .chart-card {
+            flex: 0 0 320px;
+            background: rgba(15,25,35,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.07);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .chart-card:hover { transform: translateY(-2px); background: rgba(245,158,11,0.05); }
+        .chart-header {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(0,0,0,0.2));
+            border-bottom: 1px solid rgba(245,158,11,0.15);
+            font-size: 11px;
+            font-weight: 600;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-container {
+            padding: 10px;
+            height: 180px;
+            position: relative;
+        }
+        
+        .charts-nav {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+        .charts-nav-btn {
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #f59e0b;
+            font-size: 11px;
+        }
+        .charts-nav-btn:hover { background: rgba(245,158,11,0.3); }
+        
+        .table-wrapper {
+            background: rgba(15,25,35,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.07);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex: 1.5;
+            min-height: 0;
+        }
+        .table-header {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(0,0,0,0.2));
+            border-bottom: 1px solid rgba(245,158,11,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .table-header h3 {
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+        }
+        .legend {
+            font-size: 10px;
+            color: #a78bfa;
+            background: rgba(139,92,246,0.1);
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.4);
+            border-radius: 40px;
+            padding: 4px 10px;
+            gap: 5px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 4px 0;
+            width: 140px;
+            outline: none;
+            font-size: 11px;
+        }
+        .search-box i { color: #f59e0b; font-size: 11px; }
+        
+        .table-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #f59e0b rgba(245,158,11,0.2);
+        }
+        .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+        .table-container::-webkit-scrollbar-track { background: rgba(245,158,11,0.08); border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb:hover { background: #d97706; }
+        
+        .editable-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 1400px;
+        }
+        .editable-table th {
+            background: #0f0f1c;
+            padding: 10px 6px;
+            text-align: center;
+            color: #f59e0b;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+        .editable-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #e0e0e0;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        .editable-table td:first-child {
+            white-space: normal;
+            min-width: 100px;
+        }
+        .editable-table tr:hover { background: rgba(245,158,11,0.08); }
+        
+        .editable-table td.readonly-cell {
+            cursor: default;
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .editable-table td[contenteditable="true"] {
+            cursor: text;
+            transition: background 0.2s;
+            text-align: center;
+            font-size: 14px;
+        }
+        .editable-table td[contenteditable="true"]:hover {
+            background: rgba(16,185,129,0.15);
+        }
+        .editable-table td[contenteditable="true"]:focus {
+            background: rgba(16,185,129,0.25);
+            outline: 1px solid #10b981;
+        }
+        
+        .editable-table td.total-cell {
+            background: rgba(16,185,129,0.1);
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .editable-table td.total-cell.has-formula {
+            background: rgba(139,92,246,0.15);
+            border-left: 3px solid #a78bfa;
+        }
+        
+        .editable-table td.formula-cell {
+            background: rgba(139,92,246,0.15);
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .editable-table td.subtotal-cell {
+            background: rgba(245,158,11,0.1);
+            font-weight: 600;
+            color: #fbbf24;
+            font-size: 14px;
+        }
+        
+        .col-letter {
+            font-size: 10px;
+            color: #a78bfa;
+            display: block;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+        
+        .badge-entregado {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(16,185,129,0.2);
+            color: #34d399;
+            white-space: nowrap;
+        }
+        
+        .btn-ver-pdf {
+            background: none;
+            border: none;
+            color: #f59e0b;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 3px 6px;
+            border-radius: 6px;
+            margin-left: 6px;
+        }
+        .btn-ver-pdf:hover {
+            background: rgba(245,158,11,0.2);
+            transform: scale(1.05);
+        }
+        
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f172ae6;
+            backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: 40px;
+            z-index: 10001;
+            border-left: 3px solid #f59e0b;
+            font-size: 13px;
+            max-width: 400px;
+        }
+        
+        .modal-detail {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-detail-content {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 85%;
+            overflow: hidden;
+            border: 1px solid rgba(245,158,11,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-detail-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-detail-header h3 { color: white; display: flex; align-items: center; gap: 8px; font-size: 16px; }
+        .modal-detail-header h3 i { color: #f59e0b; }
+        .modal-detail-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-detail-body { padding: 18px; flex: 1; overflow: auto; max-height: 70vh; }
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .detail-table th {
+            background: #0f0f1c;
+            padding: 8px 6px;
+            text-align: left;
+            color: #f59e0b;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            font-size: 12px;
+        }
+        .detail-table td {
+            padding: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+        .detail-table tr:hover { background: rgba(245,158,11,0.08); }
+        .detail-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .detail-stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+        }
+        .detail-stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #f59e0b;
+        }
+        .detail-stat-label {
+            font-size: 10px;
+            color: #a0a0c0;
+        }
+        
+        .modal-pdf {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            z-index: 20001;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-pdf-content {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85%;
+            overflow: hidden;
+            border: 1px solid rgba(245,158,11,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-pdf-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-pdf-header h3 { color: white; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .modal-pdf-header h3 i { color: #f59e0b; }
+        .close-modal { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 24px; cursor: pointer; }
+        .pdf-viewer { width: 100%; height: 55vh; border: none; border-radius: 12px; background: white; }
+        .modal-pdf-body { padding: 0 18px 18px 18px; flex: 1; display: flex; flex-direction: column; }
+        .modal-pdf-body .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+        
+        .table-action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .btn-table-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 40px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            color: #fbbf24;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-table-icon:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .btn-excel-table { background: rgba(16,185,129,0.15); color: #10b981; }
+        .btn-excel-table:hover { background: #10b981; color: white; }
+        .btn-pdf-table { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .btn-pdf-table:hover { background: #ef4444; color: white; }
+        .btn-add-col-table { background: rgba(6,182,212,0.15); color: #06b6d4; }
+        .btn-add-col-table:hover { background: #06b6d4; color: white; }
+        .btn-refresh-table { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        .btn-refresh-table:hover { background: #8b5cf6; color: white; }
+        .btn-save-table { background: rgba(16,185,129,0.15); color: #10b981; }
+        .btn-save-table:hover { background: #10b981; color: white; }
+        .btn-editables-table { background: rgba(236,72,153,0.15); color: #ec4899; }
+        .btn-editables-table:hover { background: #ec4899; color: white; }
+        
+        .delete-col-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 11px;
+            margin-left: 4px;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .delete-col-btn:hover {
+            background: rgba(239,68,68,0.3);
+        }
+        
+        .scroll-indicator {
+            padding: 4px 10px;
+            font-size: 10px;
+            color: #a78bfa;
+            background: rgba(139,92,246,0.1);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .saving-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #10b981;
+            padding: 3px 10px;
+            background: rgba(16,185,129,0.1);
+            border-radius: 20px;
+        }
+        .saving-indicator.active {
+            display: inline-flex;
+        }
+        .saving-indicator i {
+            animation: spin 0.8s linear infinite;
+        }
+        
+        .formula-hint {
+            font-size: 10px;
+            color: #a78bfa;
+            background: rgba(139,92,246,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            cursor: default;
+        }
+        
+        .last-update {
+            font-size: 10px;
+            color: #888;
+            margin-left: 8px;
+        }
+        
+        .reportes-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            padding: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .reportes-footer i { color: #f59e0b; margin-right: 4px; }
+        .reportes-footer strong { color: #fbbf24; }
+        
+        /* ========== MODAL TABLAS EDITABLES ========== */
+        .modal-editables {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(20px);
+            z-index: 20002;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-editables-content {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            border-radius: 24px;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 92%;
+            overflow: hidden;
+            border: 1px solid rgba(245,158,11,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-editables-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .modal-editables-header h3 { 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 16px; 
+        }
+        .modal-editables-header h3 i { color: #ec4899; }
+        .modal-editables-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-editables-close:hover { color: white; }
+        .modal-editables-body { 
+            padding: 0;
+            flex: 1; 
+            overflow: auto;
+            background: radial-gradient(circle at 20% 30%, #0b0f1c, #06080f);
+        }
+        .modal-editables-body iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 78vh;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+        }
+        
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            body { padding: 12px; }
+            .reportes-container { height: calc(100vh - 24px); height: calc(100dvh - 24px); }
+            .chart-card { flex: 0 0 280px; }
+            .modal-editables-content { width: 98%; max-height: 95%; }
+            .modal-editables-body iframe { min-height: 70vh; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 8px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .reportes-header h1 { font-size: 14px; }
+            .reportes-header { padding: 10px 14px; }
+            .periodo-chip { font-size: 10px; padding: 4px 10px; }
+            .editable-table { font-size: 12px; min-width: 1000px; }
+            .editable-table th { font-size: 11px; padding: 6px 4px; }
+            .editable-table td { font-size: 12px; padding: 5px 4px; }
+            .chart-card { flex: 0 0 240px; }
+            .chart-container { height: 150px; }
+            .search-box input { width: 100px; font-size: 10px; }
+            .reportes-container { height: calc(100vh - 16px); height: calc(100dvh - 16px); gap: 8px; }
+            .modal-editables-body iframe { min-height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+<div class="reportes-container">
+    
+    <div class="reportes-header">
+        <h1><i class="fas fa-chart-pie"></i> Reportes GSN | Pedidos Entregados</h1>
+        <div class="periodo-selector">
+            <button class="periodo-chip" data-periodo="diario">📅 Hoy</button>
+            <button class="periodo-chip" data-periodo="semanal">📆 Semana</button>
+            <button class="periodo-chip" data-periodo="mensual">📊 Mes</button>
+            <button class="periodo-chip active" data-periodo="todos">🌍 Todos</button>
+        </div>
+    </div>
+    
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card" data-stat="totalEntregados">
+            <i class="fas fa-file-invoice"></i>
+            <div class="stat-value" id="totalEntregados">0</div>
+            <div class="stat-label">Pedidos Entregados</div>
+        </div>
+        <div class="stat-card" data-stat="totalGalones">
+            <i class="fas fa-oil-can"></i>
+            <div class="stat-value" id="totalGalones">0</div>
+            <div class="stat-label">Galones</div>
+        </div>
+        <div class="stat-card" data-stat="totalCosto">
+            <i class="fas fa-dollar-sign"></i>
+            <div class="stat-value" id="totalCosto">C$0</div>
+            <div class="stat-label">Costo Combustible</div>
+        </div>
+        <div class="stat-card" data-stat="totalVenta">
+            <i class="fas fa-chart-line"></i>
+            <div class="stat-value" id="totalVenta">C$0</div>
+            <div class="stat-label">Total Ventas</div>
+        </div>
+        <div class="stat-card" data-stat="totalMargen">
+            <i class="fas fa-coins"></i>
+            <div class="stat-value" id="totalMargen">C$0</div>
+            <div class="stat-label">Margen Bruto</div>
+        </div>
+        <div class="stat-card" data-stat="promPorcentaje">
+            <i class="fas fa-percent"></i>
+            <div class="stat-value" id="promPorcentaje">0%</div>
+            <div class="stat-label">% Margen</div>
+        </div>
+    </div>
+    
+    <div class="charts-nav">
+        <button id="chartsScrollLeft" class="charts-nav-btn"><i class="fas fa-chevron-left"></i></button>
+        <button id="chartsScrollRight" class="charts-nav-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    
+    <div class="charts-scroll-container" id="chartsScrollContainer">
+        <div class="charts-grid">
+            <div class="chart-card" data-chart="evolucion">
+                <div class="chart-header"><i class="fas fa-chart-line"></i> Evolución Ventas vs Costo</div>
+                <div class="chart-container"><canvas id="chartEvolucion"></canvas></div>
+            </div>
+            <div class="chart-card" data-chart="clientes">
+                <div class="chart-header"><i class="fas fa-chart-bar"></i> Top Clientes (Galones)</div>
+                <div class="chart-container"><canvas id="chartClientes"></canvas></div>
+            </div>
+            <div class="chart-card" data-chart="margen">
+                <div class="chart-header"><i class="fas fa-chart-pie"></i> Margen por Cliente</div>
+                <div class="chart-container"><canvas id="chartMargen"></canvas></div>
+            </div>
+            <div class="chart-card" data-chart="margenMensual">
+                <div class="chart-header"><i class="fas fa-chart-line"></i> % Margen Mensual</div>
+                <div class="chart-container"><canvas id="chartMargenMensual"></canvas></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-wrapper">
+        <div class="table-header">
+            <h3><i class="fas fa-table-list"></i> HISTORIAL DE FACTURAS ENTREGADAS</h3>
+            <div class="table-action-buttons">
+                <span class="saving-indicator" id="savingIndicator"><i class="fas fa-spinner"></i> Guardando...</span>
+                <span class="formula-hint"><i class="fas fa-calculator"></i> =D+E</span>
+                <button id="saveDataBtn" class="btn-table-icon btn-save-table" title="Guardar datos manualmente"><i class="fas fa-save"></i></button>
+                <button id="exportExcelTableBtn" class="btn-table-icon btn-excel-table" title="Exportar Excel"><i class="fas fa-file-excel"></i></button>
+                <button id="exportPdfTableBtn" class="btn-table-icon btn-pdf-table" title="Exportar PDF"><i class="fas fa-file-pdf"></i></button>
+                <button id="addCustomColTableBtn" class="btn-table-icon btn-add-col-table" title="Agregar Columna Personalizada"><i class="fas fa-columns"></i></button>
+                <button id="openEditablesBtn" class="btn-table-icon btn-editables-table" title="Tablas Editables (Bitácora)"><i class="fas fa-table"></i></button>
+                <button id="refreshDataTableBtn" class="btn-table-icon btn-refresh-table" title="Recargar desde servidor"><i class="fas fa-sync-alt"></i></button>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar...">
+                </div>
+            </div>
+        </div>
+        <div class="table-container" id="tableContainer">
+            <div class="loader" style="text-align:center;padding:30px;">
+                <div class="spinner" style="width:36px;height:36px;border:3px solid rgba(245,158,11,0.2);border-top-color:#f59e0b;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite;"></div>
+                <p style="font-size:14px;">Cargando pedidos entregados...</p>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-arrows-alt-h"></i> Desliza hacia los lados para ver más columnas | <i class="fas fa-arrows-alt-v"></i> Desliza hacia arriba/abajo para ver más filas
+            <span class="last-update" id="lastUpdate"></span>
+        </div>
+        <div class="legend" style="padding:6px 10px; font-size:11px; text-align:center; border-top:1px solid rgba(255,255,255,0.05); flex-shrink:0;">
+            <i class="fas fa-info-circle"></i> <strong>Subtotal = Total del pedido facturado (combustible + traslado, SIN IVA)</strong> | <strong>TOTAL editable</strong> - Usa fórmulas como <strong>=D+E</strong> o <strong>=D+E*100</strong> | <strong>📐</strong> indica celda con fórmula
+        </div>
+    </div>
+    
+    <div class="reportes-footer">
+        <i class="fas fa-database"></i> Datos sincronizados con Operaciones · Muestra SOLO pedidos ENTREGADOS · <strong>Click en gráficas o estadísticas para ver detalle</strong>
+    </div>
+</div>
+
+<div id="modalDetail" class="modal-detail">
+    <div class="modal-detail-content">
+        <div class="modal-detail-header">
+            <h3 id="modalDetailTitle"><i class="fas fa-chart-line"></i> Detalle de Estadística</h3>
+            <button class="modal-detail-close" onclick="cerrarModalDetalle()">&times;</button>
+        </div>
+        <div class="modal-detail-body" id="modalDetailBody">
+            <div class="loading-spinner" style="text-align:center;padding:20px;font-size:14px;"><i class="fas fa-spinner fa-pulse"></i> Cargando...</div>
+        </div>
+    </div>
+</div>
+
+<div id="modalPdf" class="modal-pdf">
+    <div class="modal-pdf-content">
+        <div class="modal-pdf-header">
+            <h3><i class="fas fa-file-pdf"></i> Comprobante de Pago</h3>
+            <button class="close-modal" onclick="cerrarModalPdf()">&times;</button>
+        </div>
+        <div class="modal-pdf-body">
+            <iframe id="pdfViewer" class="pdf-viewer" src=""></iframe>
+            <div class="btn-group">
+                <button class="btn-icon" onclick="descargarPdfActual()" style="background:#10b981; color:white; width:auto; padding:8px 20px; border:none; border-radius:8px; cursor:pointer; font-size:14px;"><i class="fas fa-download"></i> Descargar PDF</button>
+                <button class="btn-icon" onclick="cerrarModalPdf()" style="background:#ef4444; color:white; width:auto; padding:8px 20px; border:none; border-radius:8px; cursor:pointer; font-size:14px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Tablas Editables (Bitácora) -->
+<div id="modalEditables" class="modal-editables">
+    <div class="modal-editables-content">
+        <div class="modal-editables-header">
+            <h3><i class="fas fa-table"></i> Bitácora de Datos - Visor Central GSN</h3>
+            <button class="modal-editables-close" onclick="cerrarModalEditables()">&times;</button>
+        </div>
+        <div class="modal-editables-body" id="modalEditablesBody">
+            <div style="text-align:center;padding:40px;">
+                <div class="spinner" style="width:36px;height:36px;border:3px solid rgba(236,72,153,0.2);border-top-color:#ec4899;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite;"></div>
+                <p style="font-size:14px; color:#888;">Cargando bitácora de datos...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+            body.style.backgroundImage = 'url(' + imagenUrl + ')';
+        } else {
+            body.style.backgroundImage = '';
+            body.classList.add(tema + '-theme');
+        }
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else if (temaGuardado !== 'image') {
+                aplicarTema(temaGuardado);
+            }
+        }
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+                var tema = event.data.tema;
+                var imagen = event.data.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else if (tema !== 'image') {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+        });
+    }
+
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    var pedidosEntregados = [];
+    var tableData = [];
+    var customColumns = [];
+    var totalsEditados = {};
+    var currentPeriodo = "todos";
+    var charts = {};
+    var pdfActualId = null;
+    var chartDataCache = {};
+    var isSaving = false;
+    var isRecargando = false;
+    
+    var FIXED_COLUMNS = [
+        { name: "Factura", letter: "A", editable: false, key: "factura_id" },
+        { name: "Empresa", letter: "B", editable: false, key: "nombre" },
+        { name: "Fecha", letter: "C", editable: false, key: "fecha_entrega" },
+        { name: "Galones", letter: "D", editable: false, key: "galones" },
+        { name: "Precio/Galón", letter: "E", editable: false, key: "precio_por_galon" },
+        { name: "Conductor 1", letter: "F", editable: false, key: "conductor_asignado" },
+        { name: "Conductor 2", letter: "G", editable: false, key: "conductor2_asignado" },
+        { name: "Camión 1", letter: "H", editable: false, key: "camion_asignado" },
+        { name: "Camión 2", letter: "I", editable: false, key: "camion2_asignado" },
+        { name: "Bono 1", letter: "J", editable: false, key: "bono1" },
+        { name: "Bono 2", letter: "K", editable: false, key: "bono2" },
+        { name: "Viático 1", letter: "L", editable: false, key: "viatico1" },
+        { name: "Viático 2", letter: "M", editable: false, key: "viatico2" },
+        { name: "Subtotal", letter: "N", editable: false, key: "costo_total", isSubtotal: true },
+        { name: "TOTAL", letter: "O", editable: true, key: "total_calculado", isTotal: true }
+    ];
+    
+    function getAllColumns() {
+        var beforeTotal = FIXED_COLUMNS.filter(function(col) { return col.name !== "TOTAL"; });
+        return beforeTotal.concat(customColumns).concat([FIXED_COLUMNS.find(function(col) { return col.name === "TOTAL"; })]);
+    }
+    
+    function updateColumnLetters() {
+        var allCols = getAllColumns();
+        allCols.forEach(function(col, idx) {
+            col.letter = String.fromCharCode(65 + idx);
+        });
+    }
+    
+    function getColumnMap() {
+        var allCols = getAllColumns();
+        var map = {};
+        allCols.forEach(function(col) {
+            map[col.letter] = col.name;
+        });
+        return map;
+    }
+    
+    function formatearMoneda(valor) { 
+        if (valor === undefined || valor === null || isNaN(valor)) return 'C$0.00';
+        return 'C$' + parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+    }
+    
+    function formatearNumero(valor) {
+        if (valor === undefined || valor === null || isNaN(valor)) return '0';
+        return parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+    
+    function formatearFecha(fechaStr) {
+        if (!fechaStr) return '';
+        try {
+            var fecha = new Date(fechaStr);
+            return fecha.toLocaleDateString('es-NI', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch(e) {
+            return fechaStr;
+        }
+    }
+    
+    function escapeHtml(str) { 
+        if (!str) return ''; 
+        return String(str).replace(/[&<>]/g, function(m) { return m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'; }); 
+    }
+    
+    function mostrarToast(msg, tipo) {
+        tipo = tipo || 'success';
+        var old = document.querySelector('.toast-message');
+        if (old) old.remove();
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icon = tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
+        toast.style.background = tipo === 'success' ? '#10b981' : tipo === 'error' ? '#ef4444' : '#f59e0b';
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3500);
+    }
+    
+    function showSaving(show) {
+        var indicator = document.getElementById('savingIndicator');
+        if (indicator) {
+            if (show) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+    }
+    
+    function updateLastUpdate() {
+        var el = document.getElementById('lastUpdate');
+        if (el) {
+            var now = new Date();
+            el.textContent = 'Última actualización: ' + now.toLocaleTimeString();
+        }
+    }
+    
+    window.cerrarModalDetalle = function() {
+        document.getElementById('modalDetail').style.display = 'none';
+    };
+    
+    function mostrarDetalleEstadistica(statId, titulo, datos) {
+        var modal = document.getElementById('modalDetail');
+        var modalTitle = document.getElementById('modalDetailTitle');
+        var modalBody = document.getElementById('modalDetailBody');
+        
+        modalTitle.innerHTML = '<i class="fas fa-chart-line"></i> ' + titulo;
+        
+        var html = '';
+        
+        if (datos.lista && datos.lista.length > 0) {
+            html += 
+                '<div class="detail-stats">' +
+                    '<div class="detail-stat-card">' +
+                        '<div class="detail-stat-value">' + (datos.total || datos.lista.length) + '</div>' +
+                        '<div class="detail-stat-label">Total Registros</div>' +
+                    '</div>' +
+                    '<div class="detail-stat-card">' +
+                        '<div class="detail-stat-value">' + (datos.sumatoria ? formatearMoneda(datos.sumatoria) : '-') + '</div>' +
+                        '<div class="detail-stat-label">Sumatoria</div>' +
+                    '</div>' +
+                '</div>' +
+                '<table class="detail-table">' +
+                    '<thead>' +
+                        '<tr><th>ID</th><th>Empresa</th><th>Fecha</th><th>Galones</th><th>Valor</th></tr>' +
+                    '</thead>' +
+                    '<tbody>';
+            
+            for (var i = 0; i < Math.min(datos.lista.length, 50); i++) {
+                var item = datos.lista[i];
+                html += '<tr>' +
+                    '<td>' + escapeHtml(item.id || item.factura_id || '-') + '</td>' +
+                    '<td>' + escapeHtml(item.empresa || item.nombre || '-') + '</td>' +
+                    '<td>' + (item.fecha || '-') + '</td>' +
+                    '<td>' + formatearNumero(item.galones || 0) + '</td>' +
+                    '<td>' + formatearMoneda(item.valor || 0) + '</td>' +
+                '</tr>';
+            }
+            
+            if (datos.lista.length > 50) {
+                html += '<tr><td colspan="5" style="text-align:center; color:#888; font-size:13px;">Mostrando 50 de ' + datos.lista.length + ' registros</td></tr>';
+            }
+            
+            html += '</tbody></table>';
+        } else {
+            html = '<div class="empty-state" style="text-align:center;padding:40px;font-size:14px;"><i class="fas fa-inbox" style="font-size:2rem;color:#666;"></i><p style="margin-top:10px;color:#888;">No hay datos disponibles para mostrar</p></div>';
+        }
+        
+        modalBody.innerHTML = html;
+        modal.style.display = 'flex';
+    }
+    
+    function evaluarFormulaExcel(formula, row) {
+        if (!formula || typeof formula !== 'string') return null;
+        if (!formula.startsWith('=')) return null;
+        
+        try {
+            var expr = formula.substring(1).trim();
+            var columnMap = getColumnMap();
+            var refs = expr.match(/[A-Za-z]+/g) || [];
+            
+            for (var r = 0; r < refs.length; r++) {
+                var ref = refs[r];
+                var colLetter = ref.toUpperCase();
+                var colName = columnMap[colLetter];
+                if (!colName) continue;
+                
+                var val = row[colName];
+                if (val === undefined || val === null || val === '') val = 0;
+                var numVal = parseFloat(String(val).replace(/[C$,\s]/g, '')) || 0;
+                expr = expr.replace(new RegExp('\\b' + ref + '\\b', 'g'), String(numVal));
+            }
+            
+            var result = Function('"use strict"; return (' + expr + ')')();
+            if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+                return Math.round(result * 100) / 100;
+            }
+            return null;
+        } catch(e) {
+            console.warn('Error evaluando fórmula:', e, 'Fórmula:', formula);
+            return null;
+        }
+    }
+    
+    async function guardarDatosCompletosEnServidor() {
+        if (isSaving) return;
+        isSaving = true;
+        showSaving(true);
+        
+        try {
+            var datosAGuardar = {
+                columnas_personalizadas: customColumns.map(function(c) { return c.name; }),
+                datos_tabla: tableData,
+                totals_editados: totalsEditados
+            };
+            
+            var response = await fetch('/api/reportes/guardar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosAGuardar)
+            });
+            
+            var result = await response.json();
+            if (result.ok) {
+                console.log('✅ Datos guardados en servidor');
+                updateLastUpdate();
+            } else {
+                console.error('❌ Error guardando datos:', result.error);
+                mostrarToast('Error guardando datos: ' + (result.error || 'Error desconocido'), 'error');
+            }
+            return result;
+        } catch (error) {
+            console.error('Error guardando datos:', error);
+            mostrarToast('Error de conexión al guardar datos', 'error');
+            return { ok: false, error: error.message };
+        } finally {
+            isSaving = false;
+            showSaving(false);
+        }
+    }
+    
+    async function guardarTotalesEditados() {
+        if (isSaving) return;
+        isSaving = true;
+        showSaving(true);
+        
+        try {
+            var response = await fetch('/api/reportes/guardar_totales', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ totals: totalsEditados })
+            });
+            
+            var result = await response.json();
+            if (result.ok) {
+                console.log('✅ Totales guardados en servidor');
+            } else {
+                console.error('❌ Error guardando totales:', result.error);
+            }
+            return result;
+        } catch (error) {
+            console.error('Error guardando totales:', error);
+            return { ok: false, error: error.message };
+        } finally {
+            isSaving = false;
+            showSaving(false);
+        }
+    }
+    
+    async function guardarCeldaEnServidor(pedidoId, columna, valor) {
+        try {
+            var response = await fetch('/api/reportes/guardar_celda', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    factura_id: pedidoId,
+                    columna: columna,
+                    valor: valor
+                })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error guardando celda:', error);
+            return { ok: false, error: error.message };
+        }
+    }
+    
+    async function guardarColumnasEnServidor() {
+        if (isSaving) return;
+        isSaving = true;
+        showSaving(true);
+        
+        try {
+            var response = await fetch('/api/reportes/guardar_columnas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ columnas: customColumns.map(function(c) { return c.name; }) })
+            });
+            
+            var result = await response.json();
+            if (result.ok) {
+                console.log('✅ Columnas guardadas en servidor');
+            } else {
+                console.error('❌ Error guardando columnas:', result.error);
+            }
+            return result;
+        } catch (error) {
+            console.error('Error guardando columnas:', error);
+            return { ok: false, error: error.message };
+        } finally {
+            isSaving = false;
+            showSaving(false);
+        }
+    }
+    
+    async function cargarDatosDesdeServidor() {
+        try {
+            var response = await fetch('/api/reportes/cargar_datos?_=' + Date.now());
+            var data = await response.json();
+            
+            if (data.ok && data.data) {
+                if (data.data.columnas_personalizadas && data.data.columnas_personalizadas.length > 0) {
+                    customColumns = data.data.columnas_personalizadas.map(function(col) { return { name: col, editable: true, isCustom: true }; });
+                    console.log('📋 Columnas personalizadas cargadas:', customColumns.length);
+                }
+                
+                if (data.data.totals_editados) {
+                    totalsEditados = data.data.totals_editados;
+                    console.log('💰 Totales editados cargados:', Object.keys(totalsEditados).length);
+                }
+                
+                if (data.data.datos_tabla && data.data.datos_tabla.length > 0) {
+                    var datosGuardados = data.data.datos_tabla;
+                    for (var i = 0; i < datosGuardados.length; i++) {
+                        var filaGuardada = datosGuardados[i];
+                        var pedidoId = filaGuardada['Factura'] || filaGuardada['ID Pedido'];
+                        var filaExistente = tableData.find(function(row) { return (row['Factura'] === pedidoId) || (row['ID Pedido'] === pedidoId); });
+                        if (filaExistente) {
+                            for (var key in filaGuardada) {
+                                if (filaGuardada.hasOwnProperty(key)) {
+                                    if (key !== 'Factura' && key !== 'ID Pedido') {
+                                        if (key === 'TOTAL') {
+                                            filaExistente[key] = filaGuardada[key];
+                                        } else if (customColumns.some(function(c) { return c.name === key; })) {
+                                            filaExistente[key] = filaGuardada[key];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log('📊 Datos de tabla cargados:', datosGuardados.length);
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            console.error('Error cargando datos desde servidor:', error);
+            return false;
+        }
+    }
+    
+    async function actualizarCelda(rowIndex, colName, value, pedidoId, element) {
+        var isTotalColumn = colName === 'TOTAL';
+        var isCustomColumn = customColumns.some(function(col) { return col.name === colName; });
+        
+        if (!isTotalColumn && !isCustomColumn) {
+            mostrarToast('Esta columna no es editable', 'error');
+            renderizarTabla();
+            return;
+        }
+        
+        if (tableData[rowIndex] && tableData[rowIndex][colName] !== undefined) {
+            var valorFinal = value;
+            var formulaGuardada = null;
+            
+            if (isTotalColumn) {
+                var trimmedValue = String(value).trim();
+                
+                if (trimmedValue.startsWith('=')) {
+                    var resultado = evaluarFormulaExcel(trimmedValue, tableData[rowIndex]);
+                    
+                    if (resultado !== null) {
+                        valorFinal = resultado;
+                        formulaGuardada = trimmedValue;
+                        
+                        if (!totalsEditados[pedidoId]) {
+                            totalsEditados[pedidoId] = {};
+                        }
+                        totalsEditados[pedidoId]['TOTAL'] = resultado;
+                        if (formulaGuardada) {
+                            totalsEditados[pedidoId]['TOTAL_formula'] = formulaGuardada;
+                        }
+                        tableData[rowIndex][colName] = resultado;
+                        
+                        await guardarTotalesEditados();
+                        await guardarDatosCompletosEnServidor();
+                        mostrarToast('✅ Fórmula: ' + formulaGuardada + ' = ' + formatearMoneda(resultado), 'success');
+                    } else {
+                        mostrarToast('❌ Error en la fórmula: ' + trimmedValue, 'error');
+                        renderizarTabla();
+                        return;
+                    }
+                } else {
+                    var numValue = parseFloat(String(value).replace(/[C$,\s]/g, ''));
+                    if (!isNaN(numValue)) {
+                        if (!totalsEditados[pedidoId]) {
+                            totalsEditados[pedidoId] = {};
+                        }
+                        totalsEditados[pedidoId]['TOTAL'] = numValue;
+                        delete totalsEditados[pedidoId]['TOTAL_formula'];
+                        tableData[rowIndex][colName] = numValue;
+                        valorFinal = numValue;
+                        await guardarTotalesEditados();
+                        await guardarDatosCompletosEnServidor();
+                        mostrarToast('TOTAL actualizado a ' + formatearMoneda(numValue), 'success');
+                    } else {
+                        mostrarToast('Valor inválido', 'error');
+                        renderizarTabla();
+                        return;
+                    }
+                }
+            } else if (isCustomColumn) {
+                tableData[rowIndex][colName] = valorFinal;
+                if (pedidoId) {
+                    await guardarCeldaEnServidor(pedidoId, colName, valorFinal);
+                }
+                await guardarDatosCompletosEnServidor();
+            }
+            
+            renderizarTabla();
+            actualizarStatsDesdeDatos();
+            actualizarGraficasDesdeDatos();
+        }
+    }
+    
+    function agregarColumnaPersonalizada() {
+        var colName = prompt('Nombre de la nueva columna personalizada:', 'Campo extra ' + (customColumns.length + 1));
+        if (!colName) return;
+        
+        if (getAllColumns().some(function(col) { return col.name === colName; })) {
+            mostrarToast('Ya existe una columna con ese nombre', 'error');
+            return;
+        }
+        
+        customColumns.push({ name: colName, editable: true, isCustom: true });
+        updateColumnLetters();
+        
+        tableData.forEach(function(row) {
+            row[colName] = '';
+        });
+        
+        guardarColumnasEnServidor();
+        guardarDatosCompletosEnServidor();
+        renderizarTabla();
+        mostrarToast('Columna "' + colName + '" agregada (editable)', 'success');
+    }
+    
+    function eliminarColumnaPersonalizada(colName) {
+        if (!confirm('¿Eliminar la columna personalizada "' + colName + '"?')) return;
+        
+        var index = customColumns.findIndex(function(c) { return c.name === colName; });
+        if (index !== -1) {
+            customColumns.splice(index, 1);
+            updateColumnLetters();
+            tableData.forEach(function(row) {
+                delete row[colName];
+            });
+            guardarColumnasEnServidor();
+            guardarDatosCompletosEnServidor();
+            renderizarTabla();
+            mostrarToast('Columna "' + colName + '" eliminada', 'success');
+        }
+    }
+    
+    function renderizarTabla() {
+        var container = document.getElementById('tableContainer');
+        var allColumns = getAllColumns();
+        updateColumnLetters();
+        var searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        
+        var filteredData = [].concat(tableData);
+        if (searchTerm) {
+            filteredData = filteredData.filter(function(row) {
+                return Object.values(row).some(function(val) {
+                    return String(val).toLowerCase().includes(searchTerm);
+                });
+            });
+        }
+        
+        if (!filteredData.length || !allColumns.length) {
+            container.innerHTML = '<div class="loader" style="text-align:center;padding:30px;font-size:14px;"><i class="fas fa-inbox" style="font-size:2rem;color:#666;"></i><p style="margin-top:10px;color:#888;">No hay pedidos entregados para mostrar</p></div>';
+            return;
+        }
+        
+        var html = '<table class="editable-table"><thead><tr>';
+        
+        allColumns.forEach(function(col, idx) {
+            var isTotal = col.name === 'TOTAL';
+            var isSubtotal = col.name === 'Subtotal';
+            var isCustom = col.isCustom === true;
+            
+            var style = '';
+            if (isTotal) style = 'background: rgba(16,185,129,0.2);';
+            if (isSubtotal) style = 'background: rgba(245,158,11,0.2);';
+            if (isCustom) style = 'background: rgba(6,182,212,0.2);';
+            
+            html += '<th style="' + style + '">' +
+                        escapeHtml(col.name) +
+                        '<span class="col-letter">' + col.letter + '</span>';
+            
+            if (isCustom) {
+                html += '<button class="delete-col-btn" onclick="window.eliminarColumnaExterna(\'' + escapeHtml(col.name) + '\')" title="Eliminar columna">' +
+                            '<i class="fas fa-trash-alt"></i>' +
+                        '</button>';
+            }
+            html += '</th>';
+        });
+        html += '</thead><tbody>';
+        
+        filteredData.forEach(function(row, rowIndex) {
+            var originalIndex = tableData.indexOf(row);
+            var facturaId = row['Factura'] || row.id;
+            html += '<tr>';
+            allColumns.forEach(function(col) {
+                var value = row[col.name] !== undefined ? row[col.name] : '';
+                var isTotal = col.name === 'TOTAL';
+                var isSubtotal = col.name === 'Subtotal';
+                var isCustom = col.isCustom === true;
+                var isEditable = isTotal || isCustom;
+                var isFormula = isTotal && value.toString().startsWith('=');
+                
+                var cellClass = '';
+                if (isFormula) cellClass = 'formula-cell';
+                if (isTotal) {
+                    cellClass += ' total-cell';
+                    var tieneFormula = totalsEditados[facturaId] && totalsEditados[facturaId]['TOTAL_formula'];
+                    if (tieneFormula) {
+                        cellClass += ' has-formula';
+                    }
+                }
+                if (isSubtotal) cellClass += ' subtotal-cell';
+                
+                if (col.name === 'Factura') {
+                    html += '<td class="' + cellClass + '">' +
+                                '<span class="badge-entregado"><i class="fas fa-check-circle"></i> ' + escapeHtml(String(value)) + '</span>' +
+                                '<button class="btn-ver-pdf" onclick="verPdf(\'' + escapeHtml(facturaId) + '\')" title="Ver PDF"><i class="fas fa-eye"></i></button>' +
+                              '</td>';
+                } else if (col.name === 'Fecha') {
+                    var fechaFormateada = formatearFecha(value);
+                    html += '<td class="readonly-cell">' + escapeHtml(fechaFormateada) + '</td>';
+                } else if (col.name === 'TOTAL') {
+                    var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+                    var formulaGuardada = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL_formula'] : null;
+                    
+                    var displayText;
+                    if (valorEditado !== null) {
+                        if (formulaGuardada) {
+                            displayText = formatearMoneda(valorEditado) + ' 📐';
+                        } else {
+                            displayText = formatearMoneda(valorEditado);
+                        }
+                    } else {
+                        var val = parseFloat(value) || 0;
+                        displayText = formatearMoneda(val);
+                    }
+                    
+                    var titleAttr = formulaGuardada ? ' title="Fórmula: ' + escapeHtml(formulaGuardada) + '"' : '';
+                    
+                    html += '<td contenteditable="true" data-row="' + originalIndex + '" data-col="' + escapeHtml(col.name) + '" data-pedido="' + escapeHtml(facturaId) + '"' +
+                                ' class="' + cellClass + '"' + titleAttr +
+                                ' onkeydown="window.handleKeyDownExterna(event, ' + originalIndex + ', \'' + escapeHtml(col.name) + '\', \'' + escapeHtml(facturaId) + '\', this)"' +
+                                ' onblur="window.actualizarCeldaExterna(' + originalIndex + ', \'' + escapeHtml(col.name) + '\', this.innerText, \'' + escapeHtml(facturaId) + '\', this)">' +
+                                escapeHtml(String(displayText)) +
+                              '</td>';
+                } else if (isEditable) {
+                    var displayValue = String(value);
+                    if (typeof value === 'number' || (!isNaN(parseFloat(value)) && !isNaN(value))) {
+                        displayValue = value;
+                    }
+                    html += '<td contenteditable="true" data-row="' + originalIndex + '" data-col="' + escapeHtml(col.name) + '" data-pedido="' + escapeHtml(facturaId) + '"' +
+                                ' class="' + cellClass + '"' +
+                                ' onkeydown="window.handleKeyDownExterna(event, ' + originalIndex + ', \'' + escapeHtml(col.name) + '\', \'' + escapeHtml(facturaId) + '\', this)"' +
+                                ' onblur="window.actualizarCeldaExterna(' + originalIndex + ', \'' + escapeHtml(col.name) + '\', this.innerText, \'' + escapeHtml(facturaId) + '\', this)">' +
+                                escapeHtml(String(displayValue)) +
+                              '</td>';
+                } else {
+                    var displayValue = value;
+                    if (typeof value === 'number') {
+                        if (col.name === 'Galones') displayValue = formatearNumero(value);
+                        else if (col.name === 'Subtotal') displayValue = formatearMoneda(value);
+                        else displayValue = formatearMoneda(value);
+                    }
+                    html += '<td class="readonly-cell">' + escapeHtml(String(displayValue)) + '</td>';
+                }
+            });
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    
+    window.handleKeyDownExterna = function(event, rowIndex, colName, pedidoId, element) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            event.stopPropagation();
+            element.blur();
+            return false;
+        }
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            element.blur();
+            return false;
+        }
+        return true;
+    };
+    
+    window.actualizarCeldaExterna = async function(rowIndex, colName, value, pedidoId, element) {
+        await actualizarCelda(rowIndex, colName, value, pedidoId, element);
+    };
+    
+    window.eliminarColumnaExterna = function(colName) {
+        eliminarColumnaPersonalizada(colName);
+    };
+    
+    function sincronizarDesdePedidos(pedidos) {
+        tableData = pedidos.map(function(p) {
+            var row = {};
+            FIXED_COLUMNS.forEach(function(col) {
+                var facturaId = p.factura_id || p.id;
+                
+                if (col.key === 'factura_id') row[col.name] = facturaId;
+                else if (col.key === 'nombre') row[col.name] = p.nombre || p.empresa_nombre || '';
+                else if (col.key === 'fecha_entrega') row[col.name] = p.fecha_entrega || p.fecha || p.fecha_str || '';
+                else if (col.key === 'galones') row[col.name] = p.galones || 0;
+                else if (col.key === 'precio_por_galon') row[col.name] = p.precio_por_galon || 0;
+                else if (col.key === 'conductor_asignado') row[col.name] = p.conductor_asignado || p.conductor1 || '';
+                else if (col.key === 'conductor2_asignado') row[col.name] = p.conductor2_asignado || p.conductor2 || '';
+                else if (col.key === 'camion_asignado') row[col.name] = p.camion_asignado || p.placa || p.camion1 || '';
+                else if (col.key === 'camion2_asignado') row[col.name] = p.camion2_asignado || p.placa2 || p.camion2 || '';
+                else if (col.key === 'bono1') row[col.name] = p.bono1 || p.bono_cupon || '';
+                else if (col.key === 'bono2') row[col.name] = p.bono2 || '';
+                else if (col.key === 'viatico1') row[col.name] = p.viatico1 || 0;
+                else if (col.key === 'viatico2') row[col.name] = p.viatico2 || 0;
+                else if (col.key === 'costo_total') {
+                    row[col.name] = p.costo_total || 0;
+                }
+                else if (col.key === 'total_calculado') {
+                    var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+                    if (valorEditado !== null) {
+                        row[col.name] = valorEditado;
+                    } else {
+                        row[col.name] = p.total || p.costo_total || 0;
+                    }
+                }
+                else row[col.name] = '';
+            });
+            
+            customColumns.forEach(function(col) {
+                row[col.name] = '';
+            });
+            
+            return row;
+        });
+        
+        renderizarTabla();
+    }
+    
+    function actualizarStatsDesdeDatos() {
+        document.getElementById('totalEntregados').innerText = tableData.length;
+        document.getElementById('totalGalones').innerText = formatearNumero(tableData.reduce(function(s, row) { return s + (parseFloat(row['Galones']) || 0); }, 0));
+        document.getElementById('totalCosto').innerHTML = formatearMoneda(tableData.reduce(function(s, row) { return s + ((parseFloat(row['Galones']) || 0) * (parseFloat(row['Precio/Galón']) || 0)); }, 0));
+        var totalVenta = tableData.reduce(function(s, row) {
+            var facturaId = row['Factura'];
+            var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+            return s + (valorEditado !== null ? valorEditado : (parseFloat(row['TOTAL']) || 0));
+        }, 0);
+        var totalCosto = tableData.reduce(function(s, row) { return s + ((parseFloat(row['Galones']) || 0) * (parseFloat(row['Precio/Galón']) || 0)); }, 0);
+        document.getElementById('totalVenta').innerHTML = formatearMoneda(totalVenta);
+        document.getElementById('totalMargen').innerHTML = formatearMoneda(totalVenta - totalCosto);
+        document.getElementById('promPorcentaje').innerText = totalVenta > 0 ? ((totalVenta - totalCosto) / totalVenta * 100).toFixed(1) + '%' : '0%';
+    }
+    
+    function actualizarGraficasDesdeDatos() {
+        var pedidosParaGraficas = tableData.map(function(row) {
+            var facturaId = row['Factura'];
+            var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+            return {
+                fecha_str: row['Fecha'],
+                nombre: row['Empresa'],
+                galones: parseFloat(row['Galones']) || 0,
+                precio: parseFloat(row['Precio/Galón']) || 0,
+                costo_combustible: (parseFloat(row['Galones']) || 0) * (parseFloat(row['Precio/Galón']) || 0),
+                importe: valorEditado !== null ? valorEditado : (parseFloat(row['TOTAL']) || 0)
+            };
+        });
+        
+        destroyCharts();
+        setTimeout(function() { crearGraficas(pedidosParaGraficas); }, 100);
+    }
+    
+    function filtrarPorPeriodo(data, periodo) {
+        var hoy = new Date();
+        hoy.setHours(0,0,0,0);
+        if (periodo === 'diario') {
+            var hoyStr = hoy.toISOString().split('T')[0];
+            return data.filter(function(p) {
+                var fecha = p.fecha_entrega || p.fecha_str;
+                return fecha && fecha.substring(0, 10) === hoyStr;
+            });
+        }
+        if (periodo === 'semanal') {
+            var semanaAtras = new Date(hoy);
+            semanaAtras.setDate(hoy.getDate() - 7);
+            return data.filter(function(p) {
+                var fecha = p.fecha_entrega || p.fecha_str;
+                return fecha && new Date(fecha) >= semanaAtras;
+            });
+        }
+        if (periodo === 'mensual') {
+            var mesAtras = new Date(hoy);
+            mesAtras.setMonth(hoy.getMonth() - 1);
+            return data.filter(function(p) {
+                var fecha = p.fecha_entrega || p.fecha_str;
+                return fecha && new Date(fecha) >= mesAtras;
+            });
+        }
+        return data;
+    }
+    
+    function destroyCharts() {
+        var chartIds = ['chartEvolucion', 'chartClientes', 'chartMargen', 'chartMargenMensual'];
+        for (var i = 0; i < chartIds.length; i++) {
+            var id = chartIds[i];
+            var canvas = document.getElementById(id);
+            if (canvas && charts[id]) {
+                try { charts[id].destroy(); } catch(e) {}
+                charts[id] = null;
+            }
+        }
+    }
+    
+    function crearGraficas(data) {
+        if (typeof Chart === 'undefined') return;
+        
+        try {
+            var fechasGroup = {};
+            data.forEach(function(p) {
+                var fecha = p.fecha_str;
+                if (fecha) {
+                    var fechaKey = fecha.substring(0, 10);
+                    if (!fechasGroup[fechaKey]) fechasGroup[fechaKey] = { costo: 0, venta: 0 };
+                    fechasGroup[fechaKey].costo += (p.costo_combustible || 0);
+                    fechasGroup[fechaKey].venta += (p.importe || 0);
+                }
+            });
+            var fechasSorted = Object.keys(fechasGroup).sort().slice(-7);
+            var costosArr = fechasSorted.map(function(f) { return fechasGroup[f].costo; });
+            var ventasArr = fechasSorted.map(function(f) { return fechasGroup[f].venta; });
+            
+            chartDataCache.evolucion = {
+                labels: fechasSorted.map(function(f) { return f.substring(5); }),
+                data: ventasArr,
+                sumatoria: ventasArr.reduce(function(a, b) { return a + b; }, 0)
+            };
+            
+            var ctx1 = document.getElementById('chartEvolucion')?.getContext('2d');
+            if (ctx1) {
+                charts.chartEvolucion = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: fechasSorted.map(function(f) { return f.substring(5); }),
+                        datasets: [
+                            { label: 'Costo Directo', data: costosArr, borderColor: '#ef4444', backgroundColor: 'transparent', tension: 0.3, pointRadius: 2 },
+                            { label: 'Total Ventas', data: ventasArr, borderColor: '#10b981', backgroundColor: 'transparent', tension: 0.3, pointRadius: 2 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#fff', font: { size: 9 } } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff', font: { size: 8 } } } } }
+                });
+            }
+            
+            var volCliente = {};
+            data.forEach(function(p) {
+                var nombre = (p.nombre || 'Desconocido').substring(0, 20);
+                volCliente[nombre] = (volCliente[nombre] || 0) + (p.galones || 0);
+            });
+            var topClientes = Object.keys(volCliente).sort(function(a, b) { return volCliente[b] - volCliente[a]; }).slice(0, 5);
+            var volDatos = topClientes.map(function(c) { return volCliente[c]; });
+            
+            chartDataCache.clientes = {
+                labels: topClientes,
+                data: volDatos,
+                sumatoria: volDatos.reduce(function(a, b) { return a + b; }, 0)
+            };
+            
+            var ctx2 = document.getElementById('chartClientes')?.getContext('2d');
+            if (ctx2) {
+                charts.chartClientes = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: topClientes.map(function(c) { return c.length > 12 ? c.substring(0, 10) + '..' : c; }),
+                        datasets: [{ label: 'Galones', data: volDatos, backgroundColor: '#f59e0b', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#fff', font: { size: 9 } } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff', font: { size: 8 } } } } }
+                });
+            }
+            
+            var margenCliente = {};
+            data.forEach(function(p) {
+                var nom = (p.nombre || 'Desconocido').substring(0, 20);
+                var venta = p.importe || 0;
+                var costo = p.costo_combustible || 0;
+                margenCliente[nom] = (margenCliente[nom] || 0) + (venta - costo);
+            });
+            var pieClientes = Object.keys(margenCliente).sort(function(a, b) { return margenCliente[b] - margenCliente[a]; }).slice(0, 5);
+            var pieData = pieClientes.map(function(c) { return Math.max(0, margenCliente[c]); });
+            
+            chartDataCache.margen = {
+                labels: pieClientes,
+                data: pieData,
+                sumatoria: pieData.reduce(function(a, b) { return a + b; }, 0)
+            };
+            
+            var ctx3 = document.getElementById('chartMargen')?.getContext('2d');
+            if (ctx3) {
+                charts.chartMargen = new Chart(ctx3, {
+                    type: 'pie',
+                    data: {
+                        labels: pieClientes.map(function(c) { return c.length > 12 ? c.substring(0, 10) + '..' : c; }),
+                        datasets: [{ data: pieData, backgroundColor: ['#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4'] }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'right', labels: { color: '#fff', font: { size: 8 } } } } }
+                });
+            }
+            
+            var monthMap = {};
+            data.forEach(function(p) {
+                var mes = p.fecha_str ? p.fecha_str.substring(0, 7) : '';
+                if (mes) {
+                    if (!monthMap[mes]) monthMap[mes] = { venta: 0, costo: 0 };
+                    monthMap[mes].venta += (p.importe || 0);
+                    monthMap[mes].costo += (p.costo_combustible || 0);
+                }
+            });
+            var meses = Object.keys(monthMap).sort().slice(-6);
+            var porcentajes = meses.map(function(m) { return monthMap[m].venta > 0 ? ((monthMap[m].venta - monthMap[m].costo) / monthMap[m].venta * 100) : 0; });
+            
+            chartDataCache.margenMensual = {
+                labels: meses,
+                data: porcentajes,
+                sumatoria: porcentajes.reduce(function(a, b) { return a + b; }, 0)
+            };
+            
+            var ctx4 = document.getElementById('chartMargenMensual')?.getContext('2d');
+            if (ctx4) {
+                charts.chartMargenMensual = new Chart(ctx4, {
+                    type: 'line',
+                    data: {
+                        labels: meses,
+                        datasets: [{ label: '% Margen', data: porcentajes, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { ticks: { color: '#fff', callback: function(v) { return v + '%'; } } }, x: { ticks: { color: '#fff', font: { size: 8 } } } } }
+                });
+            }
+        } catch(e) { console.error('Error creando gráficas:', e); }
+    }
+    
+    async function cargarPedidosEntregados() {
+        try {
+            var response = await fetch('/api/facturas_lista?_=' + Date.now());
+            var data = await response.json();
+            var facturas = data.facturas || [];
+            var facturasEntregadas = facturas.filter(function(f) { return f.estado_factura === 'entregado'; });
+            
+            console.log("📦 Facturas entregadas encontradas:", facturasEntregadas.length);
+            
+            pedidosEntregados = facturasEntregadas.map(function(f) {
+                return {
+                    id: f.id,
+                    factura_id: f.id,
+                    nombre: f.empresa_nombre || f.nombre || 'N/A',
+                    fecha_entrega: f.fecha_entrega || f.fecha_emision || f.fecha,
+                    fecha_str: f.fecha_entrega || f.fecha_emision || f.fecha,
+                    galones: f.galones || 0,
+                    precio_por_galon: f.precio_por_galon || 0,
+                    conductor_asignado: f.conductor_asignado || '',
+                    conductor2_asignado: f.conductor2_asignado || '',
+                    camion_asignado: f.camion_asignado || '',
+                    camion2_asignado: f.camion2_asignado || '',
+                    bono1: f.bono1 || '',
+                    bono2: f.bono2 || '',
+                    viatico1: f.viatico1 || 0,
+                    viatico2: f.viatico2 || 0,
+                    costo_total: f.total || f.costo_total || 0,
+                    total: f.total || f.costo_total || 0,
+                    estado_operacion: 'entregado'
+                };
+            });
+            
+            return pedidosEntregados;
+        } catch(e) {
+            console.error('Error cargando pedidos entregados:', e);
+            pedidosEntregados = [];
+            return [];
+        }
+    }
+    
+    async function recargarTodo() {
+        if (isRecargando) return;
+        isRecargando = true;
+        
+        var container = document.getElementById('tableContainer');
+        if (container) container.innerHTML = '<div class="loader" style="text-align:center;padding:30px;"><div class="spinner" style="width:36px;height:36px;border:3px solid rgba(245,158,11,0.2);border-top-color:#f59e0b;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite;"></div><p style="font-size:14px;">Cargando pedidos entregados...</p></div>';
+        
+        try {
+            await cargarPedidosEntregados();
+            var filtrados = filtrarPorPeriodo(pedidosEntregados, currentPeriodo);
+            await cargarDatosDesdeServidor();
+            sincronizarDesdePedidos(filtrados);
+            actualizarStatsDesdeDatos();
+            renderizarTabla();
+            destroyCharts();
+            setTimeout(function() { crearGraficas(filtrados); }, 100);
+            updateLastUpdate();
+            
+            console.log("✅ Datos recargados:", tableData.length, "pedidos entregados");
+            console.log("✅ Totales editados:", Object.keys(totalsEditados).length, "facturas");
+            console.log("✅ Columnas personalizadas:", customColumns.length);
+        } catch (error) {
+            console.error('Error recargando datos:', error);
+            mostrarToast('Error recargando datos', 'error');
+        } finally {
+            isRecargando = false;
+        }
+    }
+    
+    // ==================== CAPTURAR GRÁFICAS PARA EXPORTACIÓN ====================
+    function capturarGraficas() {
+        var graficas = {};
+        var chartIds = ['chartEvolucion', 'chartClientes', 'chartMargen', 'chartMargenMensual'];
+        
+        for (var i = 0; i < chartIds.length; i++) {
+            var id = chartIds[i];
+            var canvas = document.getElementById(id);
+            if (canvas) {
+                try {
+                    graficas[id] = canvas.toDataURL('image/png');
+                } catch(e) {
+                    console.error('Error capturando gráfica ' + id + ':', e);
+                    graficas[id] = null;
+                }
+            }
+        }
+        return graficas;
+    }
+    
+    // ==================== EXPORTAR EXCEL ====================
+    function exportarAExcel() {
+        try {
+            if (!tableData.length) {
+                mostrarToast('No hay datos para exportar', 'error');
+                return;
+            }
+            mostrarToast('📊 Generando Excel desde el servidor...', 'info');
+            var url = '/api/reportes/exportar_excel?rutas=1&saldo=1';
+            window.open(url, '_blank');
+            mostrarToast('✅ Excel generado', 'success');
+        } catch(e) {
+            console.error('Error exportando Excel:', e);
+            mostrarToast('Error al exportar Excel: ' + e.message, 'error');
+        }
+    }
+    
+    // ==================== EXPORTAR PDF ====================
+    function exportarAPDF() {
+        try {
+            if (!tableData.length) {
+                mostrarToast('No hay datos para exportar', 'error');
+                return;
+            }
+            mostrarToast('📄 Generando PDF desde el servidor...', 'info');
+            var url = '/api/reportes/exportar_pdf?rutas=1&saldo=1';
+            window.open(url, '_blank');
+            mostrarToast('✅ PDF generado', 'success');
+        } catch(e) {
+            console.error('Error exportando PDF:', e);
+            mostrarToast('Error al exportar PDF: ' + e.message, 'error');
+        }
+    }
+    
+    // ==================== TABLAS EDITABLES (BITÁCORA) ====================
+    function abrirModalEditables() {
+        var modal = document.getElementById('modalEditables');
+        var body = document.getElementById('modalEditablesBody');
+        
+        // Mostrar el modal
+        modal.style.display = 'flex';
+        
+        // Cargar la bitácora en el iframe usando la ruta correcta
+        // IMPORTANTE: La ruta debe ser accesible desde el navegador
+        // Si el archivo está en templates/modulos/tablas_editables.html
+        // en Django deberías servirlo a través de una vista o como archivo estático
+        body.innerHTML = `
+            <div style="text-align:center;padding:40px;">
+                <div class="spinner" style="width:36px;height:36px;border:3px solid rgba(236,72,153,0.2);border-top-color:#ec4899;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite;"></div>
+                <p style="font-size:14px; color:#888;">Cargando bitácora de datos...</p>
+            </div>
+        `;
+        
+        // Usar fetch para cargar el contenido directamente (mejor que iframe)
+        // La ruta correcta es relativa a la raíz del proyecto Django
+        fetch('/templates/modulos/tablas_editables.html')
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Error al cargar el módulo: ' + response.status);
+                }
+                return response.text();
+            })
+            .then(function(html) {
+                // Reemplazar el contenido del body con el HTML del módulo
+                body.innerHTML = html;
+                
+                // Re-ejecutar los scripts del módulo cargado
+                var scripts = body.querySelectorAll('script');
+                scripts.forEach(function(script) {
+                    // Crear un nuevo script y copiar el contenido
+                    var newScript = document.createElement('script');
+                    if (script.src) {
+                        newScript.src = script.src;
+                    } else {
+                        newScript.textContent = script.textContent;
+                    }
+                    // Reemplazar el script original con el nuevo
+                    script.parentNode.replaceChild(newScript, script);
+                });
+                
+                // Aplicar el tema guardado al módulo cargado
+                if (window.cargarTemaGuardado) {
+                    try { window.cargarTemaGuardado(); } catch(e) {}
+                }
+            })
+            .catch(function(error) {
+                console.error('Error cargando tablas editables:', error);
+                body.innerHTML = `
+                    <div style="text-align:center;padding:60px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#ef4444;"></i>
+                        <p style="margin-top:15px;color:#ef4444;font-size:1rem;">
+                            Error al cargar el módulo de bitácora
+                        </p>
+                        <p style="color:#888;font-size:0.85rem;margin-top:5px;">
+                            ${error.message}
+                        </p>
+                        <button onclick="window.location.reload()" style="margin-top:15px;background:#f59e0b;border:none;color:white;padding:8px 20px;border-radius:8px;cursor:pointer;">
+                            <i class="fas fa-sync-alt"></i> Reintentar
+                        </button>
+                    </div>
+                `;
+            });
+    }
+    
+    function cerrarModalEditables() {
+        document.getElementById('modalEditables').style.display = 'none';
+        // Limpiar el contenido para liberar recursos
+        var body = document.getElementById('modalEditablesBody');
+        body.innerHTML = `
+            <div style="text-align:center;padding:40px;">
+                <div class="spinner" style="width:36px;height:36px;border:3px solid rgba(236,72,153,0.2);border-top-color:#ec4899;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite;"></div>
+                <p style="font-size:14px; color:#888;">Cargando bitácora de datos...</p>
+            </div>
+        `;
+    }
+    
+    window.cerrarModalEditables = cerrarModalEditables;
+    window.abrirModalEditables = abrirModalEditables;
+    
+    function cerrarModalPdf() {
+        document.getElementById('modalPdf').style.display = 'none';
+        document.getElementById('pdfViewer').src = '';
+        pdfActualId = null;
+    }
+    
+    function verPdf(facturaId) {
+        if (!facturaId) return;
+        pdfActualId = facturaId;
+        document.getElementById('pdfViewer').src = '/descargar_factura/' + facturaId;
+        document.getElementById('modalPdf').style.display = 'flex';
+    }
+    
+    function descargarPdfActual() {
+        if (pdfActualId) window.open('/descargar_factura/' + pdfActualId, '_blank');
+    }
+    
+    window.verPdf = verPdf;
+    window.cerrarModalPdf = cerrarModalPdf;
+    window.descargarPdfActual = descargarPdfActual;
+    window.capturarGraficas = capturarGraficas;
+    
+    function init() {
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        
+        document.querySelectorAll('.periodo-chip').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.periodo-chip').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                currentPeriodo = btn.getAttribute('data-periodo');
+                recargarTodo();
+            });
+        });
+        
+        var chartsScrollContainer = document.getElementById('chartsScrollContainer');
+        var chartsScrollLeft = document.getElementById('chartsScrollLeft');
+        var chartsScrollRight = document.getElementById('chartsScrollRight');
+        
+        if (chartsScrollLeft) {
+            chartsScrollLeft.addEventListener('click', function() {
+                chartsScrollContainer.scrollBy({ left: -400, behavior: 'smooth' });
+            });
+        }
+        if (chartsScrollRight) {
+            chartsScrollRight.addEventListener('click', function() {
+                chartsScrollContainer.scrollBy({ left: 400, behavior: 'smooth' });
+            });
+        }
+        
+        document.querySelectorAll('.stat-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var statId = card.getAttribute('data-stat');
+                if (!statId) return;
+                
+                var titulo = '';
+                var datos = { lista: [] };
+                
+                switch(statId) {
+                    case 'totalEntregados':
+                        titulo = 'Detalle de Pedidos Entregados';
+                        datos = {
+                            lista: tableData.map(function(row) {
+                                return { id: row['Factura'], empresa: row['Empresa'], fecha: row['Fecha'], galones: row['Galones'], valor: 1 };
+                            }),
+                            total: tableData.length,
+                            sumatoria: tableData.length
+                        };
+                        break;
+                    case 'totalGalones':
+                        titulo = 'Detalle de Galones por Pedido';
+                        datos = {
+                            lista: tableData.map(function(row) {
+                                return { id: row['Factura'], empresa: row['Empresa'], fecha: row['Fecha'], galones: row['Galones'], valor: row['Galones'] };
+                            }),
+                            total: tableData.length,
+                            sumatoria: tableData.reduce(function(s, row) { return s + (parseFloat(row['Galones']) || 0); }, 0)
+                        };
+                        break;
+                    case 'totalCosto':
+                        titulo = 'Detalle de Costo de Combustible por Pedido';
+                        datos = {
+                            lista: tableData.map(function(row) {
+                                return { id: row['Factura'], empresa: row['Empresa'], fecha: row['Fecha'], galones: row['Galones'], valor: (parseFloat(row['Galones']) || 0) * (parseFloat(row['Precio/Galón']) || 0) };
+                            }),
+                            total: tableData.length,
+                            sumatoria: tableData.reduce(function(s, row) { return s + ((parseFloat(row['Galones']) || 0) * (parseFloat(row['Precio/Galón']) || 0)); }, 0)
+                        };
+                        break;
+                    case 'totalVenta':
+                        titulo = 'Detalle de Ventas por Pedido (TOTAL)';
+                        datos = {
+                            lista: tableData.map(function(row) {
+                                var facturaId = row['Factura'];
+                                var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+                                return { id: facturaId, empresa: row['Empresa'], fecha: row['Fecha'], galones: row['Galones'], valor: valorEditado !== null ? valorEditado : (parseFloat(row['TOTAL']) || 0) };
+                            }),
+                            total: tableData.length,
+                            sumatoria: tableData.reduce(function(s, row) {
+                                var facturaId = row['Factura'];
+                                var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+                                return s + (valorEditado !== null ? valorEditado : (parseFloat(row['TOTAL']) || 0));
+                            }, 0)
+                        };
+                        break;
+                    case 'totalMargen':
+                        titulo = 'Detalle de Margen Bruto por Pedido';
+                        var ventaTotal = tableData.reduce(function(s, row) {
+                            var facturaId = row['Factura'];
+                            var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+                            return s + (valorEditado !== null ? valorEditado : (parseFloat(row['TOTAL']) || 0));
+                        }, 0);
+                        var costoTotal = tableData.reduce(function(s, row) { return s + ((parseFloat(row['Galones']) || 0) * (parseFloat(row['Precio/Galón']) || 0)); }, 0);
+                        datos = {
+                            lista: [{ id: 'Resumen', empresa: 'Todos los pedidos', fecha: '-', galones: '-', valor: ventaTotal - costoTotal }],
+                            total: 1,
+                            sumatoria: ventaTotal - costoTotal
+                        };
+                        break;
+                    case 'promPorcentaje':
+                        titulo = 'Porcentaje de Margen Promedio';
+                        var ventaTotal2 = tableData.reduce(function(s, row) {
+                            var facturaId = row['Factura'];
+                            var valorEditado = totalsEditados[facturaId] ? totalsEditados[facturaId]['TOTAL'] : null;
+                            return s + (valorEditado !== null ? valorEditado : (parseFloat(row['TOTAL']) || 0));
+                        }, 0);
+                        var costoTotal2 = tableData.reduce(function(s, row) { return s + ((parseFloat(row['Galones']) || 0) * (parseFloat(row['Precio/Galón']) || 0)); }, 0);
+                        var porcentaje = ventaTotal2 > 0 ? ((ventaTotal2 - costoTotal2) / ventaTotal2 * 100) : 0;
+                        datos = {
+                            lista: [{ id: 'Resumen', empresa: 'Margen promedio', fecha: '-', galones: '-', valor: porcentaje }],
+                            total: 1,
+                            sumatoria: porcentaje
+                        };
+                        break;
+                    default:
+                        return;
+                }
+                
+                if (datos.lista.length > 0) {
+                    mostrarDetalleEstadistica(statId, titulo, datos);
+                } else {
+                    mostrarToast('No hay datos disponibles para mostrar', 'info');
+                }
+            });
+        });
+        
+        document.querySelectorAll('.chart-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var chartType = card.getAttribute('data-chart');
+                var titulo = '';
+                var datos = { labels: [], data: [] };
+                
+                switch(chartType) {
+                    case 'evolucion':
+                        titulo = 'Evolución de Ventas - Últimos 7 días';
+                        datos = chartDataCache.evolucion || { labels: [], data: [], sumatoria: 0 };
+                        break;
+                    case 'clientes':
+                        titulo = 'Top Clientes por Galones';
+                        datos = chartDataCache.clientes || { labels: [], data: [], sumatoria: 0 };
+                        break;
+                    case 'margen':
+                        titulo = 'Margen por Cliente';
+                        datos = chartDataCache.margen || { labels: [], data: [], sumatoria: 0 };
+                        break;
+                    case 'margenMensual':
+                        titulo = 'Porcentaje de Margen Mensual';
+                        datos = chartDataCache.margenMensual || { labels: [], data: [], sumatoria: 0 };
+                        break;
+                    default:
+                        return;
+                }
+                
+                if (datos.labels && datos.labels.length > 0) {
+                    mostrarDetalleEstadistica(chartType, titulo, { lista: datos.labels.map(function(label, i) { return { id: label, empresa: label, fecha: '-', galones: '-', valor: datos.data[i] }; }), total: datos.labels.length, sumatoria: datos.sumatoria });
+                } else {
+                    mostrarToast('No hay datos disponibles para mostrar', 'info');
+                }
+            });
+        });
+        
+        document.getElementById('addCustomColTableBtn')?.addEventListener('click', agregarColumnaPersonalizada);
+        document.getElementById('exportExcelTableBtn')?.addEventListener('click', exportarAExcel);
+        document.getElementById('exportPdfTableBtn')?.addEventListener('click', exportarAPDF);
+        document.getElementById('refreshDataTableBtn')?.addEventListener('click', recargarTodo);
+        document.getElementById('saveDataBtn')?.addEventListener('click', async function() {
+            await guardarDatosCompletosEnServidor();
+            mostrarToast('✅ Datos guardados manualmente', 'success');
+        });
+        document.getElementById('openEditablesBtn')?.addEventListener('click', abrirModalEditables);
+        
+        document.getElementById('searchInput')?.addEventListener('keyup', function() {
+            renderizarTabla();
+        });
+        
+        recargarTodo();
+        
+        window.addEventListener('message', async function(event) {
+            var msg = event.data;
+            if (msg && (msg.type === 'PEDIDO_ACTUALIZADO' || msg.type === 'FACTURA_GENERADA' || msg.type === 'PEDIDO_ENTREGADO')) {
+                console.log("📡 Reportes: Recibido mensaje de actualización:", msg.type);
+                await recargarTodo();
+            }
+        });
+    }
+    
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Clientes · Rutas + Saldo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: transparent !important;
+            color: #eef2f8;
+            padding: 12px;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.75);
+        }
+        .modulo-clientes {
+            width: 100%;
+            max-width: 1200px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+        }
+        .panel-principal {
+            background: rgba(10, 22, 40, 0.85);
+            backdrop-filter: blur(18px);
+            border-radius: 24px;
+            border: 1px solid rgba(96, 165, 250, 0.12);
+            padding: 14px 18px 10px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(96, 165, 250, 0.15);
+            flex-shrink: 0;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left .icono {
+            background: rgba(96, 165, 250, 0.12);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 1px solid rgba(96, 165, 250, 0.25);
+            color: #60a5fa;
+            font-size: 16px;
+        }
+        .header-left h2 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .header-left h2 small {
+            font-weight: 400;
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.35);
+        }
+        .header-left .btn-nuevo-cliente {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 30px;
+            padding: 3px 12px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .header-left .btn-nuevo-cliente:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .top-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+        .ventanas-botones {
+            display: flex;
+            gap: 4px;
+        }
+        .btn-ventana {
+            padding: 5px 14px;
+            border-radius: 30px;
+            border: 2px solid rgba(96, 165, 250, 0.2);
+            font-weight: 600;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(96, 165, 250, 0.05);
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-ventana:hover {
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+            border-color: rgba(96, 165, 250, 0.4);
+        }
+        .btn-ventana.active {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(96, 165, 250, 0.3);
+        }
+        .btn-ventana i { font-size: 0.65rem; }
+
+        .acciones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+        }
+        .btn {
+            padding: 5px 12px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.6rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: rgba(255,255,255,0.04);
+            color: #cbd5e1;
+            border: 1px solid transparent;
+        }
+        .btn-primary { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #fff; }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+        .btn-outline { border-color: rgba(96,165,250,0.3); color: #60a5fa; }
+        .btn-outline:hover { background: rgba(96,165,250,0.08); }
+        .btn-danger { background: rgba(239,68,68,0.1); color: #f87171; }
+        .btn-danger:hover { background: rgba(239,68,68,0.25); }
+        .btn-warning { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .btn-sm { padding: 3px 8px; font-size: 0.55rem; }
+        .btn-icon { padding: 5px 10px; font-size: 0.75rem; }
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+        .btn-excel { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+        .btn-excel:hover { background: rgba(16,185,129,0.25); }
+        .btn-pdf { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+        .btn-pdf:hover { background: rgba(239,68,68,0.25); }
+        .btn-recargar { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.15); }
+        .btn-recargar:hover { background: rgba(96,165,250,0.2); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px,1fr));
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            padding: 8px 10px;
+            border: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stat-card i { font-size: 16px; color: #60a5fa; opacity: 0.8; }
+        .stat-info .valor { font-size: 1rem; font-weight: 700; color: #ffffff; }
+        .stat-info .etiqueta { font-size: 0.45rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .ventana-container {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+        .ventana-container.active {
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tabla-wrapper, .tabla-saldo-wrapper {
+            flex: 1;
+            overflow: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.03);
+            min-height: 0;
+        }
+        .tabla-wrapper::-webkit-scrollbar,
+        .tabla-saldo-wrapper::-webkit-scrollbar { width: 10px; height: 10px; }
+        .tabla-wrapper::-webkit-scrollbar-track,
+        .tabla-saldo-wrapper::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 10px; }
+        .tabla-wrapper::-webkit-scrollbar-thumb,
+        .tabla-saldo-wrapper::-webkit-scrollbar-thumb { background: #60a5fa; border-radius: 10px; }
+
+        .tabla-container-centrada {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-width: 100%;
+            padding: 4px;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0 4px;
+            font-size: 16px;
+            width: auto;
+            min-width: 100%;
+        }
+        th {
+            background: rgba(20, 28, 45, 0.95);
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-size: 12px;
+            border-bottom: 2px solid rgba(96,165,250,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+        th .letra-col {
+            display: block;
+            font-size: 10px;
+            color: #60a5fa;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        th .nombre-col {
+            display: block;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: 0.2s;
+            color: #cbd5e1;
+        }
+        th .nombre-col:hover {
+            background: rgba(96,165,250,0.08);
+        }
+        th .nombre-col-input {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #60a5fa;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 6px;
+            width: 100%;
+            min-width: 70px;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+        th .nombre-col-input:focus {
+            outline: none;
+            border-color: #f59e0b;
+        }
+        th .btn-eliminar-col {
+            background: rgba(239,68,68,0.1);
+            border: none;
+            border-radius: 4px;
+            padding: 1px 6px;
+            color: #f87171;
+            cursor: pointer;
+            font-size: 10px;
+            transition: 0.2s;
+            margin-left: 4px;
+        }
+        th .btn-eliminar-col:hover {
+            background: rgba(239,68,68,0.3);
+        }
+        td {
+            padding: 6px 10px;
+            background: rgba(10, 18, 28, 0.4);
+            border-radius: 6px;
+            text-align: center;
+            vertical-align: middle;
+            transition: 0.15s;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 16px;
+            min-width: 70px;
+        }
+        tr:hover td { background: rgba(96,165,250,0.04); }
+        td.seleccionada {
+            outline: 2px solid #60a5fa;
+            background: rgba(96,165,250,0.15);
+        }
+        .editable {
+            cursor: text;
+            display: inline-block;
+            width: 100%;
+            min-height: 22px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: 0.15s;
+            font-size: 16px;
+        }
+        .editable:hover { background: rgba(96,165,250,0.08); outline: 1px solid rgba(96,165,250,0.2); }
+        .editable:focus { background: rgba(96,165,250,0.12); outline: 2px solid #60a5fa; }
+        .col-datos { background: rgba(139,92,246,0.03); }
+        .col-ruta { background: rgba(245,158,11,0.03); }
+        .col-total { background: rgba(16,185,129,0.05); border-left: 2px solid #34d399; }
+        .col-credito { background: rgba(96,165,250,0.05); border-left: 2px solid #60a5fa; }
+        .btn-credito {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .btn-credito:hover { transform: scale(1.03); }
+        .btn-eliminar-fila {
+            background: rgba(239,68,68,0.1);
+            border: none;
+            border-radius: 6px;
+            padding: 4px 10px;
+            color: #f87171;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .btn-eliminar-fila:hover {
+            background: rgba(239,68,68,0.3);
+        }
+        .acciones-celda {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tabla-saldo {
+            font-size: 16px;
+            min-width: 100%;
+        }
+        .tabla-saldo th {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .tabla-saldo td {
+            padding: 6px 12px;
+            font-size: 16px;
+        }
+        .saldo-limite { color: #60a5fa; font-weight: 700; }
+        .saldo-gastado { color: #f59e0b; font-weight: 700; }
+        .saldo-disponible { color: #34d399; font-weight: 700; }
+        .saldo-bloqueado { color: #ef4444; font-weight: 700; }
+        .barra-saldo {
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+            min-width: 80px;
+        }
+        .barra-saldo .fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+        }
+        .modal-box {
+            background: #0f172a; border-radius: 22px; max-width: 520px; width: 92%;
+            border: 1px solid rgba(96,165,250,0.2); padding: 20px 18px;
+            animation: fadeUp 0.25s ease;
+            max-height: 90vh; overflow-y: auto;
+        }
+        @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .modal-header h3 { color: #60a5fa; font-size:0.95rem; }
+        .modal-close { background:none; border:none; color:#94a3b8; font-size:22px; cursor:pointer; }
+        .modal-close:hover { color:#60a5fa; }
+        .form-group { margin-bottom: 8px; }
+        .form-group label { display:block; font-size:0.6rem; color:#94a3b8; margin-bottom:2px; font-weight:500; }
+        .form-group label .req { color:#f87171; }
+        .form-group input, .form-group select {
+            width:100%; padding:6px 10px; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08);
+            border-radius:8px; color:#e2e8f0; font-size:0.75rem; transition:0.2s;
+        }
+        .form-group input:focus { border-color:#60a5fa; outline:none; background:rgba(0,0,0,0.5); }
+        .form-group input::placeholder { color:#4a5568; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+        .modal-footer { display:flex; gap:8px; margin-top:14px; }
+        .modal-footer .btn { flex:1; justify-content:center; padding:6px 12px; font-size:0.7rem; }
+        .toast {
+            position: fixed; bottom: 16px; right: 16px; background: #0f172ae6; backdrop-filter: blur(12px);
+            padding: 8px 16px; border-radius: 30px; color: #e2e8f0; font-weight: 500; font-size:0.65rem;
+            border-left: 4px solid #60a5fa; z-index: 99999; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .toast i { margin-right: 6px; }
+        .text-orange { color:#f59e0b; }
+        .text-green { color:#34d399; }
+        .text-red { color:#f87171; }
+        .saving-indicator {
+            position: fixed; bottom:16px; left:16px; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px);
+            padding:4px 12px; border-radius:30px; font-size:0.6rem; color:#34d399; display:none;
+            align-items:center; gap:5px; z-index:9999;
+        }
+        .saving-indicator.show { display:flex; }
+        .credito-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .credito-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(96,165,250,0.1);
+        }
+        .credito-card .label { font-size: 0.5rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .credito-card .value { font-size: 0.9rem; font-weight: 700; }
+        .credito-card .value.limite { color: #60a5fa; }
+        .credito-card .value.gastado { color: #f59e0b; }
+        .credito-card .value.restante { color: #34d399; }
+        
+        .editable.formula-mode {
+            color: #fbbf24;
+            font-family: 'Consolas', monospace;
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 4px;
+        }
+        .editable.formula-result {
+            color: #34d399;
+            font-weight: 700;
+        }
+        
+        .btn-fila-col {
+            background: rgba(245,158,11,0.12);
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            color: #fbbf24;
+            cursor: pointer;
+            font-size: 10px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            white-space: nowrap;
+        }
+        .btn-fila-col:hover {
+            background: rgba(245,158,11,0.25);
+        }
+        .acciones-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .acciones-header .label-acciones {
+            font-size: 9px;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+        .acciones-header .grupo-botones {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        @media (max-width: 700px) { .form-row { grid-template-columns:1fr; } }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .export-option {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .export-option:hover {
+            border-color: #60a5fa;
+            background: rgba(96,165,250,0.05);
+        }
+        .export-option.selected {
+            border-color: #34d399;
+            background: rgba(16,185,129,0.05);
+        }
+        .export-option .icon { font-size: 28px; margin-bottom: 6px; }
+        .export-option .label { font-size: 0.65rem; color: #94a3b8; }
+        .export-option .desc { font-size: 0.5rem; color: #64748b; margin-top: 2px; }
+        .export-option input[type="checkbox"] {
+            margin-top: 6px;
+            accent-color: #34d399;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="modulo-clientes">
+    <div class="panel-principal">
+        <div class="panel-header">
+            <div class="header-left">
+                <div class="icono"><i class="fas fa-users"></i></div>
+                <div>
+                    <h2>
+                        Gestión Clientes
+                        <button class="btn-nuevo-cliente" onclick="abrirModalNuevo()">
+                            <i class="fas fa-plus"></i> Nuevo
+                        </button>
+                        <small>Rutas · Saldo · Crédito</small>
+                    </h2>
+                </div>
+            </div>
+            <div class="top-controls">
+                <div class="ventanas-botones">
+                    <button class="btn-ventana active" id="btnVentanaRutas" onclick="cambiarVentana('rutas')">
+                        <i class="fas fa-route"></i> Rutas
+                    </button>
+                    <button class="btn-ventana" id="btnVentanaSaldo" onclick="cambiarVentana('saldo')">
+                        <i class="fas fa-wallet"></i> Saldo
+                    </button>
+                </div>
+                <div class="acciones">
+                    <button class="btn btn-excel btn-icon" onclick="abrirModalExportar('excel')" title="Exportar a Excel"><i class="fas fa-file-excel"></i></button>
+                    <button class="btn btn-pdf btn-icon" onclick="abrirModalExportar('pdf')" title="Exportar a PDF"><i class="fas fa-file-pdf"></i></button>
+                    <button class="btn btn-recargar btn-icon" onclick="recargar()" title="Recargar"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><i class="fas fa-users"></i><div class="stat-info"><span class="valor" id="totalClientes">0</span><div class="etiqueta">Clientes</div></div></div>
+            <div class="stat-card"><i class="fas fa-coins"></i><div class="stat-info"><span class="valor" id="deudaTotal">C$0</span><div class="etiqueta">Deuda total</div></div></div>
+            <div class="stat-card"><i class="fas fa-exclamation-triangle"></i><div class="stat-info"><span class="valor" id="conDeuda">0</span><div class="etiqueta">Con deuda</div></div></div>
+            <div class="stat-card"><i class="fas fa-credit-card"></i><div class="stat-info"><span class="valor" id="limiteTotal">C$0</span><div class="etiqueta">Límite total</div></div></div>
+        </div>
+
+        <div class="ventana-container active" id="ventanaRutas">
+            <div class="tabla-wrapper" id="tablaWrapper">
+                <div class="tabla-container-centrada">
+                    <div id="contenedorTabla"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ventana-container" id="ventanaSaldo">
+            <div class="tabla-saldo-wrapper">
+                <div class="tabla-container-centrada">
+                    <div id="contenedorSaldo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NUEVO CLIENTE -->
+<div class="modal-overlay" id="modalNuevo">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus"></i> Nuevo Cliente</h3>
+            <button class="modal-close" onclick="cerrarModal('modalNuevo')">&times;</button>
+        </div>
+        <div style="font-size:0.7rem; color:#60a5fa; margin-bottom:8px; font-weight:600;"><i class="fas fa-id-card"></i> Datos del Cliente</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>ID <span class="req">*</span></label>
+                <input id="nuevoId" placeholder="Ej: SANTA-RITA-001">
+            </div>
+            <div class="form-group">
+                <label>Nombre <span class="req">*</span></label>
+                <input id="nuevoNombre" placeholder="Razón social">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Contacto</label><input id="nuevoContacto" placeholder="Nombre contacto"></div>
+            <div class="form-group"><label>RUC/Cédula</label><input id="nuevoCedula" placeholder="Número"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Teléfono</label><input id="nuevoTelefono" placeholder="505 8888 7777"></div>
+            <div class="form-group"><label>Email</label><input id="nuevoEmail" placeholder="correo@cliente.com"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Placa</label><input id="nuevoPlaca" placeholder="Placa vehículo"></div>
+            <div class="form-group"><label>Destino</label><input id="nuevoDestino" placeholder="Destino habitual"></div>
+        </div>
+        <div class="form-group"><label>Dirección</label><input id="nuevoDireccion" placeholder="Dirección completa"></div>
+        <div class="form-group"><label>Conductor asignado</label><input id="nuevoConductor" placeholder="Conductor"></div>
+        <div class="form-group"><label>Tipo</label><select id="nuevoTipo"><option value="Cliente">Cliente</option><option value="Proveedor">Proveedor</option><option value="Distribuidor">Distribuidor</option></select></div>
+
+        <hr style="border-color:rgba(255,255,255,0.05); margin:8px 0;">
+        <div style="font-size:0.7rem; color:#f59e0b; margin-bottom:6px; font-weight:600;"><i class="fas fa-coins"></i> Crédito Inicial</div>
+        <div class="form-row">
+            <div class="form-group"><label>Crédito</label><input type="number" id="nuevoCredito" step="0.01" value="0"></div>
+            <div class="form-group"><label>Límite Crédito</label><input type="number" id="nuevoLimite" step="0.01" value="0"></div>
+        </div>
+
+        <hr style="border-color:rgba(255,255,255,0.05); margin:8px 0;">
+        <div style="font-size:0.7rem; color:#34d399; margin-bottom:6px; font-weight:600;"><i class="fas fa-route"></i> Datos de Ruta</div>
+        <div class="form-row">
+            <div class="form-group"><label>Origen</label><input id="nuevoOrigen" placeholder="Origen"></div>
+            <div class="form-group"><label>Destino Ruta</label><input id="nuevoDestinoRuta" placeholder="Destino"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Diesel</label><input type="number" id="nuevoDiesel" step="0.01" value="0"></div>
+            <div class="form-group"><label>Diesel Max</label><input type="number" id="nuevoDieselMax" step="0.01" value="0"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Gasolina</label><input type="number" id="nuevoGasolina" step="0.01" value="0"></div>
+            <div class="form-group"><label>Gasolina Max</label><input type="number" id="nuevoGasolinaMax" step="0.01" value="0"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Bono 1</label><input id="nuevoBono1" placeholder="Bono 1"></div>
+            <div class="form-group"><label>Bono 2</label><input id="nuevoBono2" placeholder="Bono 2"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Viático 1</label><input type="number" id="nuevoViatico1" step="0.01" value="0"></div>
+            <div class="form-group"><label>Viático 2</label><input type="number" id="nuevoViatico2" step="0.01" value="0"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Costo Traslado</label><input type="number" id="nuevoTraslado" step="0.01" value="0"></div>
+            <div class="form-group"><label>Distancia (km)</label><input type="number" id="nuevoDistancia" step="0.01" value="0"></div>
+        </div>
+        <div class="form-group"><label>Fórmula</label><input id="nuevoFormula" value="=E+F+G+H+K+L+M+N"></div>
+
+        <div class="modal-footer">
+            <button class="btn" style="flex:1; background:rgba(255,255,255,0.05);" onclick="cerrarModal('modalNuevo')">Cancelar</button>
+            <button class="btn btn-success" style="flex:1;" onclick="guardarNuevo()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EXPORTAR -->
+<div class="modal-overlay" id="modalExportar">
+    <div class="modal-box" style="max-width:480px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-export"></i> Exportar <span id="exportTipoLabel">Excel</span></h3>
+            <button class="modal-close" onclick="cerrarModal('modalExportar')">&times;</button>
+        </div>
+        <p style="font-size:0.7rem; color:#94a3b8; text-align:center; margin-bottom:10px;">Selecciona las secciones que deseas incluir en la exportación</p>
+        
+        <div class="export-options">
+            <div class="export-option selected" onclick="toggleExportOption(this)" data-section="rutas">
+                <div class="icon"><i class="fas fa-route"></i></div>
+                <div class="label">Tabla de Rutas</div>
+                <div class="desc">Datos de ruta y costos</div>
+                <input type="checkbox" checked>
+            </div>
+            <div class="export-option selected" onclick="toggleExportOption(this)" data-section="saldo">
+                <div class="icon"><i class="fas fa-wallet"></i></div>
+                <div class="label">Tabla de Saldo</div>
+                <div class="desc">Crédito y límites</div>
+                <input type="checkbox" checked>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin:10px 0; font-size:0.6rem; color:#64748b;">
+            <i class="fas fa-info-circle"></i> Ambas tablas se exportarán en el mismo archivo
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn" style="flex:1; background:rgba(255,255,255,0.05);" onclick="cerrarModal('modalExportar')">Cancelar</button>
+            <button class="btn btn-success" style="flex:1;" onclick="confirmarExportar()">
+                <i class="fas fa-download"></i> Exportar
+            </button>
+        </div>
+        <div id="exportMensaje" style="margin-top:8px; font-size:0.65rem; text-align:center;"></div>
+    </div>
+</div>
+
+<!-- MODAL CRÉDITO -->
+<div class="modal-overlay" id="modalCredito">
+    <div class="modal-box">
+        <div class="modal-header"><h3><i class="fas fa-coins"></i> Gestión de Crédito</h3><button class="modal-close" onclick="cerrarModal('modalCredito')">&times;</button></div>
+        <div id="infoClienteModal" style="font-size:0.75rem; color:#94a3b8; margin-bottom:12px; text-align:center; padding:6px; background:rgba(0,0,0,0.2); border-radius:8px;"></div>
+        <div class="credito-grid">
+            <div class="credito-card"><div class="label">Límite</div><div class="value limite" id="modalLimite">C$0</div></div>
+            <div class="credito-card"><div class="label">Gastado</div><div class="value gastado" id="modalCreditoActual">C$0</div></div>
+            <div class="credito-card"><div class="label">Restante</div><div class="value restante" id="modalDisponible">C$0</div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.5rem; color:#94a3b8; margin-bottom:2px;">
+                <span>0%</span><span id="porcentajeTexto">0%</span><span>100%</span>
+            </div>
+            <div class="progress-bar" style="height:5px; background:rgba(255,255,255,0.05);">
+                <div class="progress-fill" id="modalProgressFill" style="width:0%; background:#60a5fa;"></div>
+            </div>
+        </div>
+        <div class="form-group"><label>Monto (C$)</label><input type="number" id="modalMonto" step="0.01" placeholder="0.00"></div>
+        <div class="modal-footer">
+            <button class="btn btn-success" onclick="aplicarCredito(true)"><i class="fas fa-arrow-down"></i> Abonar</button>
+            <button class="btn" style="background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;" onclick="aplicarCredito(false)"><i class="fas fa-arrow-up"></i> Cargar</button>
+        </div>
+        <div id="modalMensaje" style="margin-top:8px; font-size:0.65rem; text-align:center;"></div>
+        <hr style="border-color:rgba(255,255,255,0.05); margin:10px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="font-size:0.6rem; color:#94a3b8;"><i class="fas fa-chart-line"></i> Extensiones</strong>
+            <button class="btn btn-sm btn-warning" onclick="abrirExtender()"><i class="fas fa-plus-circle"></i> Extender</button>
+        </div>
+        <div id="extensionesList" style="font-size:0.6rem; color:#94a3b8; max-height:80px; overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- MODAL EXTENDER -->
+<div class="modal-overlay" id="modalExtender">
+    <div class="modal-box" style="max-width:360px;">
+        <div class="modal-header"><h3><i class="fas fa-plus-circle"></i> Extender límite</h3><button class="modal-close" onclick="cerrarModal('modalExtender')">&times;</button></div>
+        <div class="form-group"><label>Cliente</label><input id="extenderNombre" readonly style="background:rgba(0,0,0,0.4);"></div>
+        <div class="form-group"><label>Límite actual</label><input id="extenderLimiteActual" readonly style="background:rgba(0,0,0,0.4);"></div>
+        <div class="form-group"><label>Monto (C$)</label><input type="number" id="extenderMonto" step="1000" placeholder="50000"></div>
+        <div class="form-group"><label>Motivo</label><input id="extenderMotivo" placeholder="Motivo"></div>
+        <div class="modal-footer">
+            <button class="btn" style="flex:1; background:rgba(255,255,255,0.05);" onclick="cerrarModal('modalExtender')">Cancelar</button>
+            <button class="btn btn-success" style="flex:1;" onclick="confirmarExtender()">Extender</button>
+        </div>
+    </div>
+</div>
+
+<div id="savingIndicator" class="saving-indicator"><i class="fas fa-save"></i> <span>Guardando...</span></div>
+
+<script>
+// ============================================
+// GESTIÓN CLIENTES - VERSIÓN AUTÓNOMA
+// ============================================
+
+var clientesData = [];
+var columnasRuta = [
+    'CLIENTE', 'TIPO', 'ORIGEN', 'DESTINO', 
+    'DIESEL', 'DIESEL MAX', 'GASOLINA', 'GASOLINA MAX',
+    'BONO 1', 'BONO 2', 'VIATICO 1', 'VIATICO 2', 
+    'TRASLADO', 'DISTANCIA', 'COSTO TOTAL'
+];
+
+var COLUMNAS_PROTEGIDAS = new Set([
+    'CLIENTE', 'TIPO', 'ORIGEN', 'DESTINO', 
+    'DIESEL', 'DIESEL MAX', 'GASOLINA', 'GASOLINA MAX',
+    'BONO 1', 'BONO 2', 'VIATICO 1', 'VIATICO 2', 
+    'TRASLADO', 'DISTANCIA', 'COSTO TOTAL'
+]);
+
+var COLUMNAS_NUMERICAS = new Set([
+    'DIESEL', 'DIESEL MAX', 'GASOLINA', 'GASOLINA MAX',
+    'VIATICO 1', 'VIATICO 2', 'TRASLADO', 'DISTANCIA', 'COSTO TOTAL'
+]);
+
+var NOMBRES_MOSTRADOS = {
+    'CLIENTE': 'Cliente',
+    'TIPO': 'Tipo',
+    'ORIGEN': 'Origen',
+    'DESTINO': 'Destino',
+    'DIESEL': 'Diesel',
+    'DIESEL MAX': 'Diesel Max',
+    'GASOLINA': 'Gasolina',
+    'GASOLINA MAX': 'Gasolina Max',
+    'BONO 1': 'Bono 1',
+    'BONO 2': 'Bono 2',
+    'VIATICO 1': 'Viático 1',
+    'VIATICO 2': 'Viático 2',
+    'TRASLADO': 'Traslado',
+    'DISTANCIA': 'Distancia',
+    'COSTO TOTAL': 'Costo Total'
+};
+
+var clienteIdActual = null;
+var ventanaActual = 'rutas';
+var celdaSeleccionada = null;
+var exportSections = { rutas: true, saldo: true };
+var exportFormat = 'excel';
+
+// ==================== API ====================
+var API = {
+    clientes: '/api/clientes',
+    guardar: '/api/guardar_cliente',
+    eliminar: '/api/eliminar_cliente',
+    credito: '/api/actualizar_credito',
+    extender: '/api/extender_limite',
+    exportarExcel: '/api/exportar_clientes_excel',
+    exportarPDF: '/api/exportar_clientes_pdf',
+    guardarConfig: '/api/guardar_config_clientes',
+    obtenerConfig: '/api/obtener_config_clientes'
+};
+
+// ==================== HELPERS ====================
+function toast(msg, tipo) {
+    tipo = tipo || 'success';
+    var t = document.createElement('div');
+    t.className = 'toast';
+    var icon = tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+    t.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
+    document.body.appendChild(t);
+    setTimeout(function() { t.remove(); }, 3000);
+}
+
+function formatearMoneda(v) {
+    if (v === undefined || v === null) return 'C$0.00';
+    return 'C$' + parseFloat(v).toFixed(2);
+}
+
+function escapar(texto) {
+    if (!texto) return '';
+    var d = document.createElement('div');
+    d.textContent = texto;
+    return d.innerHTML;
+}
+
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+
+function mostrarSaving(show) {
+    var el = document.getElementById('savingIndicator');
+    if (show) el.classList.add('show'); else el.classList.remove('show');
+}
+
+function obtenerLetraColumna(index) {
+    return String.fromCharCode(65 + index);
+}
+
+function toggleExportOption(el) {
+    var checkbox = el.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    el.classList.toggle('selected');
+}
+
+// ==================== CAMBIAR VENTANA ====================
+function cambiarVentana(ventana) {
+    ventanaActual = ventana;
+    var containers = document.querySelectorAll('.ventana-container');
+    for (var i = 0; i < containers.length; i++) {
+        containers[i].classList.remove('active');
+    }
+    var buttons = document.querySelectorAll('.btn-ventana');
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active');
+    }
+    if (ventana === 'rutas') {
+        document.getElementById('ventanaRutas').classList.add('active');
+        document.getElementById('btnVentanaRutas').classList.add('active');
+        renderizarTablaRutas();
+    } else {
+        document.getElementById('ventanaSaldo').classList.add('active');
+        document.getElementById('btnVentanaSaldo').classList.add('active');
+        renderizarTablaSaldo();
+    }
+}
+
+// ==================== OBTENER CLIENTES ====================
+async function obtenerClientes() {
+    try {
+        toast('Cargando datos...', 'info');
+        var r = await fetch(API.clientes);
+        var d = await r.json();
+        console.log('Respuesta del servidor:', d);
+        
+        if (d.ok && d.clientes) {
+            if (d.config) {
+                if (d.config.columnas && d.config.columnas.length > 0) {
+                    columnasRuta = d.config.columnas;
+                }
+                if (d.config.nombres_mostrados) {
+                    for (var key in d.config.nombres_mostrados) {
+                        NOMBRES_MOSTRADOS[key] = d.config.nombres_mostrados[key];
+                    }
+                }
+                if (d.config.columnas_protegidas) {
+                    COLUMNAS_PROTEGIDAS = new Set(d.config.columnas_protegidas);
+                }
+                if (d.config.columnas_numericas) {
+                    COLUMNAS_NUMERICAS = new Set(d.config.columnas_numericas);
+                }
+            }
+            toast('Datos cargados: ' + d.clientes.length + ' clientes', 'success');
+            return d.clientes;
+        }
+        
+        if (d.clientes) {
+            toast('Datos cargados: ' + d.clientes.length + ' clientes', 'success');
+            return d.clientes;
+        }
+        
+        if (d.error) {
+            console.error('Error del servidor:', d.error);
+            toast('Error al cargar datos: ' + d.error, 'error');
+        } else {
+            toast('No se pudieron cargar los datos', 'error');
+        }
+        return [];
+    } catch(e) { 
+        console.error('Error en obtenerClientes:', e); 
+        toast('Error de conexión al servidor: ' + e.message, 'error');
+        return []; 
+    }
+}
+
+// ==================== EVALUAR FÓRMULA ====================
+function evaluarFormulaExcel(formula, row) {
+    if (!formula || typeof formula !== 'string') return parseFloat(formula) || 0;
+    var trimmed = formula.trim();
+    if (!trimmed.startsWith('=')) {
+        var num = parseFloat(trimmed);
+        return isNaN(num) ? 0 : num;
+    }
+    var expr = trimmed.substring(1).trim();
+    if (!expr) return 0;
+    var exprUpper = expr.toUpperCase();
+    var valores = {};
+    for (var i = 0; i < columnasRuta.length; i++) {
+        var letra = obtenerLetraColumna(i);
+        var colName = columnasRuta[i];
+        if (COLUMNAS_NUMERICAS.has(colName) || colName === 'COSTO TOTAL') {
+            var val = parseFloat(row[colName]);
+            if (!isNaN(val)) {
+                valores[letra] = val;
+            }
+        } else {
+            valores[letra] = 0;
+        }
+    }
+    var exprEvaluable = exprUpper;
+    var letrasOrdenadas = Object.keys(valores).sort(function(a, b) { return b.length - a.length; });
+    for (var j = 0; j < letrasOrdenadas.length; j++) {
+        var letra2 = letrasOrdenadas[j];
+        var valor = valores[letra2];
+        var regexMayus = new RegExp('\\b' + letra2 + '\\b', 'g');
+        var regexMinus = new RegExp('\\b' + letra2.toLowerCase() + '\\b', 'g');
+        exprEvaluable = exprEvaluable.replace(regexMayus, '(' + valor + ')');
+        exprEvaluable = exprEvaluable.replace(regexMinus, '(' + valor + ')');
+    }
+    exprEvaluable = exprEvaluable.replace(/[^0-9+\-*/()\. ,]/g, '');
+    exprEvaluable = exprEvaluable.replace(/,/g, '.');
+    if (!exprEvaluable || exprEvaluable.trim() === '') return 0;
+    try {
+        var resultado = Function('"use strict"; return (' + exprEvaluable + ')')();
+        return isNaN(resultado) ? 0 : resultado;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function calcularCostoTotal(row) {
+    var formula = row.FORMULA || '=E+F+G+H+K+L+M+N';
+    return evaluarFormulaExcel(formula, row);
+}
+
+// ==================== GUARDAR CAMPO ====================
+async function guardarCampo(clienteId, campo, valor) {
+    mostrarSaving(true);
+    try {
+        var cli = null;
+        for (var i = 0; i < clientesData.length; i++) {
+            if (clientesData[i].ID === clienteId) { cli = clientesData[i]; break; }
+        }
+        if (!cli) return false;
+        cli[campo] = valor;
+        var nuevoTotal = calcularCostoTotal(cli);
+        cli['COSTO TOTAL'] = nuevoTotal;
+        
+        var payload = {
+            id: clienteId,
+            nombre: cli.CLIENTE || '',
+            contacto: cli.CONTACTO || '',
+            cedula: cli.CEDULA || '',
+            telefono: cli.TELEFONO || '',
+            direccion: cli.DIRECCION || '',
+            destino: cli.DESTINO || '',
+            conductor: cli.CONDUCTOR || '',
+            tipo: cli.TIPO || 'Cliente',
+            placa: cli.PLACA || '',
+            email: cli.EMAIL || '',
+            credito: parseFloat(cli.CREDITO) || 0,
+            limite_credito: parseFloat(cli['LIMITE CREDITO']) || 0,
+            costo_total: nuevoTotal,
+            formula: cli.FORMULA || '=E+F+G+H+K+L+M+N',
+            origen: cli.ORIGEN || '',
+            destino_ruta: cli.DESTINO || '',
+            diesel: parseFloat(cli.DIESEL) || 0,
+            diesel_max: parseFloat(cli['DIESEL MAX']) || 0,
+            gasolina: parseFloat(cli.GASOLINA) || 0,
+            gasolina_max: parseFloat(cli['GASOLINA MAX']) || 0,
+            bono1: cli['BONO 1'] || '',
+            bono2: cli['BONO 2'] || '',
+            viatico1: parseFloat(cli['VIATICO 1']) || 0,
+            viatico2: parseFloat(cli['VIATICO 2']) || 0,
+            traslado: parseFloat(cli.TRASLADO) || 0,
+            distancia: parseFloat(cli.DISTANCIA) || 0,
+            usuario: 'admin'
+        };
+        
+        var columnasAdicionales = {};
+        for (var key in cli) {
+            if (key !== 'ID' && key !== 'CLIENTE' && key !== 'TIPO' && key !== 'ORIGEN' && 
+                key !== 'DESTINO' && key !== 'DIESEL' && key !== 'DIESEL MAX' && 
+                key !== 'GASOLINA' && key !== 'GASOLINA MAX' && key !== 'BONO 1' && 
+                key !== 'BONO 2' && key !== 'VIATICO 1' && key !== 'VIATICO 2' && 
+                key !== 'TRASLADO' && key !== 'DISTANCIA' && key !== 'COSTO TOTAL' &&
+                key !== 'CREDITO' && key !== 'LIMITE CREDITO' && key !== 'FORMULA' &&
+                key !== 'extensiones' && !key.startsWith('_')) {
+                columnasAdicionales[key] = cli[key];
+            }
+        }
+        if (Object.keys(columnasAdicionales).length > 0) {
+            payload.columnas_adicionales = columnasAdicionales;
+        }
+        
+        var r = await fetch(API.guardar, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        var data = await r.json();
+        if (data.ok) {
+            if (campo !== 'FORMULA') {
+                actualizarCeldaCostoTotal(clienteId, nuevoTotal);
+            }
+            return true;
+        }
+        toast('Error: ' + (data.error || 'no guardado'), 'error');
+        return false;
+    } catch(e) { toast('Error de conexion', 'error'); return false; }
+    finally { setTimeout(function() { mostrarSaving(false); }, 500); }
+}
+
+function actualizarCeldaCostoTotal(clienteId, nuevoTotal) {
+    var fila = document.querySelector('tr[data-id="' + clienteId + '"]');
+    if (fila) {
+        var celdas = fila.querySelectorAll('td');
+        var totalIndex = columnasRuta.length;
+        if (celdas[totalIndex - 1]) {
+            var span = celdas[totalIndex - 1].querySelector('.editable');
+            if (span) {
+                span.innerText = formatearMoneda(nuevoTotal);
+                span.classList.remove('formula-mode');
+                span.classList.add('formula-result');
+            }
+        }
+    }
+}
+
+// ==================== RENDERIZAR TABLA RUTAS ====================
+function renderizarTablaRutas() {
+    var cont = document.getElementById('contenedorTabla');
+    if (!clientesData.length) {
+        cont.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b;font-size:18px;"><i class="fas fa-route" style="font-size:40px;opacity:0.2;display:block;margin-bottom:12px;"></i><p>No hay clientes registrados</p><p style="font-size:12px;color:#475569;margin-top:8px;">Haga clic en "Nuevo" para crear un cliente</p></div>';
+        actualizarStats();
+        return;
+    }
+    var html = '<table><thead><tr>';
+    for (var i = 0; i < columnasRuta.length; i++) {
+        var col = columnasRuta[i];
+        var letra = obtenerLetraColumna(i);
+        var nombreMostrado = NOMBRES_MOSTRADOS[col] || col;
+        var esProtegida = COLUMNAS_PROTEGIDAS.has(col);
+        var esTotal = col === 'COSTO TOTAL';
+        var esNumerica = COLUMNAS_NUMERICAS.has(col);
+        var clase = '';
+        if (col === 'CLIENTE' || col === 'TIPO' || col === 'ORIGEN' || col === 'DESTINO') clase = 'col-datos';
+        else if (esNumerica && !esTotal) clase = 'col-ruta';
+        else if (esTotal) clase = 'col-total';
+        html += '<th class="' + clase + '" data-col="' + i + '" data-colname="' + col + '">';
+        html += '<span class="letra-col">' + letra + '</span>';
+        html += '<span class="nombre-col" onclick="editarNombreColumna(this, ' + i + ')" title="Doble clic para editar">' + nombreMostrado + '</span>';
+        if (!esProtegida && columnasRuta.length > 16) {
+            html += ' <button class="btn-eliminar-col" onclick="eliminarColumna(' + i + ')" title="Eliminar columna"><i class="fas fa-times"></i></button>';
+        }
+        html += '</th>';
+    }
+    html += '<th style="min-width:70px;">';
+    html += '<div class="acciones-header">';
+    html += '<span class="label-acciones">ACCIONES</span>';
+    html += '<div class="grupo-botones">';
+    html += '<button class="btn-fila-col" onclick="agregarFila()" title="Agregar fila"><i class="fas fa-plus-circle"></i> Fila</button>';
+    html += '<button class="btn-fila-col" onclick="agregarColumna()" title="Agregar columna"><i class="fas fa-columns"></i> Col</button>';
+    html += '</div></div></th></tr></thead><tbody>';
+    for (var r = 0; r < clientesData.length; r++) {
+        var row = clientesData[r];
+        row['COSTO TOTAL'] = calcularCostoTotal(row);
+        html += '<tr data-fila="' + r + '" data-id="' + row.ID + '">';
+        for (var c = 0; c < columnasRuta.length; c++) {
+            var col2 = columnasRuta[c];
+            var val = row[col2] !== undefined ? row[col2] : '';
+            var isCostoTotal = col2 === 'COSTO TOTAL';
+            var display = isCostoTotal ? formatearMoneda(val) : escapar(val);
+            var esNumerica2 = COLUMNAS_NUMERICAS.has(col2);
+            var clase2 = '';
+            if (col2 === 'COSTO TOTAL') clase2 = 'col-total';
+            else if (esNumerica2) clase2 = 'col-ruta';
+            else if (col2 === 'CLIENTE' || col2 === 'TIPO' || col2 === 'ORIGEN' || col2 === 'DESTINO') clase2 = 'col-datos';
+            var extraClass = '';
+            if (isCostoTotal) extraClass = 'formula-result';
+            var style = isCostoTotal ? 'font-weight:700;color:#34d399;' : '';
+            html += '<td class="' + clase2 + '" data-fila="' + r + '" data-col="' + c + '" onclick="seleccionarCelda(' + r + ',' + c + ')">';
+            html += '<span class="editable ' + extraClass + '" contenteditable="true" data-id="' + row.ID + '" data-field="' + col2 + '" ';
+            html += 'onfocus="iniciarEdicionCelda(this)" onblur="editarCelda(this,\'' + row.ID + '\',\'' + col2 + '\')" ';
+            html += 'onkeydown="manejarEnterCelda(event, this, \'' + row.ID + '\',\'' + col2 + '\')" style="' + style + '">' + display + '</span>';
+            html += '</td>';
+        }
+        html += '<td><button class="btn-eliminar-fila" onclick="eliminarFila(' + r + ')" title="Eliminar fila"><i class="fas fa-trash"></i></button></td></tr>';
+    }
+    html += '</tbody></table>';
+    cont.innerHTML = html;
+    actualizarStats();
+}
+
+// ==================== RENDERIZAR TABLA SALDO ====================
+function renderizarTablaSaldo() {
+    var cont = document.getElementById('contenedorSaldo');
+    if (!clientesData.length) {
+        cont.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b;font-size:18px;"><i class="fas fa-wallet" style="font-size:40px;opacity:0.2;display:block;margin-bottom:12px;"></i><p>No hay clientes registrados</p></div>';
+        return;
+    }
+    var html = '<table class="tabla-saldo"><thead><tr><th>ID</th><th>Cliente</th><th>Límite</th><th>Gastado</th><th>Disponible</th><th>% Uso</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+    for (var i = 0; i < clientesData.length; i++) {
+        var row = clientesData[i];
+        var cred = parseFloat(row.CREDITO) || 0;
+        var lim = parseFloat(row['LIMITE CREDITO']) || 0;
+        var disponible = Math.max(0, lim - cred);
+        var pct = lim > 0 ? Math.min(100, (cred / lim * 100)) : 0;
+        var estado = '', estadoColor = '';
+        if (lim > 0 && cred >= lim) { estado = 'BLOQUEADO'; estadoColor = 'saldo-bloqueado'; }
+        else if (pct >= 90) { estado = 'CRITICO'; estadoColor = 'saldo-bloqueado'; }
+        else if (pct >= 70) { estado = 'ALERTA'; estadoColor = 'saldo-bloqueado'; }
+        else if (cred > 0) { estado = 'DEBE'; estadoColor = 'text-orange'; }
+        else { estado = 'DISPONIBLE'; estadoColor = 'text-green'; }
+        var barraColor = pct >= 90 ? '#ef4444' : (pct >= 70 ? '#f59e0b' : '#34d399');
+        html += '<tr data-id="' + row.ID + '">';
+        html += '<td><strong>' + escapar(row.ID) + '</strong></td>';
+        html += '<td>' + escapar(row.CLIENTE) + '</td>';
+        html += '<td class="saldo-limite">' + formatearMoneda(lim) + '</td>';
+        html += '<td class="saldo-gastado">' + formatearMoneda(cred) + '</td>';
+        html += '<td class="saldo-disponible">' + formatearMoneda(disponible) + '</td>';
+        html += '<td><div style="display:flex; align-items:center; gap:5px; justify-content:center;"><div class="barra-saldo"><div class="fill" style="width:' + pct + '%; background:' + barraColor + ';"></div></div><span style="font-size:16px; color:#94a3b8; min-width:35px;">' + pct.toFixed(0) + '%</span></div></td>';
+        html += '<td><span class="' + estadoColor + '" style="font-weight:700; font-size:16px;">' + estado + '</span></td>';
+        html += '<td><button class="btn-credito" onclick="abrirModalCredito(\'' + row.ID + '\',\'' + escapar(row.CLIENTE) + '\')"><i class="fas fa-coins"></i> Crédito</button></td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    cont.innerHTML = html;
+}
+
+// ==================== ACTUALIZAR STATS ====================
+function actualizarStats() {
+    var total = clientesData.length;
+    var deuda = 0, conDeuda = 0, limiteTotal = 0;
+    for (var i = 0; i < clientesData.length; i++) {
+        var e = clientesData[i];
+        var c = parseFloat(e.CREDITO) || 0;
+        var l = parseFloat(e['LIMITE CREDITO']) || 0;
+        deuda += c;
+        if (c > 0) conDeuda++;
+        limiteTotal += l;
+    }
+    document.getElementById('totalClientes').textContent = total;
+    document.getElementById('deudaTotal').textContent = formatearMoneda(deuda);
+    document.getElementById('conDeuda').textContent = conDeuda;
+    document.getElementById('limiteTotal').textContent = formatearMoneda(limiteTotal);
+}
+
+// ==================== SELECCIONAR CELDA ====================
+function seleccionarCelda(fila, columna) {
+    var seleccionadas = document.querySelectorAll('td.seleccionada');
+    for (var i = 0; i < seleccionadas.length; i++) {
+        seleccionadas[i].classList.remove('seleccionada');
+    }
+    celdaSeleccionada = { fila: fila, columna: columna };
+    var td = document.querySelector('td[data-fila="' + fila + '"][data-col="' + columna + '"]');
+    if (td) td.classList.add('seleccionada');
+}
+
+// ==================== EDITAR NOMBRE COLUMNA ====================
+function editarNombreColumna(el, idx) {
+    var colName = columnasRuta[idx];
+    if (COLUMNAS_PROTEGIDAS.has(colName)) {
+        toast('No se puede cambiar el nombre de esta columna', 'info');
+        return;
+    }
+    var currentName = NOMBRES_MOSTRADOS[colName] || colName;
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'nombre-col-input';
+    input.value = currentName;
+    input.maxLength = 30;
+    el.parentNode.replaceChild(input, el);
+    input.focus();
+    input.select();
+    var guardarNombre = function() {
+        var nuevoNombre = input.value.trim();
+        if (nuevoNombre && nuevoNombre !== currentName) {
+            NOMBRES_MOSTRADOS[colName] = nuevoNombre;
+            toast('Columna renombrada a: ' + nuevoNombre, 'success');
+            guardarConfig();
+            renderizarTablaRutas();
+        } else {
+            renderizarTablaRutas();
+        }
+    };
+    input.addEventListener('blur', guardarNombre);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur();
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            renderizarTablaRutas();
+        }
+    });
+}
+
+// ==================== EDITAR CELDA ====================
+function iniciarEdicionCelda(el) {
+    var field = el.getAttribute('data-field');
+    if (field === 'COSTO TOTAL') {
+        var id = el.getAttribute('data-id');
+        var cli = null;
+        for (var i = 0; i < clientesData.length; i++) {
+            if (clientesData[i].ID === id) { cli = clientesData[i]; break; }
+        }
+        if (cli && cli.FORMULA) {
+            el.innerText = cli.FORMULA;
+            el.classList.remove('formula-result');
+            el.classList.add('formula-mode');
+        }
+    }
+}
+
+function manejarEnterCelda(event, el, id, campo) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        el.blur();
+    }
+}
+
+window.editarCelda = function(el, id, campo) {
+    if (campo === 'COSTO TOTAL') {
+        var val = el.innerText.trim();
+        if (val.startsWith('=')) {
+            var cli = null;
+            for (var i = 0; i < clientesData.length; i++) {
+                if (clientesData[i].ID === id) { cli = clientesData[i]; break; }
+            }
+            if (cli) {
+                cli.FORMULA = val;
+                var nuevoTotal = calcularCostoTotal(cli);
+                cli['COSTO TOTAL'] = nuevoTotal;
+                el.innerText = formatearMoneda(nuevoTotal);
+                el.classList.remove('formula-mode');
+                el.classList.add('formula-result');
+                guardarCampo(id, 'FORMULA', val);
+                toast('Fórmula aplicada: ' + formatearMoneda(nuevoTotal), 'success');
+            }
+        } else {
+            var num = parseFloat(val.replace(/[C$,\s]/g, ''));
+            if (!isNaN(num)) {
+                var cli2 = null;
+                for (var j = 0; j < clientesData.length; j++) {
+                    if (clientesData[j].ID === id) { cli2 = clientesData[j]; break; }
+                }
+                if (cli2) {
+                    cli2['COSTO TOTAL'] = num;
+                    el.innerText = formatearMoneda(num);
+                    el.classList.remove('formula-mode');
+                    el.classList.add('formula-result');
+                    guardarCampo(id, 'COSTO TOTAL', num);
+                    toast('Valor guardado: ' + formatearMoneda(num), 'success');
+                }
+            } else {
+                var cli3 = null;
+                for (var k = 0; k < clientesData.length; k++) {
+                    if (clientesData[k].ID === id) { cli3 = clientesData[k]; break; }
+                }
+                if (cli3) {
+                    el.innerText = formatearMoneda(cli3['COSTO TOTAL'] || 0);
+                    el.classList.remove('formula-mode');
+                    el.classList.add('formula-result');
+                }
+                toast('Ingrese un número o una fórmula con =', 'info');
+            }
+        }
+        return;
+    }
+    var val2 = el.innerText.trim();
+    if (COLUMNAS_NUMERICAS.has(campo)) {
+        val2 = val2.replace(/[C$,\s]/g, '');
+        var num2 = parseFloat(val2);
+        if (!isNaN(num2)) { val2 = num2; el.innerText = formatearMoneda(num2); }
+        else { el.innerText = formatearMoneda(0); val2 = 0; }
+    }
+    var cli4 = null;
+    for (var l = 0; l < clientesData.length; l++) {
+        if (clientesData[l].ID === id) { cli4 = clientesData[l]; break; }
+    }
+    if (cli4 && cli4[campo] != val2) {
+        cli4[campo] = val2;
+        guardarCampo(id, campo, val2);
+        if (ventanaActual === 'saldo') renderizarTablaSaldo();
+    }
+};
+
+// ==================== ELIMINAR FILA ====================
+function eliminarFila(fila) {
+    if (!confirm('¿Eliminar la fila ' + (fila + 1) + '?')) return;
+    var row = clientesData[fila];
+    if (row && row.ID && row.ID.startsWith('NUEVO-')) {
+        clientesData.splice(fila, 1);
+        renderizarTablaRutas();
+        renderizarTablaSaldo();
+        actualizarStats();
+        toast('Fila eliminada');
+        return;
+    }
+    if (row && row.ID) {
+        eliminarCliente(row.ID);
+    }
+}
+
+// ==================== ELIMINAR COLUMNA ====================
+function eliminarColumna(col) {
+    var nombreCol = columnasRuta[col];
+    if (!nombreCol) return;
+    if (COLUMNAS_PROTEGIDAS.has(nombreCol)) {
+        toast('No se puede eliminar esta columna predefinida', 'error');
+        return;
+    }
+    if (!confirm('¿Eliminar la columna "' + nombreCol + '"?')) return;
+    columnasRuta.splice(col, 1);
+    for (var i = 0; i < clientesData.length; i++) {
+        delete clientesData[i][nombreCol];
+    }
+    delete NOMBRES_MOSTRADOS[nombreCol];
+    guardarConfig();
+    renderizarTablaRutas();
+    toast('Columna "' + nombreCol + '" eliminada');
+}
+
+// ==================== AGREGAR FILA ====================
+function agregarFila() {
+    if (!clientesData.length) {
+        toast('Primero cree un cliente', 'error');
+        return;
+    }
+    var posicion = clientesData.length;
+    if (celdaSeleccionada && celdaSeleccionada.fila !== undefined) {
+        posicion = celdaSeleccionada.fila + 1;
+    }
+    var nuevaFila = {};
+    for (var i = 0; i < columnasRuta.length; i++) {
+        var col = columnasRuta[i];
+        if (col === 'CLIENTE') nuevaFila[col] = 'Nuevo Cliente';
+        else if (col === 'COSTO TOTAL') nuevaFila[col] = 0;
+        else nuevaFila[col] = '';
+    }
+    nuevaFila.ID = 'NUEVO-' + (clientesData.length + 1);
+    nuevaFila.CREDITO = 0;
+    nuevaFila['LIMITE CREDITO'] = 0;
+    nuevaFila.FORMULA = '=E+F+G+H+K+L+M+N';
+    nuevaFila.extensiones = [];
+    clientesData.splice(posicion, 0, nuevaFila);
+    renderizarTablaRutas();
+    renderizarTablaSaldo();
+    actualizarStats();
+    toast('Fila agregada en posición ' + (posicion + 1));
+}
+
+// ==================== AGREGAR COLUMNA ====================
+function agregarColumna() {
+    if (!clientesData.length) {
+        toast('Primero cree un cliente', 'error');
+        return;
+    }
+    var nombreCol = prompt('Nombre de la nueva columna:', 'Nueva Columna ' + (columnasRuta.length - 14));
+    if (!nombreCol) return;
+    if (columnasRuta.indexOf(nombreCol) !== -1) {
+        toast('Ya existe una columna con ese nombre', 'error');
+        return;
+    }
+    var posicion = columnasRuta.length - 1;
+    columnasRuta.splice(posicion, 0, nombreCol);
+    for (var i = 0; i < clientesData.length; i++) {
+        clientesData[i][nombreCol] = '';
+    }
+    if (!NOMBRES_MOSTRADOS[nombreCol]) {
+        NOMBRES_MOSTRADOS[nombreCol] = nombreCol;
+    }
+    guardarConfig();
+    renderizarTablaRutas();
+    toast('Columna "' + nombreCol + '" agregada');
+}
+
+// ==================== GUARDAR CONFIGURACIÓN ====================
+async function guardarConfig() {
+    try {
+        var config = {
+            columnas: columnasRuta,
+            nombres_mostrados: NOMBRES_MOSTRADOS,
+            columnas_protegidas: Array.from(COLUMNAS_PROTEGIDAS),
+            columnas_numericas: Array.from(COLUMNAS_NUMERICAS)
+        };
+        var r = await fetch(API.guardarConfig, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        var data = await r.json();
+        if (!data.ok) {
+            console.error('Error guardando configuración:', data.error);
+        }
+    } catch(e) {
+        console.error('Error guardando configuración:', e);
+    }
+}
+
+// ==================== CARGAR CLIENTES ====================
+async function cargarClientes() {
+    mostrarSaving(true);
+    try {
+        var datos = await obtenerClientes();
+        clientesData = [];
+        for (var i = 0; i < datos.length; i++) {
+            var e = datos[i];
+            var obj = {
+                ID: e.id || '',
+                CLIENTE: e.nombre || '',
+                TIPO: e.tipo || 'Cliente',
+                ORIGEN: e.origen || '',
+                DESTINO: e.destino || '',
+                DIESEL: e.diesel || 0,
+                'DIESEL MAX': e.diesel_max || 0,
+                GASOLINA: e.gasolina || 0,
+                'GASOLINA MAX': e.gasolina_max || 0,
+                'BONO 1': e.bono1 || '',
+                'BONO 2': e.bono2 || '',
+                'VIATICO 1': e.viatico1 || 0,
+                'VIATICO 2': e.viatico2 || 0,
+                TRASLADO: e.traslado || 0,
+                DISTANCIA: e.distancia || 0,
+                'COSTO TOTAL': e.costo_total || 0,
+                CREDITO: e.credito || 0,
+                'LIMITE CREDITO': e.limite_credito || 0,
+                FORMULA: e.formula || '=E+F+G+H+K+L+M+N',
+                extensiones: e.extensiones || []
+            };
+            if (e.columnas_adicionales) {
+                for (var key in e.columnas_adicionales) {
+                    obj[key] = e.columnas_adicionales[key];
+                }
+            }
+            clientesData.push(obj);
+        }
+        for (var j = 0; j < clientesData.length; j++) {
+            clientesData[j]['COSTO TOTAL'] = calcularCostoTotal(clientesData[j]);
+        }
+        renderizarTablaRutas();
+        renderizarTablaSaldo();
+        actualizarStats();
+        if (clientesData.length === 0) {
+            toast('No hay clientes registrados', 'info');
+        }
+    } catch(e) {
+        console.error('Error en cargarClientes:', e);
+        toast('Error al cargar los datos: ' + e.message, 'error');
+    } finally {
+        mostrarSaving(false);
+    }
+}
+
+// ==================== MODAL NUEVO CLIENTE ====================
+function abrirModalNuevo() {
+    var ids = ['nuevoId','nuevoNombre','nuevoContacto','nuevoCedula','nuevoTelefono','nuevoEmail',
+        'nuevoPlaca','nuevoDestino','nuevoDireccion','nuevoConductor','nuevoOrigen','nuevoDestinoRuta',
+        'nuevoBono1','nuevoBono2'];
+    for (var i = 0; i < ids.length; i++) {
+        document.getElementById(ids[i]).value = '';
+    }
+    var nums = ['nuevoCredito','nuevoLimite','nuevoDiesel','nuevoDieselMax','nuevoGasolina','nuevoGasolinaMax',
+        'nuevoViatico1','nuevoViatico2','nuevoTraslado','nuevoDistancia'];
+    for (var j = 0; j < nums.length; j++) {
+        document.getElementById(nums[j]).value = '0';
+    }
+    document.getElementById('nuevoTipo').value = 'Cliente';
+    document.getElementById('nuevoFormula').value = '=E+F+G+H+K+L+M+N';
+    if (clientesData.length > 0) {
+        var ultimoId = clientesData[clientesData.length - 1].ID;
+        if (ultimoId && !ultimoId.startsWith('NUEVO-')) {
+            document.getElementById('nuevoId').value = ultimoId + '-NUEVO';
+        }
+    }
+    abrirModal('modalNuevo');
+}
+
+window.guardarNuevo = async function() {
+    var nombre = document.getElementById('nuevoNombre').value.trim();
+    if (!nombre) { toast('El nombre es obligatorio', 'error'); return; }
+    var idPersonalizado = document.getElementById('nuevoId').value.trim().toUpperCase();
+    if (!idPersonalizado) {
+        toast('El ID es obligatorio. Asigne un ID único.', 'error');
+        return;
+    }
+    for (var i = 0; i < clientesData.length; i++) {
+        if (clientesData[i].ID === idPersonalizado) {
+            toast('El ID "' + idPersonalizado + '" ya existe. Use otro.', 'error');
+            return;
+        }
+    }
+    var diesel = parseFloat(document.getElementById('nuevoDiesel').value) || 0;
+    var dieselMax = parseFloat(document.getElementById('nuevoDieselMax').value) || 0;
+    var gasolina = parseFloat(document.getElementById('nuevoGasolina').value) || 0;
+    var gasolinaMax = parseFloat(document.getElementById('nuevoGasolinaMax').value) || 0;
+    var viatico1 = parseFloat(document.getElementById('nuevoViatico1').value) || 0;
+    var viatico2 = parseFloat(document.getElementById('nuevoViatico2').value) || 0;
+    var traslado = parseFloat(document.getElementById('nuevoTraslado').value) || 0;
+    var distancia = parseFloat(document.getElementById('nuevoDistancia').value) || 0;
+    var formula = document.getElementById('nuevoFormula').value.trim() || '=E+F+G+H+K+L+M+N';
+    var tempRow = {
+        DIESEL: diesel,
+        'DIESEL MAX': dieselMax,
+        GASOLINA: gasolina,
+        'GASOLINA MAX': gasolinaMax,
+        'VIATICO 1': viatico1,
+        'VIATICO 2': viatico2,
+        TRASLADO: traslado,
+        DISTANCIA: distancia,
+        FORMULA: formula
+    };
+    var costoTotal = calcularCostoTotal(tempRow);
+    var payload = {
+        id: idPersonalizado,
+        nombre: nombre,
+        contacto: document.getElementById('nuevoContacto').value.trim(),
+        cedula: document.getElementById('nuevoCedula').value.trim(),
+        telefono: document.getElementById('nuevoTelefono').value.trim(),
+        email: document.getElementById('nuevoEmail').value.trim(),
+        placa: document.getElementById('nuevoPlaca').value.trim(),
+        destino: document.getElementById('nuevoDestino').value.trim(),
+        direccion: document.getElementById('nuevoDireccion').value.trim(),
+        conductor: document.getElementById('nuevoConductor').value.trim(),
+        tipo: document.getElementById('nuevoTipo').value,
+        credito: parseFloat(document.getElementById('nuevoCredito').value) || 0,
+        limite_credito: parseFloat(document.getElementById('nuevoLimite').value) || 0,
+        origen: document.getElementById('nuevoOrigen').value.trim(),
+        destino_ruta: document.getElementById('nuevoDestinoRuta').value.trim(),
+        diesel: diesel,
+        diesel_max: dieselMax,
+        gasolina: gasolina,
+        gasolina_max: gasolinaMax,
+        bono1: document.getElementById('nuevoBono1').value.trim(),
+        bono2: document.getElementById('nuevoBono2').value.trim(),
+        viatico1: viatico1,
+        viatico2: viatico2,
+        traslado: traslado,
+        distancia: distancia,
+        costo_total: costoTotal,
+        formula: formula,
+        usuario: 'admin'
+    };
+    try {
+        var r = await fetch(API.guardar, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        var data = await r.json();
+        if (data.ok) {
+            toast('Cliente "' + nombre + '" creado con ID: ' + idPersonalizado, 'success');
+            cerrarModal('modalNuevo');
+            cargarClientes();
+        } else {
+            toast(data.error || 'Error al crear cliente', 'error');
+        }
+    } catch(e) { toast('Error de conexión', 'error'); }
+};
+
+// ==================== ELIMINAR CLIENTE ====================
+window.eliminarCliente = async function(id) {
+    if (!confirm('¿Eliminar el cliente "' + id + '"? Esta acción no se puede deshacer.')) return;
+    try {
+        var r = await fetch(API.eliminar, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, usuario: 'admin' }) });
+        var d = await r.json();
+        if (d.ok) { toast('Cliente eliminado'); cargarClientes(); }
+        else toast('Error al eliminar', 'error');
+    } catch(e) { toast('Error de conexión', 'error'); }
+};
+
+// ==================== MODAL CRÉDITO ====================
+window.abrirModalCredito = function(id, nombre) {
+    clienteIdActual = id;
+    var cli = null;
+    for (var i = 0; i < clientesData.length; i++) {
+        if (clientesData[i].ID === id) { cli = clientesData[i]; break; }
+    }
+    if (!cli) return;
+    var credito = parseFloat(cli.CREDITO) || 0;
+    var limite = parseFloat(cli['LIMITE CREDITO']) || 0;
+    var disponible = Math.max(0, limite - credito);
+    var pct = limite > 0 ? Math.min(100, (credito / limite * 100)) : 0;
+    document.getElementById('infoClienteModal').innerHTML = '<strong style="font-size:0.9rem; color:#60a5fa;">' + escapar(nombre) + '</strong> · <span style="color:#94a3b8;">' + id + '</span>';
+    document.getElementById('modalLimite').textContent = formatearMoneda(limite);
+    document.getElementById('modalCreditoActual').textContent = formatearMoneda(credito);
+    document.getElementById('modalDisponible').textContent = formatearMoneda(disponible);
+    document.getElementById('porcentajeTexto').textContent = pct.toFixed(1) + '%';
+    var progressFill = document.getElementById('modalProgressFill');
+    progressFill.style.width = pct + '%';
+    progressFill.style.background = pct >= 90 ? '#ef4444' : (pct >= 70 ? '#f59e0b' : '#60a5fa');
+    document.getElementById('modalMonto').value = '';
+    document.getElementById('modalMensaje').innerHTML = '';
+    var ext = cli.extensiones || [];
+    var cont = document.getElementById('extensionesList');
+    if (ext.length) {
+        var html = '';
+        for (var j = 0; j < ext.length; j++) {
+            html += '<div style="padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.04);">';
+            html += '<span style="color:#34d399;">+' + formatearMoneda(ext[j].monto) + '</span>';
+            html += '<span style="color:#94a3b8;"> → ' + formatearMoneda(ext[j].nuevo_limite) + '</span>';
+            html += '<div style="font-size:0.5rem; color:#64748b;">' + (ext[j].motivo || 'Sin motivo') + ' · ' + new Date(ext[j].fecha).toLocaleDateString() + '</div>';
+            html += '</div>';
+        }
+        cont.innerHTML = html;
+    } else {
+        cont.innerHTML = '<div style="color:#64748b;text-align:center;padding:6px;font-size:0.6rem;">Sin extensiones</div>';
+    }
+    abrirModal('modalCredito');
+};
+
+window.aplicarCredito = async function(esAbono) {
+    if (!clienteIdActual) return;
+    var monto = parseFloat(document.getElementById('modalMonto').value);
+    if (isNaN(monto) || monto <= 0) { document.getElementById('modalMensaje').innerHTML = '<span style="color:#f87171;">Monto inválido</span>'; return; }
+    document.getElementById('modalMensaje').innerHTML = '<span style="color:#60a5fa;"><i class="fas fa-spinner fa-pulse"></i> Procesando...</span>';
+    try {
+        var r = await fetch(API.credito, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cliente_id: clienteIdActual, monto: monto, es_abono: esAbono, usuario: 'admin' }) });
+        var d = await r.json();
+        if (d.ok) {
+            document.getElementById('modalMensaje').innerHTML = '<span style="color:#34d399;">✓ ' + (esAbono ? 'Abono aplicado' : 'Cargo aplicado') + '</span>';
+            setTimeout(function() { cerrarModal('modalCredito'); cargarClientes(); }, 1000);
+        } else { document.getElementById('modalMensaje').innerHTML = '<span style="color:#f87171;">' + (d.error || 'Error') + '</span>'; }
+    } catch(e) { document.getElementById('modalMensaje').innerHTML = '<span style="color:#f87171;">Error de conexión</span>'; }
+};
+
+window.abrirExtender = function() {
+    if (!clienteIdActual) return;
+    var cli = null;
+    for (var i = 0; i < clientesData.length; i++) {
+        if (clientesData[i].ID === clienteIdActual) { cli = clientesData[i]; break; }
+    }
+    if (!cli) return;
+    document.getElementById('extenderNombre').value = cli.CLIENTE;
+    document.getElementById('extenderLimiteActual').value = formatearMoneda(cli['LIMITE CREDITO']);
+    document.getElementById('extenderMonto').value = '';
+    document.getElementById('extenderMotivo').value = '';
+    abrirModal('modalExtender');
+};
+
+window.confirmarExtender = async function() {
+    if (!clienteIdActual) return;
+    var monto = parseFloat(document.getElementById('extenderMonto').value);
+    var motivo = document.getElementById('extenderMotivo').value.trim();
+    if (isNaN(monto) || monto <= 0) { toast('Monto inválido', 'error'); return; }
+    try {
+        var r = await fetch(API.extender, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cliente_id: clienteIdActual, monto: monto, motivo: motivo, usuario: 'admin' }) });
+        var d = await r.json();
+        if (d.ok) { toast('Límite extendido'); cerrarModal('modalExtender'); cargarClientes(); }
+        else toast(d.error || 'Error', 'error');
+    } catch(e) { toast('Error de conexión', 'error'); }
+};
+
+// ==================== MODAL EXPORTAR ====================
+function abrirModalExportar(format) {
+    exportFormat = format;
+    document.getElementById('exportTipoLabel').textContent = format === 'excel' ? 'Excel' : 'PDF';
+    var options = document.querySelectorAll('.export-option');
+    options.forEach(function(opt) {
+        var section = opt.dataset.section;
+        if (exportSections[section] !== undefined) {
+            opt.classList.toggle('selected', exportSections[section]);
+            opt.querySelector('input[type="checkbox"]').checked = exportSections[section];
+        }
+    });
+    document.getElementById('exportMensaje').innerHTML = '';
+    abrirModal('modalExportar');
+}
+
+function confirmarExportar() {
+    var options = document.querySelectorAll('.export-option');
+    options.forEach(function(opt) {
+        var section = opt.dataset.section;
+        exportSections[section] = opt.querySelector('input[type="checkbox"]').checked;
+    });
+    
+    var hasSelection = false;
+    for (var key in exportSections) {
+        if (exportSections[key]) { hasSelection = true; break; }
+    }
+    
+    if (!hasSelection) {
+        document.getElementById('exportMensaje').innerHTML = '<span style="color:#f87171;">Selecciona al menos una sección</span>';
+        return;
+    }
+    
+    cerrarModal('modalExportar');
+    if (exportFormat === 'excel') {
+        exportarExcelCompleto();
+    } else {
+        exportarPDFCompleto();
+    }
+}
+
+// ==================== EXPORTAR EXCEL ====================
+async function exportarExcelCompleto() {
+    if (!clientesData.length) { toast('Sin datos para exportar', 'error'); return; }
+    try {
+        mostrarSaving(true);
+        toast('Generando Excel desde el servidor...', 'info');
+        
+        var url = API.exportarExcel + '?rutas=' + (exportSections.rutas ? '1' : '0') + '&saldo=' + (exportSections.saldo ? '1' : '0');
+        
+        var response = await fetch(url);
+        
+        if (!response.ok) {
+            var errorText = await response.text();
+            toast('Error al generar Excel: ' + errorText, 'error');
+            mostrarSaving(false);
+            return;
+        }
+        
+        var blob = await response.blob();
+        var urlBlob = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = urlBlob;
+        a.download = 'clientes_completos_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(urlBlob);
+        
+        toast('Excel exportado correctamente', 'success');
+    } catch(e) {
+        console.error('Error exportando Excel:', e);
+        toast('Error al exportar Excel: ' + e.message, 'error');
+    } finally {
+        mostrarSaving(false);
+    }
+}
+
+// ==================== EXPORTAR PDF ====================
+async function exportarPDFCompleto() {
+    if (!clientesData.length) { toast('Sin datos para exportar', 'error'); return; }
+    try {
+        mostrarSaving(true);
+        toast('Generando PDF desde el servidor...', 'info');
+        
+        var url = API.exportarPDF + '?rutas=' + (exportSections.rutas ? '1' : '0') + '&saldo=' + (exportSections.saldo ? '1' : '0');
+        
+        var response = await fetch(url);
+        
+        if (!response.ok) {
+            var errorText = await response.text();
+            toast('Error al generar PDF: ' + errorText, 'error');
+            mostrarSaving(false);
+            return;
+        }
+        
+        var blob = await response.blob();
+        var urlBlob = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = urlBlob;
+        a.download = 'clientes_completos_' + new Date().toISOString().slice(0, 10) + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(urlBlob);
+        
+        toast('PDF exportado correctamente', 'success');
+    } catch(e) {
+        console.error('Error exportando PDF:', e);
+        toast('Error al exportar PDF: ' + e.message, 'error');
+    } finally {
+        mostrarSaving(false);
+    }
+}
+
+// ==================== RECARGAR ====================
+function recargar() { cargarClientes(); toast('Recargado'); }
+
+// ==================== INICIAR ====================
+document.addEventListener('DOMContentLoaded', function() {
+    cargarClientes();
+});
+
+var overlays = document.querySelectorAll('.modal-overlay');
+for (var i = 0; i < overlays.length; i++) {
+    overlays[i].addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
+}
+</script>
+</body>
+</html>

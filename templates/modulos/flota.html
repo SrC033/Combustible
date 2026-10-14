@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Gestión de Flota | Grupo GSN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        /* ========== ESTILOS BASE ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            color: #f0f3fa;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* ========== TEMAS ========== */
+        body.default-theme {
+            background: radial-gradient(circle at 10% 20%, #0a0f1c, #03060c);
+        }
+        body.dark-theme {
+            background: #0a0e1a;
+            color: #ffffff;
+        }
+        body.light-theme {
+            background: #f5f7fa;
+            color: #1a1a2e;
+        }
+        body.light-theme .flota-panel {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.light-theme .flota-panel-header {
+            background: rgba(0,0,0,0.05);
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        body.light-theme .flota-panel-header h3 { color: #1a1a2e; }
+        body.light-theme .flota-tab { color: #4a4a6a; }
+        body.light-theme .flota-tab.active {
+            color: #d97706;
+            border-bottom-color: #d97706;
+            background: linear-gradient(135deg, rgba(245,158,11,0.08), transparent);
+        }
+        body.light-theme .flota-tab:hover { color: #d97706; background: rgba(245,158,11,0.05); }
+        body.light-theme .editable-table th {
+            background: rgba(0,0,0,0.08);
+            color: #1a1a2e;
+        }
+        body.light-theme .editable-table td {
+            color: #1a1a2e;
+            border-bottom-color: rgba(0,0,0,0.06);
+        }
+        body.light-theme .editable-table tr:hover td { background: rgba(245,158,11,0.08); }
+        body.light-theme .btn-outline {
+            border-color: rgba(0,0,0,0.2);
+            color: #4a4a6a;
+        }
+        body.light-theme .btn-outline:hover {
+            background: rgba(0,0,0,0.05);
+            border-color: #d97706;
+            color: #d97706;
+        }
+        body.light-theme .input-moderno {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.15);
+            color: #1a1a2e;
+        }
+        body.light-theme .input-moderno:focus {
+            border-color: #d97706;
+            background: rgba(0,0,0,0.08);
+        }
+        body.light-theme .modal-container {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+        body.light-theme .modal-header h3 { color: #1a1a2e; }
+        body.light-theme .modal-header { border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-theme .modal-body input,
+        body.light-theme .modal-body select,
+        body.light-theme .modal-body textarea {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.15);
+            color: #1a1a2e;
+        }
+        body.light-theme .modal-body select option { background: #f5f5f5; color: #1a1a2e; }
+        body.light-theme .modal-footer { border-top-color: rgba(0,0,0,0.1); }
+        body.light-theme .stat-card {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.light-theme .stat-card .stat-value { color: #1a1a2e; }
+        body.light-theme .stat-card .stat-label { color: #4a4a6a; }
+        body.light-theme .stat-card i { color: #d97706; }
+        body.light-theme .chart-card {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.light-theme .chart-card h4 { color: #1a1a2e; }
+
+        body.navy-theme {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb4d);
+            color: #ffffff;
+        }
+        body.nature-theme {
+            background: linear-gradient(135deg, #134e5e, #71b280);
+            color: #ffffff;
+        }
+        body.image-theme {
+            background: url('https://images.unsplash.com/photo-1508514177221-188f0d9d8c5f?q=80&w=2070&auto=format') center/cover no-repeat fixed;
+            position: relative;
+        }
+        body.image-theme::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: -1;
+        }
+
+        /* ========== ESTILOS DEL MÓDULO ========== */
+        .flota-modulo { animation: fadeInUp 0.5s ease; max-width: 1600px; margin: 0 auto; }
+        .flota-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .flota-tab {
+            padding: 12px 28px;
+            background: transparent;
+            border: none;
+            border-radius: 40px 40px 0 0;
+            color: #a0a0c0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .flota-tab i { font-size: 1rem; }
+        .flota-tab:hover { color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+        .flota-tab.active { color: #f59e0b; border-bottom: 2px solid #f59e0b; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), transparent); }
+        .flota-panel {
+            background: rgba(15, 25, 35, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            overflow: hidden;
+            animation: fadeInUp 0.3s ease;
+        }
+        .flota-panel-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(0, 0, 0, 0.3));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .flota-panel-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            margin: 0;
+        }
+        .btn-sm {
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-outline { background: transparent; border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .btn-sm:hover { transform: translateY(-2px); filter: brightness(1.05); cursor: pointer; }
+        .editable-table-container {
+            padding: 20px 24px;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .editable-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .editable-table th {
+            background: #16213e;
+            color: #f59e0b;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .editable-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+        }
+        .editable-table tr:hover td {
+            background: rgba(245, 158, 11, 0.08);
+        }
+        .editable-cell {
+            cursor: text;
+            transition: background 0.2s ease;
+            display: inline-block;
+            width: 100%;
+            min-height: 24px;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .editable-cell:hover {
+            background: rgba(245, 158, 11, 0.15);
+            outline: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .editable-cell:focus {
+            background: rgba(245, 158, 11, 0.25);
+            outline: 2px solid #f59e0b;
+            border-radius: 4px;
+        }
+        .conductor-select, .estado-select {
+            background: #1a1a2e;
+            color: white;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 6px 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-container {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            border-radius: 32px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 85%;
+            overflow-y: auto;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 { color: #f59e0b; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #a0a0c0;
+            font-size: 28px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-close:hover { color: #ef4444; transform: rotate(90deg); }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .input-moderno {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2a2a3e;
+            border: 1px solid #3a3a4e;
+            border-radius: 12px;
+            color: white;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        .input-moderno:focus { outline: none; border-color: #f59e0b; background: #1a1a2e; }
+        .empty-state { text-align: center; padding: 60px; color: #94a3b8; }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; color: #f59e0b; opacity: 0.5; }
+        .toast-message {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #0f172ae6;
+            backdrop-filter: blur(12px);
+            padding: 12px 24px;
+            border-radius: 60px;
+            z-index: 10001;
+            font-weight: 500;
+            border-left: 4px solid #f59e0b;
+            font-size: 0.85rem;
+            color: white;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f59e0b;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .btn-export { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .mantenimiento-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .mantenimiento-filters input, .mantenimiento-filters select {
+            background: #1a1a2e;
+            border: 1px solid #3a3a4e;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: white;
+        }
+        .stat-card {
+            background: rgba(15, 25, 35, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .stat-card i { font-size: 2rem; color: #f59e0b; margin-bottom: 10px; display: block; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: white; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; margin-top: 5px; }
+        .chart-card {
+            background: rgba(15, 25, 35, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .chart-card h4 { color: #f59e0b; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .flota-tab { padding: 8px 16px; font-size: 0.75rem; }
+            .editable-table-container { padding: 12px; }
+            .editable-table th, .editable-table td { padding: 8px; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="flota-modulo">
+    <div class="flota-tabs">
+        <button class="flota-tab active" data-tab="conductores"><i class="fas fa-users"></i> Conductores</button>
+        <button class="flota-tab" data-tab="camiones"><i class="fas fa-truck"></i> Camiones</button>
+        <button class="flota-tab" data-tab="mantenimiento"><i class="fas fa-tools"></i> Mantenimiento</button>
+        <button class="flota-tab" data-tab="estadisticas"><i class="fas fa-chart-pie"></i> Estadísticas</button>
+    </div>
+
+    <!-- Panel Conductores -->
+    <div id="panelConductores" class="flota-panel">
+        <div class="flota-panel-header">
+            <h3><i class="fas fa-users"></i> Conductores Registrados</h3>
+            <button id="nuevoConductorBtn" class="btn-success btn-sm"><i class="fas fa-plus"></i> Nuevo Conductor</button>
+        </div>
+        <div class="editable-table-container">
+            <table class="editable-table">
+                <thead>
+                    <tr><th>ID</th><th>Nombre</th><th>Cédula</th><th>Licencia</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="tbodyConductores">
+                    <tr><td colspan="7" class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Cargando conductores...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Panel Camiones -->
+    <div id="panelCamiones" class="flota-panel" style="display:none;">
+        <div class="flota-panel-header">
+            <h3><i class="fas fa-truck"></i> Camiones Registrados</h3>
+            <button id="nuevoCamionBtn" class="btn-success btn-sm"><i class="fas fa-plus"></i> Nuevo Camión</button>
+        </div>
+        <div class="editable-table-container">
+            <table class="editable-table">
+                <thead>
+                    <tr><th>ID</th><th>Placa</th><th>Marca</th><th>Modelo</th><th>Año</th><th>Capacidad</th><th>Conductor</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="tbodyCamiones">
+                    <tr><td colspan="9" class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Cargando camiones...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Panel Mantenimiento -->
+    <div id="panelMantenimiento" class="flota-panel" style="display:none;">
+        <div class="flota-panel-header">
+            <h3><i class="fas fa-tools"></i> Registro de Mantenimiento</h3>
+            <div style="display: flex; gap: 10px;">
+                <button id="exportarMantenimientoBtn" class="btn-primary btn-sm"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                <button id="nuevoMantenimientoBtn" class="btn-success btn-sm"><i class="fas fa-plus"></i> Nuevo Registro</button>
+            </div>
+        </div>
+        <div class="editable-table-container">
+            <table class="editable-table" id="tablaMantenimiento">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Camión</th><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Costo</th><th>Kilometraje</th><th>Próximo Mant.</th><th>Estado</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyMantenimiento">
+                    <tr><td colspan="10" class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Cargando registros...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Panel Estadísticas -->
+    <div id="panelEstadisticas" class="flota-panel" style="display:none;">
+        <div class="flota-panel-header">
+            <h3><i class="fas fa-chart-pie"></i> Estadísticas de Flota</h3>
+            <button id="refreshEstadisticasBtn" class="btn-primary btn-sm"><i class="fas fa-sync-alt"></i> Actualizar</button>
+        </div>
+        <div class="editable-table-container">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px;">
+                <div class="stat-card"><i class="fas fa-users"></i><div class="stat-value" id="kpiTotalConductores">0</div><div class="stat-label">Total Conductores</div></div>
+                <div class="stat-card"><i class="fas fa-truck"></i><div class="stat-value" id="kpiTotalCamiones">0</div><div class="stat-label">Total Camiones</div></div>
+                <div class="stat-card"><i class="fas fa-check-circle"></i><div class="stat-value" id="kpiCamionesActivos">0</div><div class="stat-label">Camiones Activos</div></div>
+                <div class="stat-card"><i class="fas fa-tools"></i><div class="stat-value" id="kpiMantenimientos">0</div><div class="stat-label">Mantenimientos</div></div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                <div class="chart-card"><h4><i class="fas fa-chart-pie"></i> Estado de la Flota</h4><canvas id="chartFlota"></canvas></div>
+                <div class="chart-card"><h4><i class="fas fa-chart-bar"></i> Distribución por Estado</h4><canvas id="chartDistribucion"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONDUCTOR -->
+<div id="modalConductor" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header"><h3><i class="fas fa-user-plus"></i> Nuevo Conductor</h3><button class="modal-close" onclick="cerrarModalConductor()">&times;</button></div>
+        <div class="modal-body">
+            <input type="text" id="conductorNombre" class="input-moderno" placeholder="Nombre completo *">
+            <input type="text" id="conductorCedula" class="input-moderno" placeholder="Cédula">
+            <input type="text" id="conductorLicencia" class="input-moderno" placeholder="Número de licencia">
+            <input type="text" id="conductorTelefono" class="input-moderno" placeholder="Teléfono">
+            <input type="text" id="conductorDireccion" class="input-moderno" placeholder="Dirección">
+        </div>
+        <div class="modal-footer"><button class="btn-outline" onclick="cerrarModalConductor()">Cancelar</button><button id="guardarConductorBtn" class="btn-success">Guardar</button></div>
+    </div>
+</div>
+
+<!-- MODAL CAMION -->
+<div id="modalCamion" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header"><h3><i class="fas fa-truck-plus"></i> Nuevo Camión</h3><button class="modal-close" onclick="cerrarModalCamion()">&times;</button></div>
+        <div class="modal-body">
+            <input type="text" id="camionPlaca" class="input-moderno" placeholder="Placa *">
+            <input type="text" id="camionMarca" class="input-moderno" placeholder="Marca">
+            <input type="text" id="camionModelo" class="input-moderno" placeholder="Modelo">
+            <input type="text" id="camionAnio" class="input-moderno" placeholder="Año">
+            <input type="number" id="camionCapacidad" class="input-moderno" placeholder="Capacidad (galones)">
+            <select id="camionConductor" class="input-moderno"><option value="">Sin conductor asignado</option></select>
+            <select id="camionEstado" class="input-moderno"><option value="Disponible">Disponible</option><option value="En Ruta">En Ruta</option><option value="Mantenimiento">Mantenimiento</option></select>
+        </div>
+        <div class="modal-footer"><button class="btn-outline" onclick="cerrarModalCamion()">Cancelar</button><button id="guardarCamionBtn" class="btn-success">Guardar</button></div>
+    </div>
+</div>
+
+<!-- MODAL MANTENIMIENTO -->
+<div id="modalMantenimiento" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header"><h3><i class="fas fa-tools"></i> Registro de Mantenimiento</h3><button class="modal-close" onclick="cerrarModalMantenimiento()">&times;</button></div>
+        <div class="modal-body">
+            <select id="mantenimientoCamion" class="input-moderno"><option value="">Seleccionar Camión</option></select>
+            <input type="date" id="mantenimientoFecha" class="input-moderno" value="">
+            <select id="mantenimientoTipo" class="input-moderno">
+                <option value="Preventivo">Preventivo</option><option value="Correctivo">Correctivo</option><option value="Cambio de Aceite">Cambio de Aceite</option>
+                <option value="Frenos">Frenos</option><option value="Neumáticos">Neumáticos</option><option value="Motor">Motor</option>
+            </select>
+            <textarea id="mantenimientoDescripcion" class="input-moderno" placeholder="Descripción" rows="3"></textarea>
+            <input type="number" id="mantenimientoCosto" class="input-moderno" placeholder="Costo (C$)" step="0.01">
+            <input type="number" id="mantenimientoKilometraje" class="input-moderno" placeholder="Kilometraje actual">
+            <input type="date" id="mantenimientoProximo" class="input-moderno" value="">
+            <select id="mantenimientoEstado" class="input-moderno">
+                <option value="Pendiente">Pendiente</option><option value="En Proceso">En Proceso</option><option value="Completado">Completado</option><option value="Cancelado">Cancelado</option>
+            </select>
+        </div>
+        <div class="modal-footer"><button class="btn-outline" onclick="cerrarModalMantenimiento()">Cancelar</button><button id="guardarMantenimientoBtn" class="btn-success">Guardar</button></div>
+    </div>
+</div>
+
+<script>
+(function() {
+    console.log("🚀 Inicializando módulo Flota...");
+    
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+            body.style.backgroundImage = 'url(' + imagenUrl + ')';
+        } else {
+            body.style.backgroundImage = '';
+            body.classList.add(tema + '-theme');
+        }
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else if (temaGuardado !== 'image') {
+                aplicarTema(temaGuardado);
+            }
+        }
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+                var tema = event.data.tema;
+                var imagen = event.data.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else if (tema !== 'image') {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+        });
+    }
+
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    let conductoresLista = [];
+    let camionesLista = [];
+    let mantenimientoLista = [];
+    let chartFlota = null;
+    let chartDistribucion = null;
+    
+    const API_BASE = '/api/flota';
+    
+    function mostrarToast(msg, tipo) {
+        tipo = tipo || 'success';
+        var old = document.querySelector('.toast-message');
+        if (old) old.remove();
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icon = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
+        toast.style.background = tipo === 'success' ? '#10b981' : tipo === 'error' ? '#ef4444' : '#f59e0b';
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3000);
+    }
+    
+    function escapeHtml(text) { if (!text) return ''; return String(text).replace(/[&<>]/g, function(m) { return m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m; }); }
+    function formatearMoneda(val) { return 'C$' + parseFloat(val || 0).toFixed(2); }
+    
+    // ==================== API ====================
+    async function apiRequest(url, method, body) {
+        try {
+            var options = { method: method, headers: { 'Content-Type': 'application/json' } };
+            if (body) options.body = JSON.stringify(body);
+            var response = await fetch(url, options);
+            return await response.json();
+        } catch(e) { console.error(e); return { ok: false, error: e.message }; }
+    }
+    
+    // Conductores
+    async function cargarConductores() {
+        var res = await apiRequest(API_BASE + '/conductores', 'GET');
+        conductoresLista = res.conductores || [];
+        return conductoresLista;
+    }
+    
+    async function crearConductorAPI(datos) {
+        var res = await apiRequest(API_BASE + '/crear_conductor', 'POST', datos);
+        if (res.ok) { mostrarToast('Conductor creado', 'success'); return true; }
+        else { mostrarToast(res.error || 'Error al crear conductor', 'error'); return false; }
+    }
+    
+    async function actualizarConductor(id, campo, valor) {
+        var res = await apiRequest(API_BASE + '/actualizar_conductor', 'POST', { id: id, campo: campo, valor: valor });
+        if (res.ok) {
+            mostrarToast('Conductor actualizado', 'success');
+            await cargarConductores();
+            renderizarConductores();
+            cargarSelects();
+            actualizarEstadisticas();
+        } else {
+            mostrarToast('Error al actualizar', 'error');
+        }
+    }
+    
+    async function eliminarConductor(id) {
+        if (!confirm('¿Eliminar este conductor?')) return;
+        var res = await apiRequest(API_BASE + '/eliminar_conductor', 'POST', { id: id });
+        if (res.ok) {
+            mostrarToast('Conductor eliminado', 'success');
+            await cargarConductores();
+            renderizarConductores();
+            cargarSelects();
+            actualizarEstadisticas();
+        } else {
+            mostrarToast('Error al eliminar', 'error');
+        }
+    }
+    
+    // Camiones
+    async function cargarCamiones() {
+        var res = await apiRequest(API_BASE + '/camiones', 'GET');
+        camionesLista = res.camiones || [];
+        return camionesLista;
+    }
+    
+    async function crearCamionAPI(datos) {
+        var res = await apiRequest(API_BASE + '/crear_camion', 'POST', datos);
+        if (res.ok) { mostrarToast('Camión creado', 'success'); return true; }
+        else { mostrarToast(res.error || 'Error al crear camión', 'error'); return false; }
+    }
+    
+    async function actualizarCamion(id, campo, valor) {
+        var res = await apiRequest(API_BASE + '/actualizar_camion', 'POST', { id: id, campo: campo, valor: valor });
+        if (res.ok) {
+            mostrarToast('Camión actualizado', 'success');
+            await cargarCamiones();
+            renderizarCamiones();
+            cargarSelects();
+            actualizarEstadisticas();
+        } else {
+            mostrarToast('Error al actualizar', 'error');
+        }
+    }
+    
+    async function eliminarCamion(id) {
+        if (!confirm('¿Eliminar este camión?')) return;
+        var res = await apiRequest(API_BASE + '/eliminar_camion', 'POST', { id: id });
+        if (res.ok) {
+            mostrarToast('Camión eliminado', 'success');
+            await cargarCamiones();
+            renderizarCamiones();
+            cargarSelects();
+            actualizarEstadisticas();
+        } else {
+            mostrarToast('Error al eliminar', 'error');
+        }
+    }
+    
+    // Mantenimiento
+    async function cargarMantenimiento() {
+        var res = await apiRequest(API_BASE + '/mantenimiento', 'GET');
+        mantenimientoLista = res.registros || [];
+        return mantenimientoLista;
+    }
+    
+    async function crearMantenimientoAPI(datos) {
+        var res = await apiRequest(API_BASE + '/crear_mantenimiento', 'POST', datos);
+        if (res.ok) { mostrarToast('Registro creado', 'success'); return true; }
+        else { mostrarToast(res.error || 'Error al crear registro', 'error'); return false; }
+    }
+    
+    async function actualizarMantenimiento(id, campo, valor) {
+        var res = await apiRequest(API_BASE + '/actualizar_mantenimiento', 'POST', { id: id, campo: campo, valor: valor });
+        if (res.ok) {
+            mostrarToast('Registro actualizado', 'success');
+            await cargarMantenimiento();
+            renderizarMantenimiento();
+            actualizarEstadisticas();
+        } else {
+            mostrarToast('Error al actualizar', 'error');
+        }
+    }
+    
+    async function eliminarMantenimiento(id) {
+        if (!confirm('¿Eliminar este registro?')) return;
+        var res = await apiRequest(API_BASE + '/eliminar_mantenimiento', 'POST', { id: id });
+        if (res.ok) {
+            mostrarToast('Registro eliminado', 'success');
+            await cargarMantenimiento();
+            renderizarMantenimiento();
+            actualizarEstadisticas();
+        } else {
+            mostrarToast('Error al eliminar', 'error');
+        }
+    }
+    
+    // ==================== RENDERIZADO ====================
+    function renderizarConductores() {
+        var tbody = document.getElementById('tbodyConductores');
+        if (!tbody) return;
+        if (conductoresLista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-users"></i><p>No hay conductores</p></td></tr>';
+            return;
+        }
+        tbody.innerHTML = conductoresLista.map(function(c) {
+            return '<tr>' +
+                '<td><code>' + escapeHtml(c.id) + '</code></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="nombre">' + escapeHtml(c.nombre || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="cedula">' + escapeHtml(c.cedula || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="licencia">' + escapeHtml(c.licencia || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="telefono">' + escapeHtml(c.telefono || '') + '</span></td>' +
+                '<td><span class="badge ' + (c.activo !== false ? 'badge-success' : 'badge-danger') + '">' + (c.activo !== false ? 'Activo' : 'Inactivo') + '</span></td>' +
+                '<td><button class="btn-danger btn-sm" onclick="window.eliminarConductorGlobal(\'' + c.id + '\')"><i class="fas fa-trash"></i></button></td>' +
+            '</tr>';
+        }).join('');
+        attachEditEvents('tbodyConductores', actualizarConductor);
+    }
+    
+    function renderizarCamiones() {
+        var tbody = document.getElementById('tbodyCamiones');
+        if (!tbody) return;
+        if (camionesLista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><i class="fas fa-truck"></i><p>No hay camiones</p></td></tr>';
+            return;
+        }
+        tbody.innerHTML = camionesLista.map(function(c) {
+            var estadoClass = c.estado === 'Disponible' ? 'badge-success' : (c.estado === 'En Ruta' ? 'badge-warning' : 'badge-danger');
+            return '<tr>' +
+                '<td><code>' + escapeHtml(c.id) + '</code></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="placa">' + escapeHtml(c.placa || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="marca">' + escapeHtml(c.marca || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="modelo">' + escapeHtml(c.modelo || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="anio">' + escapeHtml(c.anio || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + c.id + '" data-field="capacidad_galones">' + (c.capacidad_galones || 0) + '</span></td>' +
+                '<td><select class="conductor-select" data-id="' + c.id + '" onchange="window.actualizarConductorCamion(\'' + c.id + '\', this.value)">' +
+                    '<option value="">Sin conductor</option>' + conductoresLista.map(function(cond) { return '<option value="' + escapeHtml(cond.nombre) + '" ' + (c.conductor_asignado === cond.nombre ? 'selected' : '') + '>' + escapeHtml(cond.nombre) + '</option>'; }).join('') +
+                '</select></td>' +
+                '<td><select class="estado-select" data-id="' + c.id + '" onchange="window.actualizarEstadoCamion(\'' + c.id + '\', this.value)">' +
+                    '<option value="Disponible" ' + (c.estado === 'Disponible' ? 'selected' : '') + '>Disponible</option>' +
+                    '<option value="En Ruta" ' + (c.estado === 'En Ruta' ? 'selected' : '') + '>En Ruta</option>' +
+                    '<option value="Mantenimiento" ' + (c.estado === 'Mantenimiento' ? 'selected' : '') + '>Mantenimiento</option>' +
+                '</select></td>' +
+                '<td><button class="btn-danger btn-sm" onclick="window.eliminarCamionGlobal(\'' + c.id + '\')"><i class="fas fa-trash"></i></button></td>' +
+            '</tr>';
+        }).join('');
+        attachEditEvents('tbodyCamiones', actualizarCamion);
+    }
+    
+    function renderizarMantenimiento() {
+        var tbody = document.getElementById('tbodyMantenimiento');
+        if (!tbody) return;
+        if (mantenimientoLista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-tools"></i><p>No hay registros de mantenimiento</p></td></tr>';
+            return;
+        }
+        tbody.innerHTML = mantenimientoLista.map(function(m) {
+            var estadoClass = m.estado === 'Completado' ? 'badge-success' : (m.estado === 'En Proceso' ? 'badge-warning' : 'badge-danger');
+            return '<tr>' +
+                '<td><code>' + escapeHtml(m.id) + '</code></td>' +
+                '<td><span class="editable-cell" data-id="' + m.id + '" data-field="camion_placa">' + escapeHtml(m.camion_placa || m.camion_id || '-') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + m.id + '" data-field="fecha">' + escapeHtml(m.fecha || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + m.id + '" data-field="tipo_mantenimiento">' + escapeHtml(m.tipo_mantenimiento || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + m.id + '" data-field="descripcion">' + escapeHtml(m.descripcion || '') + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + m.id + '" data-field="costo">' + (m.costo || 0) + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + m.id + '" data-field="kilometraje">' + (m.kilometraje || 0) + '</span></td>' +
+                '<td><span class="editable-cell" data-id="' + m.id + '" data-field="proximo_mantenimiento">' + escapeHtml(m.proximo_mantenimiento || '') + '</span></td>' +
+                '<td><span class="badge ' + estadoClass + '">' + escapeHtml(m.estado || 'Pendiente') + '</span></td>' +
+                '<td><button class="btn-danger btn-sm" onclick="window.eliminarMantenimientoGlobal(\'' + m.id + '\')"><i class="fas fa-trash"></i></button></td>' +
+            '</tr>';
+        }).join('');
+        attachEditEvents('tbodyMantenimiento', actualizarMantenimiento);
+    }
+    
+    function attachEditEvents(tableId, updateFunc) {
+        var cells = document.querySelectorAll('#' + tableId + ' .editable-cell');
+        for (var i = 0; i < cells.length; i++) {
+            var cell = cells[i];
+            // Remover handlers antiguos para evitar duplicados
+            cell.removeEventListener('blur', cell._handler);
+            cell.removeEventListener('keydown', cell._keyHandler);
+            
+            var handler = function(e) {
+                var cell = e.currentTarget;
+                var id = cell.getAttribute('data-id');
+                var field = cell.getAttribute('data-field');
+                var newVal = cell.innerText.trim();
+                // Evitar actualizar si el valor no cambió
+                if (cell._oldValue !== undefined && cell._oldValue === newVal) return;
+                cell._oldValue = newVal;
+                // Llamar a la función de actualización
+                updateFunc(id, field, newVal);
+            };
+            
+            var keyHandler = function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                }
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    var cell = e.currentTarget;
+                    if (cell._oldValue !== undefined) {
+                        cell.innerText = cell._oldValue;
+                    }
+                    cell.blur();
+                }
+            };
+            
+            cell.addEventListener('blur', handler);
+            cell.addEventListener('keydown', keyHandler);
+            cell._handler = handler;
+            cell._keyHandler = keyHandler;
+            // Guardar valor inicial
+            cell._oldValue = cell.innerText.trim();
+            
+            // Hacer editable
+            cell.contentEditable = true;
+        }
+    }
+    
+    function actualizarEstadisticas() {
+        document.getElementById('kpiTotalConductores').innerText = conductoresLista.length;
+        document.getElementById('kpiTotalCamiones').innerText = camionesLista.length;
+        document.getElementById('kpiCamionesActivos').innerText = camionesLista.filter(function(c) { return c.estado === 'Disponible'; }).length;
+        document.getElementById('kpiMantenimientos').innerText = mantenimientoLista.length;
+        
+        var disponibles = camionesLista.filter(function(c) { return c.estado === 'Disponible'; }).length;
+        var enRuta = camionesLista.filter(function(c) { return c.estado === 'En Ruta'; }).length;
+        var mantenimiento = camionesLista.filter(function(c) { return c.estado === 'Mantenimiento'; }).length;
+        
+        if (chartFlota) chartFlota.destroy();
+        var ctxFlota = document.getElementById('chartFlota');
+        if (ctxFlota) {
+            chartFlota = new Chart(ctxFlota, {
+                type: 'doughnut',
+                data: { labels: ['Disponible', 'En Ruta', 'Mantenimiento'], datasets: [{ data: [disponibles, enRuta, mantenimiento], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
+            });
+        }
+        
+        if (chartDistribucion) chartDistribucion.destroy();
+        var ctxDist = document.getElementById('chartDistribucion');
+        if (ctxDist) {
+            chartDistribucion = new Chart(ctxDist, {
+                type: 'bar',
+                data: { labels: ['Disponible', 'En Ruta', 'Mantenimiento'], datasets: [{ label: 'Camiones', data: [disponibles, enRuta, mantenimiento], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] },
+                options: { responsive: true, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
+            });
+        }
+    }
+    
+    function cargarSelects() {
+        var selectCamion = document.getElementById('mantenimientoCamion');
+        if (selectCamion) {
+            selectCamion.innerHTML = '<option value="">Seleccionar Camión</option>' + camionesLista.map(function(c) { return '<option value="' + escapeHtml(c.placa) + '">' + escapeHtml(c.placa) + ' - ' + escapeHtml(c.marca) + ' ' + escapeHtml(c.modelo) + '</option>'; }).join('');
+        }
+        var selectConductor = document.getElementById('camionConductor');
+        if (selectConductor) {
+            selectConductor.innerHTML = '<option value="">Sin conductor asignado</option>' + conductoresLista.map(function(c) { return '<option value="' + escapeHtml(c.nombre) + '">' + escapeHtml(c.nombre) + '</option>'; }).join('');
+        }
+    }
+    
+    // ==================== FUNCIONES GLOBALES PARA EVENTOS ONCHANGE ====================
+    window.actualizarConductorCamion = async function(id, nombre) {
+        var res = await apiRequest(API_BASE + '/actualizar_camion', 'POST', { id: id, campo: 'conductor_asignado', valor: nombre });
+        if (res.ok) {
+            await cargarCamiones();
+            renderizarCamiones();
+            cargarSelects();
+            actualizarEstadisticas();
+            mostrarToast('Conductor asignado', 'success');
+        } else {
+            mostrarToast('Error al asignar conductor', 'error');
+        }
+    };
+    
+    window.actualizarEstadoCamion = async function(id, estado) {
+        var res = await apiRequest(API_BASE + '/actualizar_camion', 'POST', { id: id, campo: 'estado', valor: estado });
+        if (res.ok) {
+            await cargarCamiones();
+            renderizarCamiones();
+            actualizarEstadisticas();
+            mostrarToast('Estado actualizado', 'success');
+        } else {
+            mostrarToast('Error al actualizar estado', 'error');
+        }
+    };
+    
+    window.eliminarConductorGlobal = eliminarConductor;
+    window.eliminarCamionGlobal = eliminarCamion;
+    window.eliminarMantenimientoGlobal = eliminarMantenimiento;
+    
+    // ==================== RECARGA COMPLETA ====================
+    let recargando = false;
+    async function recargarTodosLosDatos() {
+        if (recargando) return;
+        recargando = true;
+        try {
+            await Promise.all([cargarConductores(), cargarCamiones(), cargarMantenimiento()]);
+            renderizarConductores();
+            renderizarCamiones();
+            renderizarMantenimiento();
+            cargarSelects();
+            actualizarEstadisticas();
+            console.log("✅ Datos recargados");
+        } catch(e) {
+            console.error("Error recargando:", e);
+        } finally {
+            recargando = false;
+        }
+    }
+    
+    // ==================== MODALES ====================
+    window.cerrarModalConductor = function() { document.getElementById('modalConductor').style.display = 'none'; };
+    window.cerrarModalCamion = function() { document.getElementById('modalCamion').style.display = 'none'; };
+    window.cerrarModalMantenimiento = function() { document.getElementById('modalMantenimiento').style.display = 'none'; };
+    
+    async function crearConductor() {
+        var nombre = document.getElementById('conductorNombre').value.trim();
+        if (!nombre) { mostrarToast('Nombre requerido', 'error'); return; }
+        var ok = await crearConductorAPI({
+            nombre: nombre,
+            cedula: document.getElementById('conductorCedula').value,
+            licencia: document.getElementById('conductorLicencia').value,
+            telefono: document.getElementById('conductorTelefono').value,
+            direccion: document.getElementById('conductorDireccion').value
+        });
+        if (ok) {
+            document.getElementById('modalConductor').style.display = 'none';
+            document.getElementById('conductorNombre').value = '';
+            document.getElementById('conductorCedula').value = '';
+            document.getElementById('conductorLicencia').value = '';
+            document.getElementById('conductorTelefono').value = '';
+            document.getElementById('conductorDireccion').value = '';
+            await recargarTodosLosDatos();
+        }
+    }
+    
+    async function crearCamion() {
+        var placa = document.getElementById('camionPlaca').value.trim();
+        if (!placa) { mostrarToast('Placa requerida', 'error'); return; }
+        var ok = await crearCamionAPI({
+            placa: placa,
+            marca: document.getElementById('camionMarca').value,
+            modelo: document.getElementById('camionModelo').value,
+            anio: document.getElementById('camionAnio').value,
+            capacidad_galones: parseFloat(document.getElementById('camionCapacidad').value) || 0,
+            conductor_asignado: document.getElementById('camionConductor').value,
+            estado: document.getElementById('camionEstado').value
+        });
+        if (ok) {
+            document.getElementById('modalCamion').style.display = 'none';
+            document.getElementById('camionPlaca').value = '';
+            document.getElementById('camionMarca').value = '';
+            document.getElementById('camionModelo').value = '';
+            document.getElementById('camionAnio').value = '';
+            document.getElementById('camionCapacidad').value = '';
+            await recargarTodosLosDatos();
+        }
+    }
+    
+    async function crearMantenimiento() {
+        var camion = document.getElementById('mantenimientoCamion').value;
+        if (!camion) { mostrarToast('Seleccione un camión', 'error'); return; }
+        var ok = await crearMantenimientoAPI({
+            camion_placa: camion,
+            fecha: document.getElementById('mantenimientoFecha').value || new Date().toISOString().split('T')[0],
+            tipo_mantenimiento: document.getElementById('mantenimientoTipo').value,
+            descripcion: document.getElementById('mantenimientoDescripcion').value,
+            costo: parseFloat(document.getElementById('mantenimientoCosto').value) || 0,
+            kilometraje: parseInt(document.getElementById('mantenimientoKilometraje').value) || 0,
+            proximo_mantenimiento: document.getElementById('mantenimientoProximo').value,
+            estado: document.getElementById('mantenimientoEstado').value
+        });
+        if (ok) {
+            document.getElementById('modalMantenimiento').style.display = 'none';
+            limpiarModalMantenimiento();
+            await recargarTodosLosDatos();
+        }
+    }
+    
+    function limpiarModalMantenimiento() {
+        document.getElementById('mantenimientoCamion').value = '';
+        document.getElementById('mantenimientoFecha').value = '';
+        document.getElementById('mantenimientoTipo').value = 'Preventivo';
+        document.getElementById('mantenimientoDescripcion').value = '';
+        document.getElementById('mantenimientoCosto').value = '';
+        document.getElementById('mantenimientoKilometraje').value = '';
+        document.getElementById('mantenimientoProximo').value = '';
+        document.getElementById('mantenimientoEstado').value = 'Pendiente';
+    }
+    
+    function exportarMantenimientoExcel() {
+        if (mantenimientoLista.length === 0) { mostrarToast('No hay datos para exportar', 'error'); return; }
+        var data = mantenimientoLista.map(function(m) {
+            return {
+                'ID': m.id,
+                'Camión': m.camion_placa,
+                'Fecha': m.fecha,
+                'Tipo': m.tipo_mantenimiento,
+                'Descripción': m.descripcion,
+                'Costo': m.costo,
+                'Kilometraje': m.kilometraje,
+                'Próximo Mantenimiento': m.proximo_mantenimiento,
+                'Estado': m.estado
+            };
+        });
+        var ws = XLSX.utils.json_to_sheet(data);
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Mantenimiento');
+        XLSX.writeFile(wb, 'mantenimiento_' + new Date().toISOString().split('T')[0] + '.xlsx');
+        mostrarToast('Exportado a Excel', 'success');
+    }
+    
+    function cambiarPanel(tabId) {
+        document.querySelectorAll('.flota-panel').forEach(function(p) { p.style.display = 'none'; });
+        var panels = { conductores: 'panelConductores', camiones: 'panelCamiones', mantenimiento: 'panelMantenimiento', estadisticas: 'panelEstadisticas' };
+        var panel = document.getElementById(panels[tabId]);
+        if (panel) panel.style.display = 'block';
+        document.querySelectorAll('.flota-tab').forEach(function(t) { t.classList.remove('active'); });
+        var activeTab = document.querySelector('.flota-tab[data-tab="' + tabId + '"]');
+        if (activeTab) activeTab.classList.add('active');
+        if (tabId === 'estadisticas') setTimeout(actualizarEstadisticas, 100);
+    }
+    
+    // ==================== INICIALIZACIÓN ====================
+    function init() {
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        recargarTodosLosDatos();
+        
+        document.querySelectorAll('.flota-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() { cambiarPanel(tab.getAttribute('data-tab')); });
+        });
+        
+        document.getElementById('nuevoConductorBtn').onclick = function() { document.getElementById('modalConductor').style.display = 'flex'; };
+        document.getElementById('guardarConductorBtn').onclick = crearConductor;
+        document.getElementById('nuevoCamionBtn').onclick = function() { cargarSelects(); document.getElementById('modalCamion').style.display = 'flex'; };
+        document.getElementById('guardarCamionBtn').onclick = crearCamion;
+        document.getElementById('nuevoMantenimientoBtn').onclick = function() { cargarSelects(); document.getElementById('modalMantenimiento').style.display = 'flex'; };
+        document.getElementById('guardarMantenimientoBtn').onclick = crearMantenimiento;
+        document.getElementById('exportarMantenimientoBtn').onclick = exportarMantenimientoExcel;
+        document.getElementById('refreshEstadisticasBtn').onclick = function() { actualizarEstadisticas(); mostrarToast('Estadísticas actualizadas', 'success'); };
+        
+        var fechaInput = document.getElementById('mantenimientoFecha');
+        if (fechaInput && !fechaInput.value) {
+            fechaInput.value = new Date().toISOString().split('T')[0];
+        }
+    }
+    
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();
+</script>
+</body>
+</html>

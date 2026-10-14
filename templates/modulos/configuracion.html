@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Configuración | Grupo GSN - IA, Correo y Usuarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        /* ========== ESTILOS BASE ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 0;
+            margin: 0;
+            color: #f0f3fa;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+
+        }
+
+        /* ========== ESTILOS DEL MÓDULO ========== */
+        .configuracion-modulo { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .config-tabs { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; flex-shrink: 0; }
+        .config-tab {
+            padding: 8px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            color: #a0a0c0;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .config-tab i { margin-right: 8px; }
+        .config-tab:hover { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); }
+        .config-tab.active { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+        
+        .panel { 
+            background: rgba(26, 26, 46, 0.75); 
+            backdrop-filter: blur(12px); 
+            border-radius: 24px; 
+            border: 1px solid rgba(255,255,255,0.08); 
+            overflow: hidden; 
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .panel-header { padding: 14px 24px; background: rgba(15,15,28,0.8); border-bottom: 1px solid rgba(245,158,11,0.2); flex-shrink: 0; }
+        .panel-header h3 { font-size: 0.95rem; color: #fbbf24; display: flex; align-items: center; gap: 8px; }
+        .panel-body { padding: 24px; overflow-y: auto; flex: 1; }
+        
+        .input-moderno { 
+            background: rgba(0, 0, 0, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 12px; 
+            padding: 10px 14px; 
+            color: white; 
+            width: 100%; 
+            font-size: 0.8rem; 
+            transition: all 0.2s; 
+        }
+        .input-moderno:focus { outline: none; border-color: #f59e0b; background: rgba(0,0,0,0.7); }
+        label { color: #cbd5e1; margin-bottom: 6px; display: block; font-size: 0.7rem; font-weight: 500; }
+        input[type="checkbox"] { width: 16px; height: 16px; accent-color: #f59e0b; margin-right: 8px; cursor: pointer; }
+        
+        .btn-success, .btn-primary, .btn-outline, .btn-danger, .btn-info {
+            padding: 8px 18px; border-radius: 40px; font-size: 0.7rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; border: none; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .btn-info { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .btn-sm { padding: 5px 12px; font-size: 0.65rem; }
+        .btn-success:hover, .btn-primary:hover, .btn-info:hover { transform: translateY(-1px); filter: brightness(1.05); }
+        
+        .table-wrapper { overflow-x: auto; border-radius: 16px; flex: 1; }
+        .usuarios-table-config { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .usuarios-table-config th { background: #16213e; color: #f59e0b; padding: 10px 8px; text-align: left; font-weight: 600; position: sticky; top: 0; }
+        .usuarios-table-config td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .usuarios-table-config tr:hover td { background: rgba(245,158,11,0.08); }
+        
+        .rol-badge, .estado-badge { display: inline-block; padding: 2px 10px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; }
+        .rol-admin { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .rol-supervisor { background: rgba(59,130,246,0.2); color: #60a5fa; }
+        .rol-contador { background: rgba(16,185,129,0.2); color: #34d399; }
+        .rol-usuario { background: rgba(107,114,128,0.2); color: #9ca3af; }
+        .estado-activo { background: rgba(16,185,129,0.2); color: #34d399; }
+        .estado-inactivo { background: rgba(239,68,68,0.2); color: #f87171; }
+        .estado-bloqueado { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        
+        .empty-state { text-align: center; padding: 40px; color: #94a3b8; }
+        .modulos-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(245,158,11,0.15);
+            border-radius: 20px;
+            font-size: 0.6rem;
+            color: #fbbf24;
+            margin: 2px;
+            cursor: pointer;
+        }
+        
+        .password-cell {
+            font-family: monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .password-cell:hover {
+            color: #f59e0b;
+            background: rgba(245,158,11,0.1);
+        }
+        
+        /* Modal */
+        .modal-config {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); z-index: 10000;
+            justify-content: center; align-items: center;
+        }
+        .modal-config-content { 
+            background: linear-gradient(135deg, #1a1a2a, #0f0f1a); 
+            border-radius: 24px; 
+            width: 90%; 
+            max-width: 750px; 
+            border: 1px solid rgba(245,158,11,0.3); 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
+        body.light-theme .modal-config-content {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+        body.light-theme .modal-config-header h3 { color: #1a1a2e; }
+        body.light-theme .modal-config-header { background: #f5f5f5; border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-theme .modal-config-body input,
+        body.light-theme .modal-config-body select { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #1a1a2e; }
+        body.light-theme .modal-config-body label { color: #4a4a6a; }
+        body.light-theme .modal-footer { border-top-color: rgba(0,0,0,0.1); }
+        body.light-theme .permisos-section { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
+        body.light-theme .permiso-item label { color: #4a4a6a; }
+
+        .modal-config-header { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #1a1a2a; z-index: 10; }
+        .modal-config-header h3 { color: #f59e0b; font-size: 1rem; }
+        .close-modal { background: none; border: none; color: #a0a0c0; font-size: 1.5rem; cursor: pointer; }
+        .close-modal:hover { color: #ef4444; }
+        .modal-body { padding: 20px; }
+        .form-group-modal { margin-bottom: 14px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        
+        .permisos-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 14px;
+            margin-top: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .permisos-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #f59e0b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .permisos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        .permiso-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .permiso-item:hover { background: rgba(245,158,11,0.1); }
+        .permiso-item input[type="checkbox"] { width: 14px; height: 14px; margin: 0; cursor: pointer; }
+        .permiso-item label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 0.7rem;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .permiso-item label i { width: 18px; color: #f59e0b; font-size: 0.7rem; }
+        .select-all-permisos {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .toast-message {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #0f172ae6; backdrop-filter: blur(12px); padding: 8px 18px;
+            border-radius: 40px; z-index: 10001; font-weight: 500; border-left: 3px solid #f59e0b; font-size: 0.7rem;
+        }
+        .search-box { background: rgba(0,0,0,0.4); border-radius: 40px; padding: 5px 14px; display: flex; align-items: center; gap: 8px; flex: 1; }
+        .search-box input { background: transparent; border: none; color: white; width: 100%; font-size: 0.7rem; }
+        .search-box input:focus { outline: none; }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) { 
+            .form-row { grid-template-columns: 1fr; } 
+            .permisos-grid { grid-template-columns: 1fr; } 
+            .configuracion-modulo { padding: 12px; } 
+        }
+
+        /* ========== SUB VENTANA PÁGINAS HIJO ========== */
+        .modal-paginas {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(20px);
+            z-index: 30000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-paginas.active {
+            display: flex;
+        }
+        .modal-paginas-content {
+            background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+            border-radius: 28px;
+            width: 92%;
+            max-width: 1400px;
+            height: 88%;
+            overflow: hidden;
+            border: 1px solid rgba(245,158,11,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        body.light-theme .modal-paginas-content {
+            background: linear-gradient(135deg, #ffffff, #f5f5f5);
+        }
+        .modal-paginas-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.3);
+        }
+        body.light-theme .modal-paginas-header {
+            background: #f5f5f5;
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        .modal-paginas-header h3 {
+            color: #f59e0b;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        body.light-theme .modal-paginas-header h3 { color: #d97706; }
+        .modal-paginas-header h3 i { color: #f59e0b; }
+        .modal-paginas-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0 10px;
+        }
+        .modal-paginas-close:hover {
+            color: #f87171;
+            transform: rotate(90deg);
+        }
+        body.light-theme .modal-paginas-close { color: #888; }
+        body.light-theme .modal-paginas-close:hover { color: #ef4444; }
+        .modal-paginas-body {
+            flex: 1;
+            overflow: hidden;
+            padding: 0;
+        }
+        .modal-paginas-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+        }
+
+        /* Botón para abrir Páginas Hijo */
+        .btn-paginas {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-paginas:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139,92,246,0.4);
+        }
+
+        @media (max-width: 900px) {
+            .modal-paginas-content { width: 95%; height: 92%; }
+        }
+        @media (max-width: 600px) {
+            .modal-paginas-content { width: 98%; height: 95%; border-radius: 16px; }
+            .modal-paginas-header h3 { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="configuracion-modulo">
+    <div class="config-tabs">
+        <button class="config-tab active" data-tab="ia"><i class="fas fa-robot"></i> IA</button>
+        <button class="config-tab" data-tab="correo"><i class="fas fa-envelope"></i> Correo</button>
+        <button class="config-tab config-tab-admin" data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</button>
+        <button class="config-tab" data-tab="paginas"><i class="fas fa-file-code"></i> Páginas</button>
+    </div>
+
+    <!-- Panel IA -->
+    <div class="config-panel" id="configPanelIa" style="display: flex; flex: 1; min-height: 0;">
+        <div class="panel">
+            <div class="panel-header"><h3><i class="fas fa-robot"></i> Configuración de IA / Webhook</h3></div>
+            <div class="panel-body">
+                <div style="margin-bottom: 16px;"><label>Webhook URL:</label><input type="text" id="iaWebhookUrl" class="input-moderno" placeholder="https://tu-webhook.com/endpoint"></div>
+                <div style="margin-bottom: 16px;"><label>API Key:</label><input type="password" id="iaApiKey" class="input-moderno" placeholder="Tu API Key secreta"></div>
+                <div style="margin-bottom: 20px;"><label><input type="checkbox" id="iaEnabled"> Habilitar integración con IA (envío automático)</label></div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;"><button id="guardarIaConfigBtn" class="btn-success"><i class="fas fa-save"></i> Guardar</button><button id="probarIaBtn" class="btn-primary"><i class="fas fa-paper-plane"></i> Probar Envío</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Correo -->
+    <div class="config-panel" id="configPanelCorreo" style="display: none; flex: 1; min-height: 0;">
+        <div class="panel">
+            <div class="panel-header"><h3><i class="fas fa-envelope"></i> Configuración SMTP</h3></div>
+            <div class="panel-body">
+                <div style="margin-bottom: 14px;"><label>Servidor SMTP:</label><input type="text" id="smtpServer" class="input-moderno" value="smtp.gmail.com"></div>
+                <div style="margin-bottom: 14px;"><label>Puerto:</label><input type="number" id="smtpPort" class="input-moderno" value="587"></div>
+                <div style="margin-bottom: 14px;"><label>Correo Remitente:</label><input type="email" id="emailRemitente" class="input-moderno" placeholder="tucorreo@empresa.com"></div>
+                <div style="margin-bottom: 14px;"><label>Contraseña (App Password):</label><input type="password" id="emailPassword" class="input-moderno" placeholder="••••••••"></div>
+                <div style="margin-bottom: 20px;"><label><input type="checkbox" id="emailEnabled"> Activar envío de correos electrónicos</label></div>
+                <div style="display:flex; gap:12px;"><button id="guardarCorreoBtn" class="btn-success"><i class="fas fa-save"></i> Guardar</button><button id="probarCorreoBtn" class="btn-primary"><i class="fas fa-envelope"></i> Probar Correo</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Usuarios -->
+    <div class="config-panel" id="configPanelUsuarios" style="display: none; flex: 1; min-height: 0;">
+        <div class="panel">
+            <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3><i class="fas fa-users"></i> Gestión de Usuarios</h3>
+                <button class="btn-success btn-sm" id="btnNuevoUsuario"><i class="fas fa-user-plus"></i> Nuevo Usuario</button>
+            </div>
+            <div class="panel-body" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="buscarUsuarioConfig" placeholder="Buscar por nombre o email..."></div>
+                    <button id="btnExportarUsuarios" class="btn-outline btn-sm"><i class="fas fa-file-excel"></i> Exportar</button>
+                    <button id="btnRecargarUsuarios" class="btn-outline btn-sm"><i class="fas fa-sync-alt"></i> Recargar</button>
+                </div>
+                <div class="table-wrapper" style="max-height: 500px; overflow-y: auto;">
+                    <table class="usuarios-table-config">
+                        <thead>
+                            <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Cédula</th><th>Teléfono</th><th>Empresa</th><th>Rol</th><th>Estado</th><th>Contraseña</th><th>Módulos</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="usuariosConfigTableBody">
+                            <tr><td colspan="11" class="empty-state">Cargando usuarios...</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Páginas - CONTIENE LA SUBVENTANA EMBEBIDA -->
+    <div class="config-panel" id="configPanelPaginas" style="display: none; flex: 1; min-height: 0; padding: 0;">
+        <div class="panel" style="border-radius: 24px; overflow: hidden; flex: 1; display: flex; flex-direction: column;">
+            <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-shrink: 0;">
+                <h3><i class="fas fa-file-code"></i> Páginas Hijo</h3>
+                <button class="btn-paginas" id="btnAbrirPaginasModal" style="font-size:0.7rem;">
+                    <i class="fas fa-external-link-alt"></i> Abrir en ventana
+                </button>
+            </div>
+            <div class="panel-body" style="padding: 0; flex: 1; overflow: hidden;">
+                <iframe id="paginasIframeEmbed" src="/modulos/paginas_hijo.html" style="width: 100%; height: 100%; border: none; background: transparent;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL USUARIO -->
+<div id="modalUsuarioConfig" class="modal-config">
+    <div class="modal-config-content">
+        <div class="modal-config-header">
+            <h3 id="modalUsuarioTitle"><i class="fas fa-user-plus"></i> Nuevo Usuario</h3>
+            <button class="close-modal" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editUserIdConfig">
+            <div class="form-group-modal"><label><i class="fas fa-user"></i> Nombre Completo *</label><input type="text" id="userNombre" class="input-moderno" placeholder="Ej: Juan Perez"></div>
+            <div class="form-group-modal"><label><i class="fas fa-envelope"></i> Correo Electrónico *</label><input type="email" id="userEmail" class="input-moderno" placeholder="usuario@ejemplo.com"></div>
+            <div class="form-row">
+                <div class="form-group-modal"><label><i class="fas fa-id-card"></i> Cédula</label><input type="text" id="userCedula" class="input-moderno" placeholder="Cédula"></div>
+                <div class="form-group-modal"><label><i class="fas fa-phone"></i> Teléfono</label><input type="text" id="userTelefono" class="input-moderno" placeholder="Teléfono"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group-modal"><label><i class="fas fa-building"></i> Empresa</label><select id="userEmpresa" class="input-moderno"><option value="">Sin empresa</option></select></div>
+                <div class="form-group-modal"><label><i class="fas fa-user-tag"></i> Rol</label><select id="userRol" class="input-moderno">
+                    <option value="usuario">Usuario</option>
+                    <option value="admin">Administrador</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="contador">Contador</option>
+                </select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group-modal"><label><i class="fas fa-key"></i> Contraseña <span id="passwordRequired" style="color:#f59e0b; font-size:10px;">* (mínimo 6)</span></label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="password" id="userPassword" class="input-moderno" style="flex: 1;" placeholder="••••••••">
+                        <button type="button" id="togglePasswordModal" class="btn-outline btn-sm" style="width: 40px;" onclick="togglePasswordVisibility()"><i class="fas fa-eye"></i></button>
+                    </div>
+                </div>
+                <div class="form-group-modal"><label><i class="fas fa-check-circle"></i> Estado</label><select id="userEstado" class="input-moderno">
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                    <option value="bloqueado">Bloqueado</option>
+                </select></div>
+            </div>
+
+            <div class="permisos-section">
+                <div class="permisos-title"><i class="fas fa-shield-alt"></i> Módulos permitidos</div>
+                <div class="select-all-permisos">
+                    <input type="checkbox" id="selectAllModulos">
+                    <label for="selectAllModulos"><i class="fas fa-check-double"></i> Seleccionar todos los módulos</label>
+                </div>
+                <div class="permisos-grid" id="permisosModulosGrid"></div>
+                <div class="info-mensaje" style="margin-top: 10px; font-size: 10px; color: #888;">
+                    <i class="fas fa-info-circle"></i> Los administradores tienen acceso a TODOS los módulos automáticamente.
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" id="cancelarModalBtn">Cancelar</button>
+            <button class="btn-success" id="guardarUsuarioBtn"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- SUB VENTANA PÁGINAS HIJO (MODAL FLOTANTE) -->
+<div id="modalPaginas" class="modal-paginas">
+    <div class="modal-paginas-content">
+        <div class="modal-paginas-header">
+            <h3><i class="fas fa-file-code"></i> Páginas Hijo</h3>
+            <button class="modal-paginas-close" onclick="window.cerrarSubventanaPaginas()">&times;</button>
+        </div>
+        <div class="modal-paginas-body">
+            <iframe id="paginasIframeModal" src="/modulos/paginas_hijo.html"></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== CONFIGURACIÓN ====================
+(function() {
+    console.log("⚙️ Módulo Configuración - Inicializando...");
+    
+    let usuariosData = [];
+    let empresasData = [];
+    let mostrarPasswords = false;
+    let usuarioActual = null;
+    
+    // MÓDULOS DEL SISTEMA
+    const MODULOS_SISTEMA = [
+        { id: "dashboard", nombre: "Dashboard", icono: "fa-chart-line" },
+        { id: "operaciones", nombre: "Operaciones", icono: "fa-clipboard-list" },
+        { id: "empresas", nombre: "Clientes", icono: "fa-building" },
+        { id: "facturacion", nombre: "Facturación", icono: "fa-file-invoice-dollar" },
+        { id: "flota", nombre: "Flota", icono: "fa-truck-moving" },
+        { id: "costos", nombre: "Costos", icono: "fa-coins" },
+        { id: "reportes", nombre: "Reportes", icono: "fa-chart-bar" },
+        { id: "paginas_hijo", nombre: "Enlaces", icono: "fa-copy" },
+        { id: "tablas_editables", nombre: "Bitácora", icono: "fa-table" },
+        { id: "configuracion", nombre: "Configuración", icono: "fa-cog" }
+    ];
+    
+    // ==================== SISTEMA DE TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            const usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                const usuario = JSON.parse(usuarioStr);
+                return `tema_usuario_${usuario.id || usuario.email || 'default'}`;
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function aplicarTema(tema, imagenUrl = null) {
+        const body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+            body.style.backgroundImage = `url('${imagenUrl}')`;
+        } else {
+            body.style.backgroundImage = '';
+            body.classList.add(`${tema}-theme`);
+        }
+    }
+
+    function cargarTemaGuardado() {
+        const usuarioKey = obtenerUsuarioKey();
+        const temaGuardado = localStorage.getItem(usuarioKey);
+        const imagenGuardada = localStorage.getItem(`${usuarioKey}_imagen`);
+        
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) {
+                aplicarTema('image', imagenGuardada);
+            } else if (temaGuardado !== 'image') {
+                aplicarTema(temaGuardado);
+            }
+        }
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+                const tema = event.data.tema;
+                const imagen = event.data.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) {
+                        aplicarTema('image', imagen);
+                    } else if (tema !== 'image') {
+                        aplicarTema(tema);
+                    }
+                }
+            }
+        });
+    }
+    
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    function mostrarToast(mensaje, tipo) {
+        tipo = tipo || "success";
+        let old = document.querySelector('.toast-message'); if(old) old.remove();
+        let toast = document.createElement('div'); toast.className = 'toast-message';
+        toast.innerHTML = `<i class="fas ${tipo==='success'?'fa-check-circle':'fa-exclamation-triangle'}"></i> ${mensaje}`;
+        toast.style.background = tipo==='success'?'#10b981':'#ef4444';
+        document.body.appendChild(toast); 
+        setTimeout(()=>toast.remove(), 3000);
+    }
+    
+    function escapeHtml(t) { 
+        if(!t) return ''; 
+        return String(t).replace(/[&<>]/g, function(m){ 
+            if(m==='&') return '&amp;'; 
+            if(m==='<') return '&lt;'; 
+            if(m==='>') return '&gt;'; 
+            return m;
+        }); 
+    }
+    
+    function getRolNombre(r) { 
+        const roles = { admin:'Administrador', supervisor:'Supervisor', contador:'Contador', usuario:'Usuario' }; 
+        return roles[r] || 'Usuario'; 
+    }
+    
+    function getEstadoNombre(e) { 
+        const estados = { activo:'Activo', inactivo:'Inactivo', bloqueado:'Bloqueado' }; 
+        return estados[e] || 'Activo'; 
+    }
+    
+    function getModuloNombre(moduloId) { 
+        const modulo = MODULOS_SISTEMA.find(m => m.id === moduloId); 
+        return modulo ? modulo.nombre : moduloId; 
+    }
+    
+    function getModuloIcono(moduloId) {
+        const modulo = MODULOS_SISTEMA.find(m => m.id === moduloId);
+        return modulo ? modulo.icono : 'fa-circle';
+    }
+    
+    function renderizarModulosPermitidos(modulos) {
+        if (!modulos || modulos.length === 0) return '<span style="color:#6b7280;">Ninguno</span>';
+        const maxMostrar = 4;
+        const modulosMostrar = modulos.slice(0, maxMostrar);
+        let html = modulosMostrar.map(m => {
+            const modulo = MODULOS_SISTEMA.find(mod => mod.id === m);
+            const nombreModulo = modulo ? modulo.nombre : m;
+            return `<span class="modulos-badge" title="${nombreModulo}"><i class="fas ${getModuloIcono(m)}"></i> ${nombreModulo}</span>`;
+        }).join('');
+        if (modulos.length > maxMostrar) {
+            const restantes = modulos.slice(maxMostrar).map(m => getModuloNombre(m)).join(', ');
+            html += `<span class="modulos-badge" style="background:rgba(245,158,11,0.3);" title="${restantes}">+${modulos.length - maxMostrar}</span>`;
+        }
+        return html;
+    }
+    
+    function toggleMostrarPasswords() {
+        mostrarPasswords = !mostrarPasswords;
+        renderizarTablaUsuarios(usuariosData);
+        mostrarToast(mostrarPasswords ? 'Contraseñas visibles' : 'Contraseñas ocultas', 'info');
+    }
+    
+    function togglePasswordVisibilityTemporal(element) {
+        const currentText = element.innerText;
+        if (currentText === '••••••••' || currentText === '') {
+            const originalPassword = element.getAttribute('data-original') || '';
+            if (originalPassword && originalPassword !== '-') {
+                element.innerText = originalPassword;
+                element.setAttribute('data-hidden', 'false');
+            }
+        } else {
+            element.setAttribute('data-original', currentText);
+            element.innerText = '••••••••';
+            element.setAttribute('data-hidden', 'true');
+        }
+    }
+    
+    async function cargarUsuariosConfig() {
+        try {
+            console.log("🔄 Cargando usuarios...");
+            const response = await fetch('/api/usuarios');
+            const data = await response.json();
+            
+            if (data.usuarios && Array.isArray(data.usuarios)) {
+                usuariosData = data.usuarios;
+            } else if (Array.isArray(data)) {
+                usuariosData = data;
+            } else {
+                usuariosData = [];
+            }
+            
+            console.log(`✅ Cargados ${usuariosData.length} usuarios`);
+            renderizarTablaUsuarios(usuariosData);
+            return true;
+        } catch (error) {
+            console.error("❌ Error cargando usuarios:", error);
+            mostrarToast('Error al cargar usuarios: ' + error.message, 'error');
+            usuariosData = [];
+            renderizarTablaUsuarios([]);
+            return false;
+        }
+    }
+    
+    async function cargarEmpresas() {
+        try {
+            const response = await fetch('/api/empresas_activas');
+            const data = await response.json();
+            empresasData = data.empresas || [];
+            console.log(`✅ Cargadas ${empresasData.length} empresas`);
+            return true;
+        } catch (error) {
+            console.error("Error cargando empresas:", error);
+            empresasData = [];
+            return false;
+        }
+    }
+    
+    function cargarEmpresasSelect() {
+        let select = document.getElementById('userEmpresa');
+        if(select) {
+            select.innerHTML = '<option value="">Sin empresa</option>';
+            empresasData.forEach(emp => {
+                select.innerHTML += `<option value="${emp.id}">${escapeHtml(emp.nombre)} (${emp.id})</option>`;
+            });
+        }
+    }
+    
+    function renderizarTablaUsuarios(usuarios) {
+        let tbody = document.getElementById('usuariosConfigTableBody');
+        if(!tbody) return;
+        
+        if(!usuarios || usuarios.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="11" class="empty-state">No hay usuarios registrados</tbody>';
+            return;
+        }
+        
+        let html = '';
+        for(let i = 0; i < usuarios.length; i++) {
+            let u = usuarios[i];
+            const modulosPermitidos = u.modulos_permitidos || (u.rol === 'admin' ? MODULOS_SISTEMA.map(m => m.id) : ["dashboard"]);
+            let empresaNombre = u.empresa_nombre || '';
+            if (!empresaNombre && u.empresa_id) {
+                let empresa = empresasData.find(e => e.id === u.empresa_id);
+                empresaNombre = empresa ? empresa.nombre : u.empresa_id;
+            }
+            if (!empresaNombre) empresaNombre = '-';
+            
+            let passwordMostrar = u.password_plain || '';
+            let passwordDisplay = '';
+            if (!passwordMostrar || passwordMostrar === '') {
+                passwordDisplay = '-';
+            } else if (mostrarPasswords) {
+                passwordDisplay = passwordMostrar;
+            } else {
+                passwordDisplay = '••••••••';
+            }
+            
+            html += `
+                <tr data-user-id="${u.id}">
+                    <td><code>${escapeHtml(u.id || '-')}</code></td>
+                    <td><strong>${escapeHtml(u.nombre || '-')}</strong></td>
+                    <td>${escapeHtml(u.email || '-')}</td>
+                    <td>${escapeHtml(u.cedula || '-')}</td>
+                    <td>${escapeHtml(u.telefono || '-')}</td>
+                    <td>${escapeHtml(empresaNombre)}</td>
+                    <td><span class="rol-badge rol-${u.rol}">${getRolNombre(u.rol)}</span></td>
+                    <td><span class="estado-badge estado-${u.estado || 'activo'}">${getEstadoNombre(u.estado || 'activo')}</span></td>
+                    <td class="password-cell" data-original="${escapeHtml(passwordMostrar)}" onclick="window.togglePasswordVisibilityTemporal(this)" title="Haz clic para mostrar/ocultar">${escapeHtml(passwordDisplay)}</td>
+                    <td class="permisos-cell">${renderizarModulosPermitidos(modulosPermitidos)}</td>
+                    <td>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-info btn-sm edit-user-btn" data-user-id="${u.id}"><i class="fas fa-edit"></i></button>
+                            ${u.email !== 'admin@gruposn.com' ? `<button class="btn-danger btn-sm delete-user-btn" data-user-id="${u.id}"><i class="fas fa-trash"></i></button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        tbody.innerHTML = html;
+        
+        document.querySelectorAll('.edit-user-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                const userId = this.getAttribute('data-user-id');
+                editarUsuarioConfig(userId);
+            };
+        });
+        
+        document.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                const userId = this.getAttribute('data-user-id');
+                eliminarUsuarioConfig(userId);
+            };
+        });
+    }
+    
+    function cargarModulosEnModal(modulosSeleccionados) {
+        modulosSeleccionados = modulosSeleccionados || [];
+        const grid = document.getElementById('permisosModulosGrid');
+        if (!grid) return;
+        
+        const seleccionadosSet = new Set(modulosSeleccionados);
+        let html = '';
+        for(let i = 0; i < MODULOS_SISTEMA.length; i++) {
+            let modulo = MODULOS_SISTEMA[i];
+            html += `
+                <div class="permiso-item" data-modulo-id="${modulo.id}">
+                    <input type="checkbox" id="mod_${modulo.id}" value="${modulo.id}" ${seleccionadosSet.has(modulo.id) ? 'checked' : ''}>
+                    <label for="mod_${modulo.id}">
+                        <i class="fas ${modulo.icono}"></i>
+                        ${modulo.nombre}
+                    </label>
+                </div>
+            `;
+        }
+        grid.innerHTML = html;
+        
+        document.querySelectorAll('#permisosModulosGrid input[type="checkbox"]').forEach(cb => {
+            cb.onchange = updateSelectAllState;
+        });
+        updateSelectAllState();
+    }
+    
+    function updateSelectAllState() {
+        const checkboxes = document.querySelectorAll('#permisosModulosGrid input[type="checkbox"]');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        const selectAll = document.getElementById('selectAllModulos');
+        if(selectAll) selectAll.checked = allChecked;
+    }
+    
+    function toggleAllModulos(checked) {
+        document.querySelectorAll('#permisosModulosGrid input[type="checkbox"]').forEach(cb => { cb.checked = checked; });
+        updateSelectAllState();
+    }
+    
+    function obtenerModulosSeleccionados() {
+        return Array.from(document.querySelectorAll('#permisosModulosGrid input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+    }
+    
+    function togglePasswordVisibility() {
+        let passwordInput = document.getElementById('userPassword');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            document.getElementById('togglePasswordModal').innerHTML = '<i class="fas fa-eye-slash"></i>';
+        } else {
+            passwordInput.type = 'password';
+            document.getElementById('togglePasswordModal').innerHTML = '<i class="fas fa-eye"></i>';
+        }
+    }
+    
+    function mostrarModalCrearUsuario() {
+        document.getElementById('modalUsuarioTitle').innerHTML = '<i class="fas fa-user-plus"></i> Nuevo Usuario';
+        document.getElementById('editUserIdConfig').value = '';
+        document.getElementById('userNombre').value = '';
+        document.getElementById('userEmail').value = '';
+        document.getElementById('userCedula').value = '';
+        document.getElementById('userTelefono').value = '';
+        document.getElementById('userEmpresa').value = '';
+        document.getElementById('userRol').value = 'usuario';
+        document.getElementById('userPassword').value = '';
+        document.getElementById('userEstado').value = 'activo';
+        document.getElementById('passwordRequired').style.display = 'inline';
+        
+        cargarModulosEnModal(["dashboard"]);
+        cargarEmpresasSelect();
+        document.getElementById('modalUsuarioConfig').style.display = 'flex';
+    }
+    
+    async function editarUsuarioConfig(userId) {
+        const user = usuariosData.find(u => u.id === userId);
+        if(user) {
+            document.getElementById('modalUsuarioTitle').innerHTML = '<i class="fas fa-user-edit"></i> Editar Usuario';
+            document.getElementById('editUserIdConfig').value = user.id;
+            document.getElementById('userNombre').value = user.nombre;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userCedula').value = user.cedula || '';
+            document.getElementById('userTelefono').value = user.telefono || '';
+            document.getElementById('userEmpresa').value = user.empresa_id || '';
+            document.getElementById('userRol').value = user.rol;
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userEstado').value = user.estado || 'activo';
+            document.getElementById('passwordRequired').style.display = 'none';
+            
+            const modulosPermitidos = user.modulos_permitidos || (user.rol === 'admin' ? MODULOS_SISTEMA.map(m => m.id) : []);
+            cargarModulosEnModal(modulosPermitidos);
+            cargarEmpresasSelect();
+            document.getElementById('modalUsuarioConfig').style.display = 'flex';
+        }
+    }
+    
+    async function guardarUsuarioConfig() {
+        let userId = document.getElementById('editUserIdConfig').value;
+        let nombre = document.getElementById('userNombre').value.trim();
+        let email = document.getElementById('userEmail').value.trim();
+        let password = document.getElementById('userPassword').value;
+        
+        if(!nombre) { mostrarToast('Nombre requerido','error'); return; }
+        if(!email) { mostrarToast('Email requerido','error'); return; }
+        
+        if(!userId && (!password || password.length < 6)) {
+            mostrarToast('Contraseña requerida (mínimo 6 caracteres)','error'); 
+            return;
+        }
+        
+        let empresaId = document.getElementById('userEmpresa').value;
+        let empresaNombre = '';
+        if (empresaId) {
+            let empresa = empresasData.find(e => e.id === empresaId);
+            empresaNombre = empresa ? empresa.nombre : '';
+        }
+        let modulosPermitidos = obtenerModulosSeleccionados();
+        const rol = document.getElementById('userRol').value;
+        
+        if (rol === 'admin') {
+            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
+        }
+        
+        const nuevoUsuario = {
+            nombre: nombre,
+            email: email,
+            cedula: document.getElementById('userCedula').value || '',
+            telefono: document.getElementById('userTelefono').value || '',
+            empresa_id: empresaId || null,
+            empresa_nombre: empresaNombre,
+            rol: rol,
+            estado: document.getElementById('userEstado').value,
+            modulos_permitidos: modulosPermitidos,
+            password_plain: password
+        };
+        
+        if (password) nuevoUsuario.password = password;
+        if (userId) nuevoUsuario.id = userId;
+        
+        const url = userId ? '/api/actualizar_usuario' : '/api/registrar_usuario';
+        const btn = document.getElementById('guardarUsuarioBtn');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Guardando...';
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoUsuario)
+            });
+            const data = await response.json();
+            
+            if (data.ok) {
+                mostrarToast(userId ? 'Usuario actualizado' : 'Usuario creado exitosamente', 'success');
+                cerrarModalUsuarioConfig();
+                await cargarUsuariosConfig();
+            } else {
+                mostrarToast(data.error || 'Error al guardar', 'error');
+            }
+        } catch (error) {
+            console.error("Error guardando usuario:", error);
+            mostrarToast('Error de conexión', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+    
+    async function eliminarUsuarioConfig(userId) {
+        const user = usuariosData.find(u => u.id === userId);
+        if (user && user.email === 'admin@gruposn.com') {
+            mostrarToast('No se puede eliminar al administrador principal', 'error');
+            return;
+        }
+        
+        if(confirm('¿Eliminar este usuario?')) {
+            try {
+                const response = await fetch('/api/eliminar_usuario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: userId })
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    mostrarToast('Usuario eliminado', 'success');
+                    await cargarUsuariosConfig();
+                } else {
+                    mostrarToast(data.error || 'Error al eliminar', 'error');
+                }
+            } catch (error) {
+                mostrarToast('Error de conexión', 'error');
+            }
+        }
+    }
+    
+    function exportarUsuariosExcel() {
+        if(usuariosData.length === 0) {
+            mostrarToast("No hay datos para exportar", "warning");
+            return;
+        }
+        
+        const data = usuariosData.map(u => ({
+            ID: u.id,
+            Nombre: u.nombre,
+            Email: u.email,
+            Cédula: u.cedula || '-',
+            Teléfono: u.telefono || '-',
+            Empresa: u.empresa_nombre || u.empresa_id || '-',
+            Rol: getRolNombre(u.rol),
+            Estado: getEstadoNombre(u.estado || 'activo'),
+            Contraseña: u.password_plain || '-',
+            Modulos_Permitidos: (u.modulos_permitidos || []).map(m => getModuloNombre(m)).join(', ')
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Usuarios');
+        XLSX.writeFile(wb, `usuarios_${new Date().toISOString().slice(0,19)}.xlsx`);
+        mostrarToast('Exportado a Excel', 'success');
+    }
+    
+    function cerrarModalUsuarioConfig() {
+        document.getElementById('modalUsuarioConfig').style.display = 'none';
+    }
+    
+    function setupConfigButtons() {
+        document.getElementById('guardarIaConfigBtn').onclick = async function() {
+            try {
+                const config = {
+                    webhook_url: document.getElementById('iaWebhookUrl')?.value || '',
+                    api_key: document.getElementById('iaApiKey')?.value || '',
+                    enabled: document.getElementById('iaEnabled')?.checked || false,
+                    auto_send: false
+                };
+                const response = await fetch('/api/config_ia', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await response.json();
+                if (data.ok) mostrarToast('Configuración IA guardada', 'success');
+                else mostrarToast('Error al guardar', 'error');
+            } catch(e) { mostrarToast('Error de conexión', 'error'); }
+        };
+        
+        document.getElementById('probarIaBtn').onclick = async function() {
+            try {
+                const response = await fetch('/api/enviar_ia_ahora', { method: 'POST' });
+                const data = await response.json();
+                if (data.ok) mostrarToast('✅ Datos enviados', 'success');
+                else mostrarToast(data.error || 'Error', 'error');
+            } catch(e) { mostrarToast('Error', 'error'); }
+        };
+        
+        document.getElementById('guardarCorreoBtn').onclick = async function() {
+            try {
+                const config = {
+                    smtp_server: document.getElementById('smtpServer')?.value || 'smtp.gmail.com',
+                    smtp_port: parseInt(document.getElementById('smtpPort')?.value) || 587,
+                    email_remitente: document.getElementById('emailRemitente')?.value || '',
+                    email_password: document.getElementById('emailPassword')?.value || '',
+                    email_empresa: 'gruposn@example.com',
+                    enabled: document.getElementById('emailEnabled')?.checked || false
+                };
+                const response = await fetch('/api/config_correo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await response.json();
+                if (data.ok) mostrarToast('Configuración de correo guardada', 'success');
+                else mostrarToast('Error al guardar', 'error');
+            } catch(e) { mostrarToast('Error', 'error'); }
+        };
+        
+        document.getElementById('probarCorreoBtn').onclick = async function() {
+            const email = prompt('Correo de prueba:', 'test@ejemplo.com');
+            if (email) {
+                try {
+                    const response = await fetch('/api/probar_correo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    const data = await response.json();
+                    if (data.ok) mostrarToast('📧 Correo de prueba enviado', 'success');
+                    else mostrarToast(data.error || 'Error', 'error');
+                } catch(e) { mostrarToast('Error', 'error'); }
+            }
+        };
+    }
+    
+    // ==================== SUB VENTANA PÁGINAS HIJO ====================
+    function abrirSubventanaPaginas() {
+        var modal = document.getElementById('modalPaginas');
+        var iframe = document.getElementById('paginasIframeModal');
+        modal.classList.add('active');
+        iframe.src = '/modulos/paginas_hijo.html?_=' + Date.now();
+    }
+    
+    function cerrarSubventanaPaginas() {
+        var modal = document.getElementById('modalPaginas');
+        var iframe = document.getElementById('paginasIframeModal');
+        modal.classList.remove('active');
+        iframe.src = 'about:blank';
+    }
+    
+    window.abrirSubventanaPaginas = abrirSubventanaPaginas;
+    window.cerrarSubventanaPaginas = cerrarSubventanaPaginas;
+    
+    // ==================== INICIALIZACIÓN ====================
+    async function inicializarModulo() {
+        console.log("🔄 Inicializando módulo de configuración...");
+        
+        // Cargar tema guardado
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        
+        await cargarEmpresas();
+        await cargarUsuariosConfig();
+        setupConfigButtons();
+        
+        const buscarInput = document.getElementById('buscarUsuarioConfig');
+        if(buscarInput) {
+            buscarInput.onkeyup = function() {
+                let term = this.value.toLowerCase() || '';
+                let filtrados = usuariosData.filter(u => u.nombre.toLowerCase().includes(term) || u.email.toLowerCase().includes(term));
+                renderizarTablaUsuarios(filtrados);
+            };
+        }
+        
+        const userRol = document.getElementById('userRol');
+        if(userRol) {
+            userRol.onchange = function() {
+                if (this.value === 'admin') {
+                    toggleAllModulos(true);
+                    mostrarToast('⚠️ Administradores tienen acceso a todos los módulos', 'info');
+                }
+            };
+        }
+        
+        const selectAll = document.getElementById('selectAllModulos');
+        if(selectAll) selectAll.onchange = function(e) { toggleAllModulos(e.target.checked); };
+        
+        document.getElementById('btnNuevoUsuario').onclick = mostrarModalCrearUsuario;
+        document.getElementById('btnExportarUsuarios').onclick = exportarUsuariosExcel;
+        document.getElementById('btnRecargarUsuarios').onclick = cargarUsuariosConfig;
+        document.getElementById('closeModalBtn').onclick = cerrarModalUsuarioConfig;
+        document.getElementById('cancelarModalBtn').onclick = cerrarModalUsuarioConfig;
+        document.getElementById('guardarUsuarioBtn').onclick = guardarUsuarioConfig;
+        document.getElementById('togglePasswordModal').onclick = togglePasswordVisibility;
+        
+        // Botón para abrir Páginas Hijo en ventana flotante
+        document.getElementById('btnAbrirPaginasModal')?.addEventListener('click', abrirSubventanaPaginas);
+        
+        let headerPassword = document.querySelector('.usuarios-table-config th:nth-child(9)');
+        if (headerPassword) {
+            let toggleBtn = document.createElement('button');
+            toggleBtn.innerHTML = '<i class="fas fa-eye"></i>';
+            toggleBtn.title = 'Mostrar/Ocultar contraseñas';
+            toggleBtn.style.background = 'none';
+            toggleBtn.style.border = 'none';
+            toggleBtn.style.color = '#f59e0b';
+            toggleBtn.style.cursor = 'pointer';
+            toggleBtn.style.marginLeft = '8px';
+            toggleBtn.onclick = toggleMostrarPasswords;
+            headerPassword.appendChild(toggleBtn);
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalUsuarioConfig');
+            if (event.target === modal) cerrarModalUsuarioConfig();
+            
+            const modalPaginas = document.getElementById('modalPaginas');
+            if (event.target === modalPaginas) cerrarSubventanaPaginas();
+        };
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modalPaginas = document.getElementById('modalPaginas');
+                if (modalPaginas.classList.contains('active')) {
+                    cerrarSubventanaPaginas();
+                }
+            }
+        });
+        
+        document.querySelectorAll('.config-tab').forEach(tab => {
+            tab.onclick = function() {
+                document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                let tabId = this.getAttribute('data-tab');
+                document.getElementById('configPanelIa').style.display = tabId === 'ia' ? 'flex' : 'none';
+                document.getElementById('configPanelCorreo').style.display = tabId === 'correo' ? 'flex' : 'none';
+                document.getElementById('configPanelUsuarios').style.display = tabId === 'usuarios' ? 'flex' : 'none';
+                document.getElementById('configPanelPaginas').style.display = tabId === 'paginas' ? 'flex' : 'none';
+                if(tabId === 'usuarios') cargarUsuariosConfig();
+                
+                // Recargar iframe cuando se activa la pestaña de páginas
+                if(tabId === 'paginas') {
+                    var iframe = document.getElementById('paginasIframeEmbed');
+                    if(iframe) iframe.src = '/modulos/paginas_hijo.html?_=' + Date.now();
+                }
+            };
+        });
+        
+        console.log("✅ Módulo de configuración inicializado");
+    }
+    
+    window.mostrarModalCrearUsuario = mostrarModalCrearUsuario;
+    window.editarUsuarioConfig = editarUsuarioConfig;
+    window.eliminarUsuarioConfig = eliminarUsuarioConfig;
+    window.exportarUsuariosExcel = exportarUsuariosExcel;
+    window.cerrarModalUsuarioConfig = cerrarModalUsuarioConfig;
+    window.guardarUsuarioConfig = guardarUsuarioConfig;
+    window.togglePasswordVisibility = togglePasswordVisibility;
+    window.toggleMostrarPasswords = toggleMostrarPasswords;
+    window.togglePasswordVisibilityTemporal = togglePasswordVisibilityTemporal;
+    window.cargarTemaGuardado = cargarTemaGuardado;
+    window.abrirSubventanaPaginas = abrirSubventanaPaginas;
+    window.cerrarSubventanaPaginas = cerrarSubventanaPaginas;
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarModulo);
+    } else {
+        inicializarModulo();
+    }
+})();
+</script>
+</body>
+</html>

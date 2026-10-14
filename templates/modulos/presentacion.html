@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Grupo GSN | Sistema de Gestión de Combustible</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* ========== TEMAS ========== */
+        body.default-theme {
+            background: radial-gradient(circle at 10% 20%, #0a0f1c, #03060c);
+            color: #f0f3fa;
+        }
+        body.dark-theme {
+            background: #0a0e1a;
+            color: #ffffff;
+        }
+        body.light-theme {
+            background: #f5f7fa;
+            color: #1a1a2e;
+        }
+        body.light-theme .presentation-header {
+            background: rgba(255,255,255,0.85);
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        body.light-theme .logo-text h1 {
+            background: linear-gradient(135deg, #1a1a2e, #d97706);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        body.light-theme .logo-text p { color: #4a4a6a; }
+        body.light-theme .nav-links a { color: #4a4a6a; }
+        body.light-theme .nav-links a:hover { color: #d97706; }
+        body.light-theme .hero-content p { color: #4a4a6a; }
+        body.light-theme .hero-badge { background: rgba(0,0,0,0.05); color: #d97706; border-color: rgba(0,0,0,0.1); }
+        body.light-theme .dashboard-preview {
+            background: rgba(255,255,255,0.9);
+            border-color: rgba(0,0,0,0.1);
+        }
+        body.light-theme .preview-stat {
+            background: rgba(0,0,0,0.04);
+        }
+        body.light-theme .preview-stat span { color: #1a1a2e; }
+        body.light-theme .preview-stat small { color: #4a4a6a; }
+        body.light-theme .feature-card {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.light-theme .feature-card h3 { color: #1a1a2e; }
+        body.light-theme .feature-card p { color: #4a4a6a; }
+        body.light-theme .features-section { background: rgba(0,0,0,0.03); }
+        body.light-theme .cta-section { background: rgba(245,158,11,0.05); }
+        body.light-theme .cta-section h2 { color: #1a1a2e; }
+        body.light-theme .cta-section p { color: #4a4a6a; }
+        body.light-theme .footer { border-top-color: rgba(0,0,0,0.1); color: #4a4a6a; }
+        body.light-theme .stat-number {
+            background: linear-gradient(135deg, #1a1a2e, #d97706);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        body.light-theme .stat-label { color: #4a4a6a; }
+        body.light-theme .btn-outline {
+            border-color: rgba(0,0,0,0.2);
+            color: #4a4a6a;
+        }
+        body.light-theme .btn-outline:hover {
+            background: rgba(0,0,0,0.05);
+            border-color: #d97706;
+            color: #d97706;
+        }
+
+        body.navy-theme {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb4d);
+            color: #ffffff;
+        }
+        body.nature-theme {
+            background: linear-gradient(135deg, #134e5e, #71b280);
+            color: #ffffff;
+        }
+        
+        /* ========== TEMA CON IMAGEN DE FONDO ========== */
+        body.image-theme {
+            background-image: url('/templates/modulos/Imagenes/fondo.png') !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-attachment: fixed !important;
+            background-repeat: no-repeat !important;
+            position: relative;
+        }
+        
+        /* Overlay oscuro para mejor legibilidad del texto */
+        body.image-theme::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 0;
+        }
+        
+        body.image-theme .presentation-container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        body.image-theme .presentation-header {
+            background: rgba(10, 10, 20, 0.75);
+            backdrop-filter: blur(15px);
+            border-bottom-color: rgba(245,158,11,0.15);
+        }
+        
+        body.image-theme .dashboard-preview {
+            background: rgba(15, 15, 25, 0.6);
+            backdrop-filter: blur(15px);
+            border-color: rgba(245,158,11,0.15);
+        }
+        
+        body.image-theme .feature-card {
+            background: rgba(15, 15, 25, 0.7);
+            backdrop-filter: blur(15px);
+            border-color: rgba(245,158,11,0.08);
+        }
+        
+        body.image-theme .features-section { 
+            background: rgba(0, 0, 0, 0.25); 
+        }
+        
+        body.image-theme .cta-section { 
+            background: rgba(0, 0, 0, 0.25); 
+        }
+        
+        body.image-theme .footer { 
+            border-top-color: rgba(255,255,255,0.08); 
+            color: rgba(255,255,255,0.5); 
+        }
+        
+        body.image-theme .hero-content h1 {
+            background: linear-gradient(135deg, #ffffff, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        body.image-theme .hero-content p {
+            color: rgba(255,255,255,0.85);
+        }
+        
+        body.image-theme .section-title h2 {
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        body.image-theme .section-title p {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        body.image-theme .stat-number {
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        body.image-theme .stat-label {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        body.image-theme .feature-card h3 {
+            color: #ffffff;
+        }
+        
+        body.image-theme .feature-card p {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        body.image-theme .cta-section h2 {
+            color: #ffffff;
+        }
+        
+        body.image-theme .cta-section p {
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Partículas de fondo */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        body.image-theme .particles {
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Contenedor principal */
+        .presentation-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        .presentation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon i {
+            font-size: 24px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo-text p {
+            font-size: 10px;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #a0a0c0;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #f59e0b;
+        }
+
+        .btn-login-nav {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-login-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 80px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .hero-content {
+            flex: 1;
+            min-width: 300px;
+            animation: slideInLeft 0.8s ease;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .hero-badge {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 60px;
+            padding: 6px 16px;
+            display: inline-block;
+            font-size: 12px;
+            color: #f59e0b;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .hero-content h1 {
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            transition: all 0.3s ease;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            color: #a0a0c0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #f59e0b;
+        }
+
+        .hero-image {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+            animation: slideInRight 0.8s ease;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .dashboard-preview {
+            background: rgba(15, 15, 25, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preview-stat {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .preview-stat i {
+            font-size: 24px;
+            color: #f59e0b;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .preview-stat span {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .preview-stat small {
+            font-size: 11px;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+
+        .preview-chart {
+            height: 150px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(16, 185, 129, 0.05));
+            border-radius: 16px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding: 15px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: #f59e0b;
+            border-radius: 8px 8px 0 0;
+            transition: height 0.5s ease;
+            animation: growBar 1s ease-out;
+        }
+
+        @keyframes growBar {
+            from { height: 0; }
+            to { height: var(--height, 80px); }
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 80px 40px;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .section-title p {
+            color: #888;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(15, 15, 25, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.1);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-icon i {
+            font-size: 32px;
+            color: #f59e0b;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: #a0a0c0;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 80px 40px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(16, 185, 129, 0.05));
+            transition: all 0.3s ease;
+        }
+
+        .cta-section h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .cta-section p {
+            color: #a0a0c0;
+            margin-bottom: 30px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: #666;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        /* Botón flotante de login */
+        .floating-login {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .floating-login:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+        }
+
+        .floating-login i {
+            font-size: 24px;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .presentation-header {
+                padding: 15px 20px;
+            }
+            .nav-links {
+                display: none;
+            }
+            .hero-section {
+                padding: 40px 20px;
+                flex-direction: column;
+                text-align: center;
+            }
+            .hero-content h1 {
+                font-size: 36px;
+            }
+            .hero-buttons {
+                justify-content: center;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .features-section {
+                padding: 40px 20px;
+            }
+            .section-title h2 {
+                font-size: 28px;
+            }
+            .floating-login {
+                width: 45px;
+                height: 45px;
+                bottom: 20px;
+                right: 20px;
+            }
+            .floating-login i {
+                font-size: 20px;
+            }
+            .dashboard-preview {
+                padding: 20px;
+            }
+            .preview-stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            .preview-stat {
+                padding: 10px;
+            }
+            .preview-stat span {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .preview-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="presentation-container">
+    <!-- Header -->
+    <div class="presentation-header" id="presentationHeader">
+        <div class="logo">
+            <div class="logo-icon" id="logoIcon">
+                <i class="fas fa-gas-pump" id="logoIconInner"></i>
+            </div>
+            <div class="logo-text">
+                <h1 id="logoTitle">GRUPO GSN</h1>
+                <p id="logoSubtitle">Sistema de Gestión de Combustible</p>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a onclick="scrollToSection('home')">Inicio</a>
+            <a onclick="scrollToSection('features')">Características</a>
+            <a onclick="scrollToSection('stats')">Estadísticas</a>
+            <button class="btn-login-nav" onclick="irALogin()">Iniciar Sesión</button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge" id="heroBadge">
+                <i class="fas fa-star"></i> Sistema Integral de Gestión
+            </div>
+            <h1 id="heroTitle">Gestión de Combustible<br>Eficiente y Moderna</h1>
+            <p id="heroSubtitle">Controla tus pedidos, facturas, flota de vehículos y más en un solo lugar. Diseñado para empresas de Nicaragua.</p>
+            <div class="hero-buttons">
+                <button class="btn-primary" onclick="irALogin()">
+                    <i class="fas fa-rocket"></i> Comenzar Ahora
+                </button>
+                <button class="btn-outline" onclick="scrollToSection('features')">
+                    <i class="fas fa-info-circle"></i> Conocer Más
+                </button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="dashboard-preview" id="dashboardPreview">
+                <div class="preview-stats">
+                    <div class="preview-stat">
+                        <i class="fas fa-chart-line"></i>
+                        <span id="previewPedidos">94%</span>
+                        <small>Pedidos</small>
+                    </div>
+                    <div class="preview-stat">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span id="previewCosto">100%K</span>
+                        <small>Ganancia Total</small>
+                    </div>
+                    <div class="preview-stat">
+                        <i class="fas fa-truck"></i>
+                        <span id="previewCamiones">100%</span>
+                        <small>Flotas de Camiones</small>
+                    </div>
+                </div>
+                <div class="preview-chart" id="previewChart">
+                    <div class="chart-bar" style="height: 80px"></div>
+                    <div class="chart-bar" style="height: 120px"></div>
+                    <div class="chart-bar" style="height: 60px"></div>
+                    <div class="chart-bar" style="height: 140px"></div>
+                    <div class="chart-bar" style="height: 100px"></div>
+                    <div class="chart-bar" style="height: 90px"></div>
+                    <div class="chart-bar" style="height: 130px"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="section-title">
+            <h2>Características Principales</h2>
+            <p>Todo lo que necesitas para gestionar tu negocio de combustible</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card"><div class="feature-icon"><i class="fas fa-chart-line"></i></div><h3>Recepción de Pedidos</h3><p>Gestiona pedidos de combustible en tiempo real con gráficas y estadísticas actualizadas.</p></div>
+            <div class="feature-card"><div class="feature-icon"><i class="fas fa-file-invoice-dollar"></i></div><h3>Facturación Automática</h3><p>Genera facturas automáticamente y envíalas por correo a tus clientes.</p></div>
+            <div class="feature-card"><div class="feature-icon"><i class="fas fa-truck"></i></div><h3>Gestión de Flota</h3><p>Controla conductores, camiones y mantenimiento de tu flota vehicular.</p></div>
+            <div class="feature-card"><div class="feature-icon"><i class="fas fa-chart-pie"></i></div><h3>Reportes y Estadísticas</h3><p>Analiza el rendimiento con gráficas interactivas y predicciones.</p></div>
+            <div class="feature-card"><div class="feature-icon"><i class="fas fa-id-card"></i></div><h3>Gestión de Empresas</h3><p>Administra tus clientes y proveedores en una base de datos centralizada.</p></div>
+            <div class="feature-card"><div class="feature-icon"><i class="fas fa-robot"></i></div><h3>IA y Automatización</h3><p>Predicciones de demanda y automatización de procesos.</p></div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-number" id="stat1">0</div><div class="stat-label">Pedidos Procesados</div></div>
+            <div class="stat-card"><div class="stat-number" id="stat2">0</div><div class="stat-label">Empresas Registradas</div></div>
+            <div class="stat-card"><div class="stat-number" id="stat3">0</div><div class="stat-label">Galones Entregados</div></div>
+            <div class="stat-card"><div class="stat-number" id="stat4">0</div><div class="stat-label">Usuarios Activos</div></div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2>¿Listo para optimizar tu gestión?</h2>
+        <p>Únete a más de 100 empresas que confían en Grupo GSN</p>
+        <button class="btn-primary" onclick="irALogin()" style="font-size:18px; padding:16px 40px;">
+            <i class="fas fa-arrow-right"></i> Comenzar Ahora
+        </button>
+    </section>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 Grupo GSN - Sistema de Gestión de Combustible. Todos los derechos reservados.</p>
+        <p>Nicaragua | Managua</p>
+    </div>
+</div>
+
+<!-- Botón flotante de login -->
+<div class="floating-login" onclick="irALogin()" title="Iniciar Sesión">
+    <i class="fas fa-user-circle"></i>
+</div>
+
+<script>
+// ==================== PRESENTACION.JS - SISTEMA DE TEMAS COMPLETO ====================
+console.log("🎬 Página de presentación cargada");
+
+// ==================== RUTA DE LA IMAGEN ====================
+// La imagen está en: C:\combustible\templates\modulos\Imagenes\fondo.png
+// Para servirla correctamente en Flask, necesitamos usar la ruta correcta
+var RUTA_IMAGEN_FONDO = '/templates/modulos/Imagenes/fondo.png';
+
+// Rutas alternativas por si la primera falla
+var RUTAS_ALTERNATIVAS = [
+    '/static/Imagenes/fondo.png',
+    '/modulos/Imagenes/fondo.png',
+    '/templates/modulos/Imagenes/fondo.png'
+];
+
+var indiceRutaActual = 0;
+
+// ==================== SISTEMA DE TEMAS ====================
+function obtenerUsuarioKey() {
+    try {
+        var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+        if (usuarioStr) {
+            var usuario = JSON.parse(usuarioStr);
+            return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+        }
+    } catch(e) {}
+    return 'tema_usuario_default';
+}
+
+function obtenerUsuarioData() {
+    try {
+        var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+        if (usuarioStr) {
+            return JSON.parse(usuarioStr);
+        }
+    } catch(e) {}
+    return null;
+}
+
+function aplicarTema(tema, imagenUrl) {
+    var body = document.body;
+    
+    // Limpiar clases de tema
+    body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+    
+    // Limpiar estilos de fondo inline
+    body.style.background = '';
+    body.style.backgroundImage = '';
+    body.style.backgroundColor = '';
+    body.style.backgroundSize = '';
+    body.style.backgroundPosition = '';
+    body.style.backgroundAttachment = '';
+    
+    if (tema === 'image' && imagenUrl) {
+        body.classList.add('image-theme');
+        body.style.backgroundImage = 'url(' + imagenUrl + ')';
+        body.style.backgroundSize = 'cover';
+        body.style.backgroundPosition = 'center';
+        body.style.backgroundAttachment = 'fixed';
+        body.style.backgroundColor = 'transparent';
+        console.log("🎨 Tema de imagen aplicado:", imagenUrl);
+    } else {
+        body.classList.add(tema + '-theme');
+        
+        // Aplicar fondo según el tema
+        switch(tema) {
+            case 'default':
+                body.style.background = 'radial-gradient(circle at 10% 20%, #0a0f1c, #03060c)';
+                break;
+            case 'dark':
+                body.style.background = '#0a0e1a';
+                break;
+            case 'light':
+                body.style.background = '#f5f7fa';
+                break;
+            case 'navy':
+                body.style.background = 'linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb4d)';
+                break;
+            case 'nature':
+                body.style.background = 'linear-gradient(135deg, #134e5e, #71b280)';
+                break;
+            default:
+                body.style.background = 'radial-gradient(circle at 10% 20%, #0a0f1c, #03060c)';
+                break;
+        }
+        console.log("🎨 Tema aplicado:", tema);
+    }
+    
+    // Aplicar colores de módulos
+    aplicarColoresModulo();
+    
+    // Guardar en localStorage
+    var usuarioKey = obtenerUsuarioKey();
+    localStorage.setItem(usuarioKey, tema);
+    if (imagenUrl) {
+        localStorage.setItem(usuarioKey + '_imagen', imagenUrl);
+    }
+    
+    // Notificar al padre que el tema ha cambiado
+    if (window.parent && window.parent !== window) {
+        try {
+            window.parent.postMessage({ 
+                type: 'TEMA_APLICADO', 
+                tema: tema,
+                imagen: imagenUrl
+            }, '*');
+        } catch(e) {}
+    }
+}
+
+function aplicarColoresModulo() {
+    var colores = {
+        primario: localStorage.getItem('colorPrimario') || '#f59e0b',
+        secundario: localStorage.getItem('colorSecundario') || '#d97706',
+        texto: localStorage.getItem('colorTexto') || '#f0f3fa',
+        titulo: localStorage.getItem('colorTitulo') || '#ffffff',
+        logo: localStorage.getItem('colorLogo') || '#f59e0b',
+        moduloFondo: localStorage.getItem('moduloFondo') || '#1a1a2e',
+        moduloBorde: localStorage.getItem('moduloBorde') || '#2a2a3e',
+        moduloTexto: localStorage.getItem('moduloTexto') || '#e0e0e0',
+        moduloCard: localStorage.getItem('moduloCard') || '#1e1e2f',
+        moduloEtiqueta: localStorage.getItem('moduloEtiqueta') || '#f59e0b',
+        moduloAcento: localStorage.getItem('moduloAcento') || '#f59e0b'
+    };
+    
+    // Aplicar colores al logo
+    var logoIcon = document.getElementById('logoIcon');
+    if (logoIcon) {
+        logoIcon.style.background = 'linear-gradient(135deg, ' + colores.primario + ', ' + colores.secundario + ')';
+    }
+    
+    // Aplicar color al icono del logo
+    var logoIconInner = document.getElementById('logoIconInner');
+    if (logoIconInner) {
+        var logoIconoColor = localStorage.getItem('logoIconoColor') || '#ffffff';
+        logoIconInner.style.color = logoIconoColor;
+    }
+    
+    // Aplicar color al título del logo
+    var logoTitle = document.getElementById('logoTitle');
+    if (logoTitle) {
+        logoTitle.style.background = 'linear-gradient(135deg, ' + colores.titulo + ', ' + colores.primario + ')';
+        logoTitle.style.webkitBackgroundClip = 'text';
+        logoTitle.style.backgroundClip = 'text';
+        logoTitle.style.color = 'transparent';
+    }
+    
+    // Aplicar color al subtítulo del logo
+    var logoSubtitle = document.getElementById('logoSubtitle');
+    if (logoSubtitle) {
+        logoSubtitle.style.color = colores.texto;
+        logoSubtitle.style.opacity = '0.7';
+    }
+    
+    // Aplicar colores a los botones del nav
+    var btnLoginNav = document.querySelector('.btn-login-nav');
+    if (btnLoginNav) {
+        btnLoginNav.style.background = 'linear-gradient(135deg, ' + colores.primario + ', ' + colores.secundario + ')';
+    }
+    
+    // Aplicar colores a los botones principales
+    var btnPrimarys = document.querySelectorAll('.btn-primary');
+    btnPrimarys.forEach(function(btn) {
+        btn.style.background = 'linear-gradient(135deg, ' + colores.primario + ', ' + colores.secundario + ')';
+    });
+    
+    // Aplicar colores al badge
+    var heroBadge = document.getElementById('heroBadge');
+    if (heroBadge) {
+        heroBadge.style.color = colores.primario;
+        heroBadge.style.borderColor = colores.primario;
+        heroBadge.style.background = 'rgba(' + hexToRgb(colores.primario) + ', 0.15)';
+    }
+    
+    // Aplicar colores al título hero
+    var heroTitle = document.getElementById('heroTitle');
+    if (heroTitle) {
+        heroTitle.style.background = 'linear-gradient(135deg, ' + colores.titulo + ', ' + colores.primario + ', ' + colores.secundario + ')';
+        heroTitle.style.webkitBackgroundClip = 'text';
+        heroTitle.style.backgroundClip = 'text';
+        heroTitle.style.color = 'transparent';
+    }
+    
+    // Aplicar colores al subtítulo hero
+    var heroSubtitle = document.getElementById('heroSubtitle');
+    if (heroSubtitle) {
+        heroSubtitle.style.color = colores.texto;
+    }
+    
+    // Aplicar colores al dashboard preview
+    var dashboardPreview = document.getElementById('dashboardPreview');
+    if (dashboardPreview) {
+        dashboardPreview.style.borderColor = 'rgba(' + hexToRgb(colores.primario) + ', 0.3)';
+    }
+    
+    // Aplicar colores a las barras del chart
+    var chartBars = document.querySelectorAll('.chart-bar');
+    chartBars.forEach(function(bar) {
+        bar.style.background = colores.primario;
+    });
+    
+    // Aplicar colores a los iconos de features
+    var featureIcons = document.querySelectorAll('.feature-icon i');
+    featureIcons.forEach(function(icon) {
+        icon.style.color = colores.primario;
+    });
+    
+    // Aplicar colores al título de sección
+    var sectionTitles = document.querySelectorAll('.section-title h2');
+    sectionTitles.forEach(function(title) {
+        title.style.background = 'linear-gradient(135deg, ' + colores.titulo + ', ' + colores.primario + ')';
+        title.style.webkitBackgroundClip = 'text';
+        title.style.backgroundClip = 'text';
+        title.style.color = 'transparent';
+    });
+    
+    // Aplicar colores a los números de estadísticas
+    var statNumbers = document.querySelectorAll('.stat-number');
+    statNumbers.forEach(function(stat) {
+        stat.style.background = 'linear-gradient(135deg, ' + colores.titulo + ', ' + colores.primario + ')';
+        stat.style.webkitBackgroundClip = 'text';
+        stat.style.backgroundClip = 'text';
+        stat.style.color = 'transparent';
+    });
+    
+    // Aplicar colores al floating login
+    var floatingLogin = document.querySelector('.floating-login');
+    if (floatingLogin) {
+        floatingLogin.style.background = 'linear-gradient(135deg, ' + colores.primario + ', ' + colores.secundario + ')';
+    }
+}
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? parseInt(result[1], 16) + ', ' + parseInt(result[2], 16) + ', ' + parseInt(result[3], 16) : '245, 158, 11';
+}
+
+function cargarTemaGuardado() {
+    var usuarioKey = obtenerUsuarioKey();
+    var temaGuardado = localStorage.getItem(usuarioKey);
+    var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+    
+    // Cargar colores guardados
+    var coloresGuardados = localStorage.getItem(usuarioKey + '_colores');
+    if (coloresGuardados) {
+        try {
+            var colores = JSON.parse(coloresGuardados);
+            if (colores.primario) localStorage.setItem('colorPrimario', colores.primario);
+            if (colores.secundario) localStorage.setItem('colorSecundario', colores.secundario);
+            if (colores.texto) localStorage.setItem('colorTexto', colores.texto);
+            if (colores.titulo) localStorage.setItem('colorTitulo', colores.titulo);
+            if (colores.logo) localStorage.setItem('colorLogo', colores.logo);
+            if (colores.moduloFondo) localStorage.setItem('moduloFondo', colores.moduloFondo);
+            if (colores.moduloBorde) localStorage.setItem('moduloBorde', colores.moduloBorde);
+            if (colores.moduloTexto) localStorage.setItem('moduloTexto', colores.moduloTexto);
+            if (colores.moduloCard) localStorage.setItem('moduloCard', colores.moduloCard);
+            if (colores.moduloEtiqueta) localStorage.setItem('moduloEtiqueta', colores.moduloEtiqueta);
+            if (colores.moduloAcento) localStorage.setItem('moduloAcento', colores.moduloAcento);
+        } catch(e) {
+            console.warn("Error cargando colores guardados:", e);
+        }
+    }
+    
+    // Cargar logo guardado
+    var logoGuardado = localStorage.getItem(usuarioKey + '_logo');
+    if (logoGuardado) {
+        try {
+            var logo = JSON.parse(logoGuardado);
+            if (logo.icono) {
+                var logoIconInner = document.getElementById('logoIconInner');
+                if (logoIconInner) {
+                    logoIconInner.className = 'fas ' + logo.icono;
+                }
+            }
+            if (logo.iconoColor) {
+                localStorage.setItem('logoIconoColor', logo.iconoColor);
+            }
+            if (logo.titulo) {
+                var logoTitle = document.getElementById('logoTitle');
+                if (logoTitle) logoTitle.textContent = logo.titulo;
+            }
+            if (logo.subtitulo) {
+                var logoSubtitle = document.getElementById('logoSubtitle');
+                if (logoSubtitle) logoSubtitle.textContent = logo.subtitulo;
+            }
+        } catch(e) {
+            console.warn("Error cargando logo guardado:", e);
+        }
+    }
+    
+    // Si hay tema guardado, aplicarlo
+    if (temaGuardado) {
+        if (temaGuardado === 'image' && imagenGuardada) {
+            aplicarTema('image', imagenGuardada);
+        } else if (temaGuardado !== 'image') {
+            aplicarTema(temaGuardado);
+        }
+    } else {
+        // Por defecto, usar imagen de fondo
+        aplicarTema('image', RUTA_IMAGEN_FONDO);
+    }
+}
+
+function escucharMensajesTema() {
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'CAMBIAR_TEMA') {
+            var tema = event.data.tema;
+            var imagen = event.data.imagen || null;
+            if (tema) {
+                if (tema === 'image' && imagen) {
+                    aplicarTema('image', imagen);
+                } else if (tema !== 'image') {
+                    aplicarTema(tema);
+                }
+            }
+        }
+        
+        if (event.data && event.data.type === 'APLICAR_COLORES') {
+            var colores = event.data.colores;
+            if (colores) {
+                if (colores.primario) localStorage.setItem('colorPrimario', colores.primario);
+                if (colores.secundario) localStorage.setItem('colorSecundario', colores.secundario);
+                if (colores.texto) localStorage.setItem('colorTexto', colores.texto);
+                if (colores.titulo) localStorage.setItem('colorTitulo', colores.titulo);
+                if (colores.logo) localStorage.setItem('colorLogo', colores.logo);
+                if (colores.moduloFondo) localStorage.setItem('moduloFondo', colores.moduloFondo);
+                if (colores.moduloBorde) localStorage.setItem('moduloBorde', colores.moduloBorde);
+                if (colores.moduloTexto) localStorage.setItem('moduloTexto', colores.moduloTexto);
+                if (colores.moduloCard) localStorage.setItem('moduloCard', colores.moduloCard);
+                if (colores.moduloEtiqueta) localStorage.setItem('moduloEtiqueta', colores.moduloEtiqueta);
+                if (colores.moduloAcento) localStorage.setItem('moduloAcento', colores.moduloAcento);
+                aplicarColoresModulo();
+            }
+        }
+        
+        if (event.data && event.data.type === 'APLICAR_LOGO') {
+            var logo = event.data.logo;
+            if (logo) {
+                if (logo.icono) {
+                    var logoIconInner = document.getElementById('logoIconInner');
+                    if (logoIconInner) {
+                        logoIconInner.className = 'fas ' + logo.icono;
+                    }
+                }
+                if (logo.iconoColor) {
+                    localStorage.setItem('logoIconoColor', logo.iconoColor);
+                }
+                if (logo.titulo) {
+                    var logoTitle = document.getElementById('logoTitle');
+                    if (logoTitle) logoTitle.textContent = logo.titulo;
+                }
+                if (logo.subtitulo) {
+                    var logoSubtitle = document.getElementById('logoSubtitle');
+                    if (logoSubtitle) logoSubtitle.textContent = logo.subtitulo;
+                }
+                aplicarColoresModulo();
+            }
+        }
+    });
+}
+
+// ==================== FUNCIONES DE PRESENTACIÓN ====================
+// Crear partículas de fondo
+function crearParticulas() {
+    const particlesContainer = document.getElementById('particles');
+    if (!particlesContainer) return;
+    
+    particlesContainer.innerHTML = '';
+    
+    for (let i = 0; i < 80; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        const size = Math.random() * 5 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = Math.random() * 20 + 10 + 's';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Scroll suave
+function scrollToSection(sectionId) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// REDIRECCIÓN CORRECTA A LA PÁGINA DE LOGIN REAL
+function irALogin() {
+    console.log("🚀 Redirigiendo a /modulos/login.html");
+    if (localStorage.getItem('usuario_actual') || localStorage.getItem('usuario')) {
+        if (confirm('¿Deseas cerrar sesión actual e iniciar una nueva?')) {
+            localStorage.removeItem('usuario_actual');
+            localStorage.removeItem('usuario');
+        }
+    }
+    window.location.href = '/modulos/login.html';
+}
+
+// Animación de contador
+function animateCounter(element, target, duration = 2000) {
+    if (!element) return;
+    let start = 0;
+    const increment = target / (duration / 16);
+    const timer = setInterval(() => {
+        start += increment;
+        if (start >= target) {
+            element.innerText = target.toLocaleString();
+            clearInterval(timer);
+        } else {
+            element.innerText = Math.floor(start).toLocaleString();
+        }
+    }, 16);
+}
+
+// Cargar estadísticas
+function cargarEstadisticas() {
+    animateCounter(document.getElementById('stat1'), 64);
+    animateCounter(document.getElementById('stat2'), 6);
+    animateCounter(document.getElementById('stat3'), 17255);
+    animateCounter(document.getElementById('stat4'), 12);
+    
+    const previewPedidos = document.getElementById('previewPedidos');
+    const previewCosto = document.getElementById('previewCosto');
+    const previewCamiones = document.getElementById('previewCamiones');
+    if (previewPedidos) previewPedidos.innerText = "64";
+    if (previewCosto) previewCosto.innerText = "C$131K";
+    if (previewCamiones) previewCamiones.innerText = "12";
+}
+
+// Solicitar temas al padre si estamos en iframe
+function solicitarTemaAlPadre() {
+    if (window.parent && window.parent !== window) {
+        try {
+            window.parent.postMessage({ type: 'SOLICITAR_TEMA' }, '*');
+            window.parent.postMessage({ type: 'SOLICITAR_COLORES' }, '*');
+            console.log("📤 Solicitando tema y colores al padre");
+        } catch(e) {
+            console.warn("No se pudo solicitar tema al padre:", e);
+        }
+    }
+}
+
+// Verificar si la imagen de fondo existe, si no, usar la siguiente ruta alternativa
+function verificarImagenFondo() {
+    var rutaActual = RUTAS_ALTERNATIVAS[indiceRutaActual] || RUTA_IMAGEN_FONDO;
+    console.log("🔍 Verificando imagen en:", rutaActual);
+    
+    var img = new Image();
+    img.onload = function() {
+        console.log("✅ Imagen de fondo cargada correctamente:", rutaActual);
+        // Si la imagen se carga, actualizar la ruta en el tema
+        var body = document.body;
+        if (body.classList.contains('image-theme')) {
+            body.style.backgroundImage = 'url(' + rutaActual + ')';
+        }
+        // Guardar la ruta correcta
+        var usuarioKey = obtenerUsuarioKey();
+        localStorage.setItem(usuarioKey + '_imagen', rutaActual);
+    };
+    img.onerror = function() {
+        console.warn("⚠️ No se pudo cargar la imagen en:", rutaActual);
+        // Intentar con la siguiente ruta alternativa
+        indiceRutaActual++;
+        if (indiceRutaActual < RUTAS_ALTERNATIVAS.length) {
+            verificarImagenFondo();
+        } else {
+            console.error("❌ No se pudo cargar la imagen de fondo en ninguna ruta");
+            // Si todas fallan, usar un fondo por defecto
+            var body = document.body;
+            if (body.classList.contains('image-theme')) {
+                body.classList.remove('image-theme');
+                body.classList.add('default-theme');
+            }
+        }
+    };
+    img.src = rutaActual;
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🎬 Inicializando presentación con imagen de fondo");
+    
+    // Verificar imagen de fondo con múltiples rutas
+    setTimeout(verificarImagenFondo, 100);
+    
+    // Cargar tema guardado (por defecto usará la imagen)
+    cargarTemaGuardado();
+    
+    // Escuchar mensajes de tema
+    escucharMensajesTema();
+    
+    // Solicitar tema al padre si estamos en iframe
+    solicitarTemaAlPadre();
+    
+    // Crear partículas
+    crearParticulas();
+    
+    // Cargar estadísticas
+    cargarEstadisticas();
+    
+    // Aplicar colores después de un pequeño retraso
+    setTimeout(aplicarColoresModulo, 300);
+});
+
+// Exponer funciones globales
+window.scrollToSection = scrollToSection;
+window.irALogin = irALogin;
+window.aplicarTema = aplicarTema;
+window.cargarTemaGuardado = cargarTemaGuardado;
+window.aplicarColoresModulo = aplicarColoresModulo;
+</script>
+</body>
+</html>

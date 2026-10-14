@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>📡 Chat Madre | GPS Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a1628;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .chat-container {
+            max-width: 520px;
+            width: 100%;
+            background: rgba(10, 22, 40, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 92vh;
+            max-height: 780px;
+            position: relative;
+        }
+        .top-bar-conexion {
+            padding: 8px 14px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .top-bar-conexion .label {
+            font-size: 0.5rem;
+            color: rgba(56, 189, 248, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .top-bar-conexion .url-input {
+            flex: 1;
+            display: flex;
+            gap: 4px;
+            min-width: 140px;
+        }
+        .top-bar-conexion .url-input input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            border-radius: 30px;
+            padding: 4px 12px;
+            color: #7dd3fc;
+            font-size: 0.6rem;
+            font-family: monospace;
+            outline: none;
+            transition: all 0.3s;
+            min-width: 80px;
+        }
+        .top-bar-conexion .url-input input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56,189,248,0.05);
+        }
+        .top-bar-conexion .btn-conectar {
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: white;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .top-bar-conexion .btn-conectar:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px rgba(56,189,248,0.2);
+        }
+        .top-bar-conexion .btn-conectar:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .top-bar-conexion .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .top-bar-conexion .status-dot.off { background: rgba(255,255,255,0.15); }
+        .top-bar-conexion .status-dot.on { background: #38bdf8; animation: pulseDot 1s infinite; }
+        .top-bar-conexion .status-dot.error { background: #f87171; }
+        .top-bar-conexion .status-text {
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.2);
+            white-space: nowrap;
+        }
+        .top-bar-conexion .status-text.conectado { color: #38bdf8; }
+        .top-bar-conexion .status-text.error { color: #f87171; }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .chat-header .info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header .info .avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 15px rgba(56,189,248,0.2);
+        }
+        .chat-header .info .nombre {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-size: 0.85rem;
+        }
+        .chat-header .info .estado {
+            font-size: 0.55rem;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .chat-header .info .estado .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #38bdf8;
+            animation: pulseDot 1.5s infinite;
+        }
+        .chat-header .acciones {
+            display: flex;
+            gap: 6px;
+        }
+        .chat-header .acciones button {
+            background: rgba(255,255,255,0.03);
+            border: none;
+            color: #94a3b8;
+            padding: 6px 10px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .chat-header .acciones button:hover {
+            background: rgba(56, 189, 248, 0.08);
+            color: #38bdf8;
+        }
+        .chat-header .acciones button.btn-limpiar:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+        .chat-header .acciones button.btn-cerrar:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+        /* Ruedita de actualización girando */
+        .fa-spin-custom {
+            animation: fa-spin 2s infinite linear;
+        }
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(359deg); }
+        }
+
+        /* ===== SELECTOR DE CONDUCTORES CON SCROLL HORIZONTAL ===== */
+        .chat-conductor-selector {
+            display: flex;
+            gap: 4px;
+            padding: 4px 10px;
+            border-bottom: 1px solid rgba(56,189,248,0.03);
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
+            align-items: center;
+            scroll-behavior: smooth;
+            min-height: 32px;
+            max-height: 36px;
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.1);
+        }
+        .chat-conductor-selector::-webkit-scrollbar { height: 3px; }
+        .chat-conductor-selector::-webkit-scrollbar-track { background: rgba(56,189,248,0.02); border-radius: 10px; }
+        .chat-conductor-selector::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.1); border-radius: 10px; }
+        .chat-conductor-selector .tag-conductor {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.5rem;
+            background: rgba(56,189,248,0.05);
+            border: 1px solid rgba(56,189,248,0.05);
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .chat-conductor-selector .tag-conductor:hover {
+            background: rgba(56,189,248,0.1);
+            border-color: rgba(56,189,248,0.1);
+        }
+        .chat-conductor-selector .tag-conductor.active {
+            background: rgba(56,189,248,0.15);
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+        .chat-conductor-selector .tag-conductor .badge-msgs {
+            font-size: 0.35rem;
+            background: rgba(56,189,248,0.1);
+            padding: 0 4px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+        /* ===== NO LEÍDO - ROJO ===== */
+        .chat-conductor-selector .tag-conductor.no-leido {
+            border-color: rgba(239, 68, 68, 0.3) !important;
+            color: #f87171 !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+        }
+        .chat-conductor-selector .tag-conductor.no-leido .badge-msgs {
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #f87171 !important;
+        }
+        .chat-conductor-selector .tag-conductor.no-leido:hover {
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
+        .chat-conductor-selector .tag-conductor.no-leido.active {
+            background: rgba(239, 68, 68, 0.12) !important;
+            border-color: #f87171 !important;
+            color: #f87171 !important;
+        }
+        .chat-conductor-selector .label-conductores {
+            font-size: 0.45rem;
+            color: rgba(255,255,255,0.15);
+            padding: 2px 4px;
+            flex-shrink: 0;
+        }
+        .chat-conductor-selector .btn-limpiar-todos {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.45rem;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        .chat-conductor-selector .btn-limpiar-todos:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 200px;
+            scroll-behavior: smooth;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: rgba(56,189,248,0.02); border-radius: 10px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.15); border-radius: 10px; }
+
+        /* ===== MENSAJES - RECIBIDOS A LA IZQUIERDA, ENVIADOS A LA DERECHA ===== */
+        .chat-msg {
+            max-width: 85%;
+            padding: 6px 14px;
+            border-radius: 14px;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            word-break: break-word;
+            transition: none;
+        }
+        .chat-msg.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: white;
+            border-bottom-right-radius: 3px;
+            box-shadow: 0 4px 15px rgba(56,189,248,0.15);
+        }
+        .chat-msg.received {
+            align-self: flex-start;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(56,189,248,0.05);
+            border-bottom-left-radius: 3px;
+            color: #e2e8f0;
+        }
+        .chat-msg .hora {
+            font-size: 0.4rem;
+            opacity: 0.4;
+            margin-top: 2px;
+            display: block;
+            text-align: right;
+        }
+        .chat-msg .nombre {
+            font-size: 0.5rem;
+            font-weight: 600;
+            color: #38bdf8;
+            display: block;
+            margin-bottom: 1px;
+        }
+        .chat-msg .btn-eliminar-msg {
+            background: none; border: none; color: rgba(255,255,255,0.1);
+            cursor: pointer; font-size: 0.4rem; margin-left: 4px;
+            transition: all 0.2s;
+        }
+        .chat-msg .btn-eliminar-msg:hover { color: #f87171; }
+
+        /* ===== ARCHIVOS EN CHAT ===== */
+        .archivo-msg {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.03);
+            padding: 3px 8px 3px 6px;
+            border-radius: 8px;
+            margin: 2px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.03);
+            text-decoration: none;
+            max-width: 100%;
+        }
+        .archivo-msg:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.06); }
+        .archivo-msg i { font-size: 0.8rem; flex-shrink: 0; }
+        .archivo-msg .nombre { font-size: 0.55rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+        .archivo-msg .tamanio { font-size: 0.4rem; color: rgba(255,255,255,0.2); flex-shrink: 0; }
+
+        .archivo-imagen {
+            display: block;
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 4px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .archivo-imagen:hover {
+            opacity: 0.9;
+            border-color: rgba(56,189,248,0.2);
+        }
+        .archivo-imagen-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .archivo-imagen-container .btn-descarga-imagen {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            border: none;
+            border-radius: 20px;
+            padding: 2px 10px;
+            color: white;
+            font-size: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            opacity: 0;
+        }
+        .archivo-imagen-container:hover .btn-descarga-imagen {
+            opacity: 1;
+        }
+        .archivo-imagen-container .btn-descarga-imagen:hover {
+            background: rgba(56,189,248,0.4);
+        }
+        .chat-msg .archivos-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: 2px;
+        }
+
+        .chat-empty {
+            text-align: center;
+            color: rgba(255,255,255,0.08);
+            padding: 30px 20px;
+            font-size: 0.7rem;
+        }
+        .chat-empty i {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+            opacity: 0.3;
+            color: #38bdf8;
+        }
+
+        .chat-input-area {
+            padding: 6px 10px 10px 10px;
+            background: rgba(0,0,0,0.15);
+            border-top: 1px solid rgba(56,189,248,0.03);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .chat-input-row input[type="text"] {
+            flex: 1;
+            padding: 8px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(56,189,248,0.06);
+            background: rgba(255,255,255,0.02);
+            color: white;
+            font-size: 0.75rem;
+            outline: none;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            min-width: 80px;
+        }
+        .chat-input-row input[type="text"]:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56,189,248,0.02); }
+        .chat-input-row input[type="text"]::placeholder { color: rgba(255,255,255,0.1); }
+        .chat-input-row input[type="text"]:disabled { opacity: 0.4; }
+
+        .chat-input-row .btn-archivo-solo {
+            background: rgba(56,189,248,0.05);
+            border: 1px solid rgba(56,189,248,0.06);
+            border-radius: 30px;
+            padding: 8px 12px;
+            color: #7dd3fc;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            min-width: 38px;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .chat-input-row .btn-archivo-solo:hover { background: rgba(56,189,248,0.1); }
+        .chat-input-row .btn-archivo-solo .badge-archivos {
+            background: rgba(56,189,248,0.1);
+            color: #38bdf8;
+            border-radius: 50%;
+            padding: 0 4px;
+            font-size: 0.4rem;
+            min-width: 14px;
+            text-align: center;
+            position: absolute;
+            top: -4px;
+            right: -4px;
+        }
+
+        .chat-input-row button {
+            padding: 8px 14px;
+            border-radius: 60px;
+            border: none;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            min-width: 38px;
+            min-height: 38px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-input-row button:hover { transform: scale(1.03); box-shadow: 0 4px 15px rgba(56,189,248,0.15); }
+        .chat-input-row button:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+        .archivos-seleccionados {
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.2);
+            padding: 2px 10px;
+            display: none;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .archivos-seleccionados .tag-archivo {
+            background: rgba(56,189,248,0.05);
+            border: 1px solid rgba(56,189,248,0.05);
+            border-radius: 20px;
+            padding: 1px 8px;
+            font-size: 0.45rem;
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .archivos-seleccionados .tag-archivo .remove {
+            cursor: pointer;
+            color: #f87171;
+            font-size: 0.4rem;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 26, 10, 0.05);
+            backdrop-filter: blur(30px);
+            padding: 8px 16px;
+            border-radius: 40px;
+            z-index: 10001;
+            border-left: 4px solid #10b981;
+            font-size: 0.65rem;
+            color: #34d399;
+            animation: fadeInUp 0.3s ease;
+            max-width: 350px;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== MODAL DE IMAGEN AMPLIADA ===== */
+        .modal-imagen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .modal-imagen.active { display: flex; }
+        .modal-imagen img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-imagen .cerrar-modal-imagen {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.2s;
+            z-index: 99999;
+        }
+        .modal-imagen .cerrar-modal-imagen:hover { opacity: 1; }
+
+        .modal-ubicacion {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .modal-ubicacion.show { display: flex; }
+        .modal-ubicacion-content {
+            background: rgba(10, 26, 10, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85%;
+            overflow: auto;
+            border: 1px solid rgba(16,185,129,0.1);
+            padding: 24px;
+        }
+        .modal-ubicacion-content .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(16,185,129,0.05); }
+        .modal-ubicacion-content .modal-header h2 { font-size: 1rem; color: #34d399; display: flex; align-items: center; gap: 8px; }
+        .modal-ubicacion-content .modal-header .close { background: none; border: none; color: #34d399; font-size: 24px; cursor: pointer; opacity: 0.5; transition: all 0.2s; }
+        .modal-ubicacion-content .modal-header .close:hover { opacity: 1; transform: rotate(90deg); }
+        .modal-ubicacion-content .info-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(16,185,129,0.02); font-size: 0.7rem; color: #34d399; }
+        .modal-ubicacion-content .info-row .label { opacity: 0.4; }
+        .modal-ubicacion-content .info-row .value { font-weight: 500; text-align: right; }
+        .modal-ubicacion-content .map-container { margin: 12px 0; border-radius: 14px; overflow: hidden; height: 200px; background: rgba(0,0,0,0.3); }
+        .modal-ubicacion-content .map-container iframe { width: 100%; height: 100%; border: none; }
+        .modal-ubicacion-content .btn-map-link {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+            background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 30px; color: #60a5fa; font-size: 0.65rem; cursor: pointer;
+            transition: all 0.2s; text-decoration: none;
+        }
+        .modal-ubicacion-content .btn-map-link:hover { background: rgba(59,130,246,0.2); transform: translateY(-2px); }
+
+        .modal-confirmacion {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 10001;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .modal-confirmacion.show { display: flex; }
+        .modal-confirmacion-content {
+            background: rgba(10, 26, 10, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 380px;
+            padding: 24px;
+            border: 1px solid rgba(239,68,68,0.1);
+            text-align: center;
+        }
+        .modal-confirmacion-content h2 {
+            color: #f87171;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .modal-confirmacion-content p {
+            color: #e2e8f0;
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+        .modal-confirmacion-content .btn-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-confirmacion-content .btn-row button {
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-confirmacion-content .btn-row .btn-cancelar {
+            background: rgba(255,255,255,0.05);
+            color: #94a3b8;
+        }
+        .modal-confirmacion-content .btn-row .btn-cancelar:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .modal-confirmacion-content .btn-row .btn-eliminar {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .modal-confirmacion-content .btn-row .btn-eliminar:hover {
+            background: rgba(239,68,68,0.25);
+        }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                max-height: 100vh;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .chat-header .info .nombre { font-size: 0.75rem; }
+            .chat-header .acciones button span { display: none; }
+            .chat-msg { font-size: 0.7rem; padding: 5px 10px; }
+            .chat-input-row input[type="text"] { font-size: 0.7rem; padding: 6px 12px; }
+            .chat-input-row button { padding: 6px 12px; min-width: 34px; min-height: 34px; font-size: 0.7rem; }
+            .chat-input-row .btn-archivo-solo { padding: 6px 10px; min-width: 34px; min-height: 34px; font-size: 0.7rem; }
+            .top-bar-conexion .url-input input { font-size: 0.5rem; padding: 3px 10px; }
+            .top-bar-conexion .btn-conectar { font-size: 0.5rem; padding: 3px 10px; }
+            .archivo-msg .nombre { max-width: 60px; }
+            .archivo-imagen { max-height: 120px; }
+            .modal-imagen img { max-width: 95%; max-height: 80%; }
+            .chat-conductor-selector .tag-conductor { font-size: 0.45rem; padding: 1px 6px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container" id="chatContainer">
+    <!-- TOP BAR CONEXIÓN -->
+    <div class="top-bar-conexion">
+        <span class="label"><i class="fas fa-arrow-right"></i> Servidor</span>
+        <div class="url-input">
+            <input type="text" id="enlaceMadre" placeholder="https://xxx.trycloudflare.com" value="">
+            <button class="btn-conectar" id="btnConectarMadre" onclick="conectarConMadre()">
+                <i class="fas fa-plug"></i>
+            </button>
+        </div>
+        <span class="status-dot off" id="statusDot"></span>
+        <span class="status-text" id="statusText">Desconectado</span>
+    </div>
+
+    <!-- CHAT HEADER -->
+    <div class="chat-header">
+        <div class="info">
+            <div class="avatar"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="nombre" id="nombreChatHeader">📡 Chat Madre</div>
+                <div class="estado"><span class="dot"></span> <span id="contadorConectados">0</span> conectados</div>
+            </div>
+        </div>
+        <div class="acciones">
+            <button onclick="refrescarChat()" title="Actualizar chat" style="background:transparent; color:#38bdf8;">
+                <i class="fas fa-sync-alt fa-spin-custom"></i>
+            </button>
+            <button onclick="cerrarChatMadre()" class="btn-cerrar" title="Cerrar chat">
+                <i class="fas fa-times"></i> <span>Cerrar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SELECTOR DE CONDUCTORES -->
+    <div class="chat-conductor-selector" id="conductorSelector">
+        <span class="label-conductores">📋</span>
+        <button class="btn-limpiar-todos" onclick="limpiarTodosMensajes()" title="Eliminar todos los mensajes de todos los conductores">🗑️ Todos</button>
+    </div>
+
+    <!-- MENSAJES -->
+    <div class="chat-messages" id="chatMessages">
+        <div class="chat-empty">
+            <i class="fas fa-comment-dots"></i>
+            <p>Selecciona un conductor para ver sus mensajes</p>
+        </div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="chat-input-area">
+        <div class="archivos-seleccionados" id="archivosSeleccionados"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Escribe un mensaje..." autocomplete="off" disabled>
+            <button class="btn-archivo-solo" id="btnArchivo" onclick="document.getElementById('fileInput').click();" title="Adjuntar archivo">
+                <i class="fas fa-paperclip"></i>
+                <span class="badge-archivos" id="badgeArchivos" style="display:none;">0</span>
+            </button>
+            <input type="file" id="fileInput" style="display:none;" multiple>
+            <button id="chatBtnEnviar" onclick="enviarMensajeChat()" disabled><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL IMAGEN -->
+<div class="modal-imagen" id="modalImagen" onclick="cerrarModalImagen()">
+    <span class="cerrar-modal-imagen">&times;</span>
+    <img id="imagenAmpliada" src="" alt="Imagen ampliada">
+</div>
+
+<!-- MODAL UBICACIÓN -->
+<div class="modal-ubicacion" id="modalUbicacion">
+    <div class="modal-ubicacion-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-location-dot"></i> Ubicación del Conductor</h2>
+            <button class="close" onclick="cerrarModalUbicacion()">&times;</button>
+        </div>
+        <div id="modalUbicacionBody">
+            <div class="info-row"><span class="label">Conductor</span><span class="value" id="modalConductorNombre">-</span></div>
+            <div class="info-row"><span class="label">ID</span><span class="value" id="modalConductorId">-</span></div>
+            <div class="info-row"><span class="label">Fecha</span><span class="value" id="modalFecha">-</span></div>
+            <div class="info-row"><span class="label">Coordenadas</span><span class="value" id="modalCoordenadas">-</span></div>
+            <div class="map-container"><iframe id="modalMapFrame" src="about:blank"></iframe></div>
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+                <a href="#" target="_blank" class="btn-map-link" id="modalMapLink"><i class="fas fa-map"></i> Google Maps</a>
+                <button class="btn-map-link" onclick="cerrarModalUbicacion()"><i class="fas fa-times"></i> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN -->
+<div class="modal-confirmacion" id="modalConfirmacion">
+    <div class="modal-confirmacion-content">
+        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar</h2>
+        <p id="confirmacionMensaje">¿Estás seguro de eliminar todos los mensajes?</p>
+        <div class="btn-row">
+            <button class="btn-cancelar" onclick="cerrarModalConfirmacion()">Cancelar</button>
+            <button class="btn-eliminar" id="confirmarBtn" onclick="confirmarEliminar()">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// CHAT MADRE - GPS PANEL (CORREGIDO - INDICADOR ROJO CON HORA:MINUTO:SEGUNDO)
+// ============================================================
+(function() {
+    "use strict";
+
+    let API_URL = "";
+    let conectado = false;
+    let conductoresData = [];
+    let conductorSeleccionado = null;
+    let mensajesPorConductor = {};
+    let ultimoHashChat = {};
+    let mensajesNoLeidos = {};
+    let archivosSeleccionados = [];
+    let pollingInterval = null;
+    let accionConfirmacion = null;
+
+    // ===== ELEMENTOS =====
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const chatBtnEnviar = document.getElementById('chatBtnEnviar');
+    const contadorConectados = document.getElementById('contadorConectados');
+    const conductorSelector = document.getElementById('conductorSelector');
+    const enlaceMadreInput = document.getElementById('enlaceMadre');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const nombreHeader = document.getElementById('nombreChatHeader');
+    const fileInput = document.getElementById('fileInput');
+    const archivosSeleccionadosDiv = document.getElementById('archivosSeleccionados');
+    const badgeArchivos = document.getElementById('badgeArchivos');
+    const btnArchivo = document.getElementById('btnArchivo');
+    const modalImagen = document.getElementById('modalImagen');
+    const imagenAmpliada = document.getElementById('imagenAmpliada');
+
+    // ===== FUNCIONES =====
+    function escapeHtml(text) {
+        if (!text) return "";
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatearHora(fecha) {
+        return fecha.toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function formatearFecha(fecha) {
+        return fecha.toLocaleDateString('es-NI', { day: '2-digit', month: 'short' });
+    }
+
+    function mostrarToast(mensaje, tipo) {
+        tipo = tipo || 'success';
+        const old = document.querySelector('.toast-message');
+        if (old) old.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        const icon = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        toast.innerHTML = `<i class="fas ${icon}"></i> ${mensaje}`;
+        if (tipo === 'error') toast.style.borderLeftColor = '#ef4444';
+        else if (tipo === 'info') toast.style.borderLeftColor = '#fbbf24';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function forzarHttps(url) {
+        if (!url) return url;
+        if (url.startsWith('http://') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+            return url.replace('http://', 'https://');
+        }
+        return url;
+    }
+
+    // ===== CONEXIÓN =====
+    window.conectarConMadre = function() {
+        var enlace = enlaceMadreInput.value.trim();
+        var btn = document.getElementById("btnConectarMadre");
+
+        if (!enlace) {
+            statusText.textContent = 'Ingresa URL';
+            statusText.className = 'status-text error';
+            return;
+        }
+
+        enlace = forzarHttps(enlace);
+        enlace = enlace.replace(/\/p\/[^\/]+$/, '').replace(/\/p$/, '').replace(/\/primogenito\/[^\/]+$/, '').replace(/\/primogenito$/, '').replace(/\/conductor\/[^\/]+$/, '').replace(/\/conductor$/, '').replace(/\/$/, '');
+        if (!enlace.startsWith('http://') && !enlace.startsWith('https://')) { enlace = 'https://' + enlace; }
+
+        enlaceMadreInput.value = enlace;
+        API_URL = enlace;
+        localStorage.setItem("gestion_clientes_enlace_madre", enlace);
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+        statusDot.className = 'status-dot';
+        statusText.textContent = 'Conectando...';
+        statusText.className = 'status-text';
+
+        fetch(enlace + "/api/cloudflare_url", {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            signal: AbortSignal.timeout(8000)
+        })
+        .then(function(res) {
+            if (res.ok) return res.json();
+            throw new Error("Error " + res.status);
+        })
+        .then(function(data) {
+            conectado = true;
+            statusDot.className = 'status-dot on';
+            statusText.textContent = '✅ Conectado';
+            statusText.className = 'status-text conectado';
+            console.log('✅ Conectado al servidor madre');
+            cargarConductores();
+            iniciarEscucha();
+        })
+        .catch(function(err) {
+            conectado = false;
+            statusDot.className = 'status-dot error';
+            statusText.textContent = '❌ ' + err.message;
+            statusText.className = 'status-text error';
+            console.warn('Error conectando:', err.message);
+            API_URL = "";
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plug"></i>';
+        });
+    };
+
+    // ===== CARGAR CONDUCTORES =====
+    function cargarConductores() {
+        if (!API_URL || !conectado) return;
+
+        fetch(API_URL + "/api/chat/conductores_conectados", {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok && data.conductores) {
+                conductoresData = data.conductores;
+                actualizarSelectorConductores();
+                actualizarContadores();
+
+                if (conductorSeleccionado) {
+                    const existe = conductoresData.some(c => c.id === conductorSeleccionado);
+                    if (!existe) {
+                        conductorSeleccionado = null;
+                        chatInput.disabled = true;
+                        chatBtnEnviar.disabled = true;
+                        chatMessages.innerHTML = '<div class="chat-empty"><i class="fas fa-comment-dots"></i> <p>Selecciona un conductor para ver sus mensajes</p></div>';
+                    } else {
+                        cargarMensajesConductor(conductorSeleccionado);
+                    }
+                }
+
+                if (data.conductores.length > 0 && !conductorSeleccionado) {
+                    seleccionarConductor(data.conductores[0].id);
+                }
+            }
+        })
+        .catch(e => console.warn('Error cargando conductores:', e));
+    }
+
+    // ===== ACTUALIZAR SELECTOR =====
+    function actualizarSelectorConductores() {
+        let html = '<span class="label-conductores">📋</span>';
+        html += `<button class="btn-limpiar-todos" onclick="limpiarTodosMensajes()" title="Eliminar todos los mensajes de todos los conductores">🗑️ Todos</button>`;
+
+        conductoresData.forEach(c => {
+            const active = c.id === conductorSeleccionado ? 'active' : '';
+            const msgs = mensajesPorConductor[c.id] ? mensajesPorConductor[c.id].length : 0;
+            const noLeido = mensajesNoLeidos[c.id] ? 'no-leido' : '';
+            html += `<button class="tag-conductor ${active} ${noLeido}" onclick="seleccionarConductor('${c.id}')">
+                ${c.nombre}
+                <span class="badge-msgs">${msgs}</span>
+            </button>`;
+        });
+
+        conductorSelector.innerHTML = html;
+    }
+
+    // ===== SELECCIONAR CONDUCTOR =====
+    window.seleccionarConductor = function(conductorId) {
+        conductorSeleccionado = conductorId;
+        mensajesNoLeidos[conductorId] = false;
+
+        const conductor = conductoresData.find(c => c.id === conductorId);
+        if (conductor) {
+            nombreHeader.textContent = '📡 ' + conductor.nombre;
+            chatInput.disabled = false;
+            chatBtnEnviar.disabled = false;
+        } else {
+            nombreHeader.textContent = '📡 Chat Madre';
+            chatInput.disabled = true;
+            chatBtnEnviar.disabled = true;
+        }
+        actualizarSelectorConductores();
+        cargarMensajesConductor(conductorId);
+    };
+
+    // ===== CARGAR MENSAJES CON HORA:MINUTO:SEGUNDO =====
+    function cargarMensajesConductor(conductorId) {
+        if (!API_URL || !conectado || !conductorId) return;
+
+        fetch(API_URL + "/api/chat/mensajes_conductor?conductor_id=" + encodeURIComponent(conductorId) + "&limite=100", {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                const mensajes = data.mensajes || [];
+                // ✅ Usamos id, fecha y mensaje para detectar cambios (hora:minuto:segundo)
+                const hashActual = JSON.stringify(mensajes.map(m => ({ 
+                    id: m.id, 
+                    fecha: m.fecha,
+                    mensaje: m.mensaje ? m.mensaje.substring(0, 20) : ''
+                })));
+                const hashAnterior = ultimoHashChat[conductorId] || '';
+
+                // ✅ Si hay cambios en los mensajes
+                if (hashActual !== hashAnterior) {
+                    // ✅ Si NO es el conductor seleccionado, marcar como no leído
+                    if (conductorId !== conductorSeleccionado) {
+                        mensajesNoLeidos[conductorId] = true;
+                        console.log(`🔴 Nuevos mensajes para ${conductorId} - marcado como no leído (${new Date().toLocaleTimeString()})`);
+                    }
+                    // ✅ Actualizar el hash
+                    ultimoHashChat[conductorId] = hashActual;
+                }
+
+                // ✅ Siempre actualizar los mensajes
+                mensajesPorConductor[conductorId] = mensajes;
+
+                if (conductorId === conductorSeleccionado) {
+                    renderizarChat(conductorId);
+                }
+                // ✅ Siempre actualizar el selector
+                actualizarSelectorConductores();
+            }
+        })
+        .catch(e => console.warn('Error cargando mensajes:', e));
+    }
+
+    // ===== RENDERIZAR CHAT =====
+    function renderizarChat(conductorId) {
+        const mensajes = mensajesPorConductor[conductorId] || [];
+
+        if (mensajes.length === 0) {
+            chatMessages.innerHTML = `<div class="chat-empty"><i class="fas fa-comment-dots"></i> <p>No hay mensajes para este conductor</p></div>`;
+            return;
+        }
+
+        let html = '';
+        let ultimaFecha = '';
+        const mensajesOrdenados = [...mensajes].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+        mensajesOrdenados.forEach(msg => {
+            const fechaMsg = new Date(msg.fecha);
+            const fechaStr = formatearFecha(fechaMsg);
+            const horaStr = formatearHora(fechaMsg);
+
+            if (fechaStr !== ultimaFecha) {
+                html += `<div style="text-align:center;font-size:0.45rem;color:rgba(255,255,255,0.06);padding:2px 0;">${fechaStr}</div>`;
+                ultimaFecha = fechaStr;
+            }
+
+            const esPropio = msg.remitente === 'GPS Panel' || msg.remitente === 'Administrador';
+            const clase = esPropio ? 'sent' : 'received';
+            const nombreDisplay = msg.remitente || 'Conductor';
+
+            html += `<div class="chat-msg ${clase}">`;
+            if (!esPropio) {
+                html += `<span class="nombre">${escapeHtml(nombreDisplay)}</span>`;
+            }
+
+            if (msg.mensaje) {
+                html += escapeHtml(msg.mensaje);
+            }
+
+            if (msg.archivo) {
+                const archivo = msg.archivo;
+                const esImagen = archivo.tipo === 'image';
+                const icono = archivo.icono || 'fa-file';
+                const color = archivo.color || '#94a3b8';
+                const tamanio = archivo.tamanio ? (archivo.tamanio / 1024).toFixed(1) + ' KB' : '';
+                const urlDescarga = API_URL + "/api/chat/descargar_archivo?conductor_id=" + conductorId + "&nombre_guardado=" + encodeURIComponent(archivo.nombre_guardado);
+
+                html += `<div class="archivos-container">`;
+
+                if (esImagen) {
+                    html += `<div class="archivo-imagen-container">`;
+                    html += `<img src="${urlDescarga}" alt="${escapeHtml(archivo.nombre || 'Imagen')}" class="archivo-imagen" onclick="abrirModalImagen('${urlDescarga}')">`;
+                    html += `<button class="btn-descarga-imagen" onclick="event.stopPropagation(); window.open('${urlDescarga}', '_blank')">`;
+                    html += `<i class="fas fa-download"></i> Descargar</button>`;
+                    html += `</div>`;
+                } else {
+                    html += `<a href="${urlDescarga}" target="_blank" class="archivo-msg" style="border-left: 3px solid ${color};">`;
+                    html += `<i class="fas ${icono}" style="color:${color};"></i>`;
+                    html += `<span class="nombre">${escapeHtml(archivo.nombre || 'Archivo')}</span>`;
+                    if (tamanio) html += `<span class="tamanio">${tamanio}</span>`;
+                    html += `</a>`;
+                }
+
+                html += `</div>`;
+            }
+
+            html += `<button class="btn-eliminar-msg" onclick="eliminarMensaje('${msg.id}', '${conductorId}')" title="Eliminar mensaje">✕</button>`;
+
+            if (msg.ubicacion) {
+                html += `<div style="font-size:0.5rem;color:#38bdf8;margin-top:2px;cursor:pointer;" onclick="verUbicacionChat('${msg.id}', '${conductorId}')">
+                    <i class="fas fa-location-dot"></i> 📍 Ver ubicación
+                </div>`;
+            }
+            html += `<span class="hora">${horaStr}</span>`;
+            html += `</div>`;
+        });
+
+        chatMessages.innerHTML = html;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // ===== ENVIAR MENSAJE =====
+    window.enviarMensajeChat = function() {
+        const texto = chatInput.value.trim();
+
+        if (!conductorSeleccionado || !API_URL || !conectado) {
+            mostrarToast('❌ Selecciona un conductor primero', 'error');
+            return;
+        }
+
+        if (!texto && archivosSeleccionados.length === 0) {
+            mostrarToast('⚠️ Escribe un mensaje o adjunta un archivo', 'warning');
+            return;
+        }
+
+        chatBtnEnviar.disabled = true;
+        chatBtnEnviar.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+
+        if (archivosSeleccionados.length > 0) {
+            const formData = new FormData();
+            formData.append('conductor_id', conductorSeleccionado);
+            formData.append('remitente', 'GPS Panel');
+            formData.append('mensaje', texto || '');
+            formData.append('fecha', new Date().toISOString());
+
+            archivosSeleccionados.forEach(file => {
+                formData.append('archivo', file);
+            });
+
+            fetch(API_URL + "/api/chat/enviar_mensaje_conductor", {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    chatInput.value = '';
+                    archivosSeleccionados = [];
+                    fileInput.value = '';
+                    actualizarArchivosSeleccionados();
+                    cargarMensajesConductor(conductorSeleccionado);
+                    mostrarToast('✅ Mensaje enviado', 'success');
+                } else {
+                    mostrarToast('❌ Error: ' + (data.error || 'Error desconocido'), 'error');
+                }
+            })
+            .catch(e => {
+                console.warn('Error enviando mensaje:', e);
+                mostrarToast('❌ Error de conexión', 'error');
+            })
+            .finally(() => {
+                chatBtnEnviar.disabled = false;
+                chatBtnEnviar.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            });
+            return;
+        }
+
+        const payload = {
+            conductor_id: conductorSeleccionado,
+            remitente: 'GPS Panel',
+            mensaje: texto,
+            fecha: new Date().toISOString()
+        };
+
+        fetch(API_URL + "/api/chat/enviar_mensaje_conductor", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                chatInput.value = '';
+                cargarMensajesConductor(conductorSeleccionado);
+                mostrarToast('✅ Mensaje enviado', 'success');
+            } else {
+                mostrarToast('❌ Error: ' + (data.error || 'Error desconocido'), 'error');
+            }
+        })
+        .catch(e => {
+            console.warn('Error enviando mensaje:', e);
+            mostrarToast('❌ Error de conexión', 'error');
+        })
+        .finally(() => {
+            chatBtnEnviar.disabled = false;
+            chatBtnEnviar.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        });
+    };
+
+    // ===== ELIMINAR MENSAJE =====
+    window.eliminarMensaje = function(msgId, conductorId) {
+        if (!confirm('¿Eliminar este mensaje permanentemente?')) return;
+
+        fetch(API_URL + "/api/chat/eliminar_mensaje", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ msg_id: msgId, conductor_id: conductorId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                cargarMensajesConductor(conductorId);
+                mostrarToast('🗑️ Mensaje eliminado', 'success');
+            } else {
+                mostrarToast('❌ Error al eliminar', 'error');
+            }
+        })
+        .catch(e => console.warn('Error eliminando mensaje:', e));
+    };
+
+    // ===== LIMPIAR TODOS LOS MENSAJES =====
+    window.limpiarTodosMensajes = function() {
+        mostrarModalConfirmacion('⚠️ ¿Eliminar permanentemente TODOS los mensajes de TODOS los conductores?', function() {
+            fetch(API_URL + "/api/chat/limpiar_todos_mensajes", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ confirmar: true })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    mensajesPorConductor = {};
+                    ultimoHashChat = {};
+                    mensajesNoLeidos = {};
+                    if (conductorSeleccionado) {
+                        renderizarChat(conductorSeleccionado);
+                    }
+                    actualizarSelectorConductores();
+                    mostrarToast(`🗑️ ${data.mensaje}`, 'success');
+                } else {
+                    mostrarToast('❌ Error al limpiar mensajes', 'error');
+                }
+            })
+            .catch(e => console.warn('Error limpiando mensajes:', e));
+        });
+    };
+
+    // ===== VER UBICACIÓN =====
+    window.verUbicacionChat = function(msgId, conductorId) {
+        const mensajes = mensajesPorConductor[conductorId] || [];
+        const msg = mensajes.find(m => m.id === msgId);
+        if (!msg || !msg.ubicacion) {
+            mostrarToast('❌ Ubicación no disponible', 'error');
+            return;
+        }
+
+        const modal = document.getElementById('modalUbicacion');
+        document.getElementById('modalConductorNombre').textContent = msg.remitente || 'Conductor';
+        document.getElementById('modalConductorId').textContent = conductorId;
+        document.getElementById('modalFecha').textContent = new Date(msg.fecha).toLocaleString();
+        document.getElementById('modalCoordenadas').textContent = `${msg.ubicacion.lat.toFixed(5)}, ${msg.ubicacion.lng.toFixed(5)}`;
+        document.getElementById('modalMapLink').href = `https://www.google.com/maps?q=${msg.ubicacion.lat},${msg.ubicacion.lng}`;
+        document.getElementById('modalMapFrame').src = `https://www.openstreetmap.org/export/embed.html?bbox=${msg.ubicacion.lng-0.01},${msg.ubicacion.lat-0.01},${msg.ubicacion.lng+0.01},${msg.ubicacion.lat+0.01}&layer=mapnik&marker=${msg.ubicacion.lat},${msg.ubicacion.lng}`;
+        modal.classList.add('show');
+    };
+
+    // ===== ARCHIVOS =====
+    function actualizarArchivosSeleccionados() {
+        if (archivosSeleccionados.length === 0) {
+            archivosSeleccionadosDiv.style.display = 'none';
+            badgeArchivos.style.display = 'none';
+            return;
+        }
+
+        let html = '';
+        archivosSeleccionados.forEach((file, index) => {
+            const tamanio = (file.size / 1024).toFixed(1) + ' KB';
+            const esImagen = file.type.startsWith('image/');
+            html += `<span class="tag-archivo">
+                ${esImagen ? '<i class="fas fa-image"></i>' : '<i class="fas fa-file"></i>'}
+                ${escapeHtml(file.name)} (${tamanio})
+                <span class="remove" onclick="eliminarArchivoSeleccionado(${index})">✕</span>
+            </span>`;
+        });
+        archivosSeleccionadosDiv.innerHTML = html;
+        archivosSeleccionadosDiv.style.display = 'flex';
+        badgeArchivos.textContent = archivosSeleccionados.length;
+        badgeArchivos.style.display = 'inline';
+    }
+
+    window.eliminarArchivoSeleccionado = function(index) {
+        archivosSeleccionados.splice(index, 1);
+        actualizarArchivosSeleccionados();
+        if (archivosSeleccionados.length === 0) {
+            fileInput.value = '';
+        }
+    };
+
+    fileInput.addEventListener('change', function() {
+        const nuevosArchivos = Array.from(this.files);
+        if (archivosSeleccionados.length + nuevosArchivos.length > 5) {
+            mostrarToast('⚠️ Máximo 5 archivos por mensaje', 'warning');
+            this.value = '';
+            return;
+        }
+        const tamanioTotal = archivosSeleccionados.reduce((sum, f) => sum + f.size, 0) +
+                            nuevosArchivos.reduce((sum, f) => sum + f.size, 0);
+        if (tamanioTotal > 50 * 1024 * 1024) {
+            mostrarToast('⚠️ Tamaño total máximo 50 MB', 'warning');
+            this.value = '';
+            return;
+        }
+        archivosSeleccionados = archivosSeleccionados.concat(nuevosArchivos);
+        actualizarArchivosSeleccionados();
+        this.value = '';
+    });
+
+    // ===== IMAGEN MODAL =====
+    window.abrirModalImagen = function(src) {
+        imagenAmpliada.src = src;
+        modalImagen.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.cerrarModalImagen = function() {
+        modalImagen.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarModalImagen();
+            cerrarModalUbicacion();
+            cerrarModalConfirmacion();
+        }
+    });
+
+    // ===== MODALES =====
+    window.cerrarModalUbicacion = function() {
+        document.getElementById('modalUbicacion').classList.remove('show');
+        document.getElementById('modalMapFrame').src = 'about:blank';
+    };
+
+    window.cerrarModalConfirmacion = function() {
+        document.getElementById('modalConfirmacion').classList.remove('show');
+        accionConfirmacion = null;
+    };
+
+    function mostrarModalConfirmacion(mensaje, accion) {
+        document.getElementById('confirmacionMensaje').textContent = mensaje;
+        document.getElementById('modalConfirmacion').classList.add('show');
+        accionConfirmacion = accion;
+    }
+
+    window.confirmarEliminar = function() {
+        if (accionConfirmacion) {
+            accionConfirmacion();
+        }
+        cerrarModalConfirmacion();
+    };
+
+    document.getElementById('modalUbicacion').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalUbicacion();
+    });
+
+    document.getElementById('modalConfirmacion').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalConfirmacion();
+    });
+
+    // ===== REFRESCAR =====
+    window.refrescarChat = function() {
+        if (conectado && API_URL) {
+            cargarConductores();
+            if (conductorSeleccionado) {
+                cargarMensajesConductor(conductorSeleccionado);
+            }
+            mostrarToast('🔄 Chat actualizado', 'info');
+        } else {
+            conectarConMadre();
+        }
+    };
+
+    // ===== CERRAR CHAT =====
+    window.cerrarChatMadre = function() {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'CERRAR_CHAT_MADRE' }, '*');
+        } else {
+            window.close();
+        }
+    };
+
+    // ===== CONTADORES =====
+    function actualizarContadores() {
+        contadorConectados.textContent = conductoresData.length || 0;
+    }
+
+    // ===== ESCUCHA =====
+    function iniciarEscucha() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+
+        if (!API_URL || !conectado) return;
+
+        pollingInterval = setInterval(() => {
+            cargarConductores();
+            if (conductorSeleccionado) {
+                cargarMensajesConductor(conductorSeleccionado);
+            }
+        }, 5000);
+
+        console.log('👂 Escuchando chat cada 5 segundos');
+    }
+
+    // ===== EVENTOS =====
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            window.enviarMensajeChat();
+        }
+    });
+
+    // ===== INICIALIZACIÓN =====
+    function inicializar() {
+        console.log('📡 Chat Madre - Iniciando...');
+        chatInput.disabled = true;
+        chatBtnEnviar.disabled = true;
+
+        const enlaceGuardado = localStorage.getItem("gestion_clientes_enlace_madre");
+        if (enlaceGuardado) {
+            enlaceMadreInput.value = enlaceGuardado;
+            setTimeout(conectarConMadre, 500);
+        }
+
+        // Escuchar mensajes desde el padre
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'SELECCIONAR_CONDUCTOR') {
+                if (event.data.conductor_id) {
+                    seleccionarConductor(event.data.conductor_id);
+                }
+            }
+            if (event.data && event.data.type === 'ACTUALIZAR_CHAT') {
+                refrescarChat();
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializar);
+    } else {
+        inicializar();
+    }
+
+})();
+</script>
+</body>
+</html>

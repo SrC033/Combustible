@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Recepción de Pedidos | Grupo GSN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 0;
+            margin: 0;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeInUp { from { opacity: 0.80; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGlow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+            50% { text-shadow: 0 0 40px rgba(255,255,255,0.4), 0 0 60px rgba(255,255,255,0.15); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .recepcion-modulo {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+            animation: fadeInUp 0.5s ease;
+            position: relative;
+            z-index: 1;
+            background: transparent !important;
+        }
+
+        .recepcion-header-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 26, 10, 0.08) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #10b981;
+            border-radius: 0 0 20px 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 30px rgba(16,185,129,0.05);
+        }
+
+        .recepcion-header-content {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+        .btn-recargar {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: #10b981;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .btn-recargar:hover { 
+            background: rgba(16, 185, 129, 0.2); 
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(16,185,129,0.15);
+        }
+
+        .update-progress-container {
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            height: 4px;
+            margin: 10px 0 8px 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #34d399, #059669);
+            border-radius: 10px;
+            transition: width 0.05s linear;
+        }
+        .progress-text {
+            font-size: 9px;
+            color: rgba(255,255,255,0.4);
+            text-align: right;
+            margin-top: 2px;
+        }
+        .progress-time {
+            font-size: 8px;
+            color: #10b981;
+            text-align: right;
+            margin-top: 2px;
+            font-weight: 700;
+        }
+
+        /* ===== PANEL DE ESTADÍSTICAS DIVIDIDO ===== */
+        .stats-panel-dividido {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0 25px 0;
+        }
+
+        .stats-columna {
+            background: rgba(10, 26, 10, 0.12) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow: hidden;
+            padding: 14px 16px;
+            transition: all 0.3s ease;
+        }
+        .stats-columna:hover {
+            background: rgba(10, 26, 10, 0.25) !important;
+            border-color: #10b981;
+            box-shadow: 0 4px 30px rgba(16,185,129,0.06);
+        }
+
+        .stats-columna-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .stats-columna-header .titulo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .stats-columna-header .titulo i { font-size: 16px; }
+        .stats-columna-header .badge-count {
+            background: rgba(255,255,255,0.08);
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 900;
+            color: #ffffff;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .badge-recibidos { background: rgba(251,191,36,0.15); color: #fbbf24; border-color: rgba(251,191,36,0.1); }
+        .badge-entregados { background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.1); }
+
+        .stats-grid-4col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-mini-card {
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.04);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .stat-mini-card:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .stat-mini-card .value {
+            font-size: 18px;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+        .stat-mini-card .label {
+            font-size: 8px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        .stat-mini-card .icon { font-size: 14px; color: rgba(255,255,255,0.3); margin-bottom: 2px; }
+
+        .stat-mini-card.recibido .value { color: #fbbf24; }
+        .stat-mini-card.entregado .value { color: #34d399; }
+
+        /* ===== GRÁFICAS DIVIDIDAS ===== */
+        .charts-panel-dividido {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .chart-columna {
+            background: rgba(10, 26, 10, 0.12) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .chart-columna:hover {
+            background: rgba(10, 26, 10, 0.25) !important;
+            border-color: #10b981;
+            box-shadow: 0 4px 30px rgba(16,185,129,0.06);
+            transform: translateY(-3px);
+        }
+        .chart-columna-header {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-columna-header h4 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+        .chart-columna-header h4 i { margin-right: 6px; }
+        .chart-columna-header .mini-badge {
+            font-size: 9px;
+            background: rgba(255,255,255,0.06);
+            padding: 2px 10px;
+            border-radius: 20px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+        }
+        .chart-columna-body { padding: 10px; height: 160px; }
+
+        /* ===== TRIPLE GRID - LAS TRES LISTAS ORIGINALES ===== */
+        .triple-grid-elegante {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+            background: transparent !important;
+        }
+        .elegant-card {
+            background: rgba(10, 26, 10, 0.15) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .elegant-card:hover {
+            background: rgba(10, 26, 10, 0.3) !important;
+            border-color: #10b981;
+            box-shadow: 0 8px 40px rgba(16,185,129,0.1);
+            transform: translateY(-3px);
+        }
+        .pendientes-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        .camino-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa, #8b5cf6);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        .entregados-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #34d399, #10b981);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        .elegant-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .header-icon-title { display: flex; align-items: center; gap: 10px; }
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        .pendiente-icon { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.1); text-shadow: 0 0 20px rgba(245,158,11,0.2); }
+        .camino-icon { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.1); text-shadow: 0 0 20px rgba(139,92,246,0.2); }
+        .entregado-icon { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.1); text-shadow: 0 0 20px rgba(16,185,129,0.2); }
+        .header-icon-title h4 { font-size: 15px; font-weight: 800; color: #ffffff; margin: 0 0 2px 0; text-shadow: 0 0 30px rgba(255,255,255,0.05); }
+        .header-icon-title p { font-size: 10px; color: rgba(255,255,255,0.5); margin: 0; font-weight: 500; }
+        .counter-badge {
+            background: rgba(255,255,255,0.06);
+            color: #ffffff;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 20px;
+            font-weight: 900;
+            border: 1px solid rgba(255,255,255,0.04);
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+        .camino-counter { background: rgba(139,92,246,0.1); color: #a78bfa; border-color: rgba(139,92,246,0.06); text-shadow: 0 0 30px rgba(139,92,246,0.2); }
+        .entregado-counter { background: rgba(16,185,129,0.1); color: #34d399; border-color: rgba(16,185,129,0.06); text-shadow: 0 0 30px rgba(16,185,129,0.15); }
+
+        .elegant-card-body {
+            max-height: 450px;
+            overflow-y: auto;
+            padding: 12px;
+            background: transparent !important;
+        }
+        .elegant-card-body::-webkit-scrollbar { width: 4px; }
+        .elegant-card-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.01); border-radius: 10px; }
+        .elegant-card-body::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        .elegant-card-footer { padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.04); text-align: center; }
+        .btn-link-elegante {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .btn-link-elegante:hover { background: rgba(255,255,255,0.06); gap: 14px; transform: scale(1.02); box-shadow: 0 0 30px rgba(255,255,255,0.05); }
+
+        /* ===== LISTA DE PEDIDOS ===== */
+        .pedido-item-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.04);
+            transition: all 0.2s ease;
+        }
+        .pedido-item-card:hover { background: rgba(255,255,255,0.06); transform: translateX(3px); border-color: rgba(255,255,255,0.08); }
+        .pedido-item-card.has-observacion { border-left: 4px solid #ef4444 !important; background: rgba(239, 68, 68, 0.05) !important; }
+        .pedido-item-card.has-observacion:hover { background: rgba(239, 68, 68, 0.08) !important; }
+        .observacion-preview {
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            background: rgba(239,68,68,0.04);
+            border-left: 2px solid rgba(239,68,68,0.15);
+            color: #f87171;
+        }
+        .observacion-preview i { margin-right: 6px; }
+        .time-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(239,68,68,0.08);
+            color: #f87171;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 8px;
+            font-weight: 800;
+            margin-left: 8px;
+            border: 1px solid rgba(239,68,68,0.06);
+        }
+        .observacion-icon { margin-left: 5px; font-size: 11px; color: #ffffff; opacity: 0.5; }
+        .pedido-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .pedido-empresa-nombre {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+            color: #ffffff;
+            font-size: 13px;
+            text-shadow: 0 0 30px rgba(255,255,255,0.05);
+        }
+        .status-badge-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-pendiente-card { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.08); }
+        .status-camino-card { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.08); }
+        .status-entregado-card { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.08); }
+        .btn-ver-observacion {
+            background: rgba(139,92,246,0.06);
+            border: 1px solid rgba(139,92,246,0.04);
+            color: #a78bfa;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 700;
+        }
+        .btn-ver-observacion:hover { background: rgba(139,92,246,0.15); transform: scale(1.02); box-shadow: 0 0 20px rgba(139,92,246,0.08); }
+        .pedido-fecha-card { font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+        .pedido-detalles-card { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+        .detalle-chip-card {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,255,255,0.04);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 9px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+        }
+        .pedido-total-card {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            margin-top: 6px;
+        }
+        .total-label-card { font-size: 9px; color: rgba(255,255,255,0.3); font-weight: 500; }
+        .total-monto-card { font-size: 15px; font-weight: 900; color: #ffffff; text-shadow: 0 0 30px rgba(255,255,255,0.1); }
+        .empty-state-elegante { text-align: center; padding: 30px 20px; color: rgba(255,255,255,0.2); font-size: 12px; }
+        .empty-state-elegante i { font-size: 36px; color: rgba(255,255,255,0.05); margin-bottom: 10px; display: block; }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 26, 10, 0.6);
+            backdrop-filter: blur(30px);
+            padding: 10px 20px;
+            border-radius: 40px;
+            z-index: 10001;
+            font-weight: 600;
+            border-left: 4px solid #10b981;
+            font-size: 0.8rem;
+            color: #ffffff;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+        }
+
+        /* ===== MODALES ===== */
+        .observacion-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+        }
+        .observacion-modal-content {
+            background: rgba(10, 26, 10, 0.5) !important;
+            backdrop-filter: blur(30px) !important;
+            -webkit-backdrop-filter: blur(30px) !important;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85%;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+        }
+        .observacion-modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .observacion-modal-header h3 { color: #ffffff; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800; text-shadow: 0 0 30px rgba(255,255,255,0.05); }
+        .observacion-modal-header h3 i { color: #ffffff; text-shadow: 0 0 30px rgba(255,255,255,0.1); }
+        .observacion-modal-close { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 28px; cursor: pointer; transition: all 0.3s ease; }
+        .observacion-modal-close:hover { color: #ffffff; transform: rotate(90deg); }
+        .observacion-modal-body { padding: 20px; flex: 1; overflow: auto; }
+        .observacion-texto-modal {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #ffffff;
+            border-left: 4px solid #10b981;
+        }
+        .info-observacion {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+        }
+
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 20001;
+            justify-content: center;
+            align-items: center;
+        }
+        .detail-modal-content {
+            background: rgba(10, 26, 10, 0.5) !important;
+            backdrop-filter: blur(30px) !important;
+            -webkit-backdrop-filter: blur(30px) !important;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 85%;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detail-modal-header h3 { color: #ffffff; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800; text-shadow: 0 0 30px rgba(255,255,255,0.05); }
+        .detail-modal-header h3 i { color: #ffffff; text-shadow: 0 0 30px rgba(255,255,255,0.1); }
+        .detail-modal-close { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 28px; cursor: pointer; transition: all 0.3s ease; }
+        .detail-modal-close:hover { color: #ffffff; transform: rotate(90deg); }
+        .detail-modal-body { padding: 20px; flex: 1; overflow: auto; max-height: 70vh; }
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        .detail-table th {
+            background: rgba(255,255,255,0.04);
+            padding: 10px 8px;
+            text-align: left;
+            color: #ffffff;
+            font-weight: 800;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            position: sticky;
+            top: 0;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+        }
+        .detail-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.02); color: rgba(255,255,255,0.8); }
+        .detail-table tr:hover { background: rgba(255,255,255,0.03); }
+        .detail-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .detail-stat-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .detail-stat-value { font-size: 1.8rem; font-weight: 900; color: #ffffff; text-shadow: 0 0 30px rgba(255,255,255,0.1); }
+        .detail-stat-label { font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+        .chart-body canvas { filter: drop-shadow(0 0 10px rgba(16,185,129,0.05)); }
+
+        @media (max-width: 1200px) {
+            .stats-panel-dividido { grid-template-columns: 1fr 1fr; }
+            .charts-panel-dividido { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+            .triple-grid-elegante { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        }
+        @media (max-width: 992px) {
+            .charts-panel-dividido { grid-template-columns: 1fr 1fr; }
+            .stats-grid-4col { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .stats-panel-dividido { grid-template-columns: 1fr; }
+            .charts-panel-dividido { grid-template-columns: 1fr 1fr; }
+            .triple-grid-elegante { grid-template-columns: 1fr 1fr; }
+            .stats-grid-4col { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 576px) {
+            .recepcion-modulo { padding: 0 12px; }
+            .charts-panel-dividido { grid-template-columns: 1fr; }
+            .triple-grid-elegante { grid-template-columns: 1fr; }
+            .stats-grid-4col { grid-template-columns: 1fr 1fr; }
+            .stat-mini-card .value { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+<div class="recepcion-modulo">
+    <!-- HEADER -->
+    <div class="recepcion-header-sticky">
+        <div class="recepcion-header-content">
+            <button id="recargarBtn" class="btn-recargar">
+                <i class="fas fa-sync-alt"></i>
+                <span>Recargar</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="update-progress-container">
+        <div class="progress-bar-fill" id="updateProgressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">Cargando datos...</div>
+    <div class="progress-time" id="progressTime">Actualización en 5s</div>
+
+    <!-- ===== PANEL DE ESTADÍSTICAS DIVIDIDO ===== -->
+    <div class="stats-panel-dividido">
+        <!-- COLUMNA RECIBIDOS -->
+        <div class="stats-columna">
+            <div class="stats-columna-header">
+                <div class="titulo"><i class="fas fa-inbox" style="color:#fbbf24;"></i> RECIBIDOS</div>
+                <div class="badge-count badge-recibidos" id="statsRecibidosCount">0</div>
+            </div>
+            <div class="stats-grid-4col">
+                <div class="stat-mini-card recibido" data-stat="recibidosTotal">
+                    <div class="icon"><i class="fas fa-box"></i></div>
+                    <div class="value" id="recibidosTotal">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-mini-card recibido" data-stat="recibidosCosto">
+                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="value" id="recibidosCosto">C$0</div>
+                    <div class="label">Costo</div>
+                </div>
+                <div class="stat-mini-card recibido" data-stat="recibidosGalones">
+                    <div class="icon"><i class="fas fa-oil-can"></i></div>
+                    <div class="value" id="recibidosGalones">0</div>
+                    <div class="label">Galones</div>
+                </div>
+                <div class="stat-mini-card recibido" data-stat="recibidosPromedio">
+                    <div class="icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="value" id="recibidosPromedio">C$0</div>
+                    <div class="label">Promedio</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA ENTREGADOS -->
+        <div class="stats-columna">
+            <div class="stats-columna-header">
+                <div class="titulo"><i class="fas fa-check-double" style="color:#34d399;"></i> ENTREGADOS</div>
+                <div class="badge-count badge-entregados" id="statsEntregadosCount">0</div>
+            </div>
+            <div class="stats-grid-4col">
+                <div class="stat-mini-card entregado" data-stat="entregadosTotal">
+                    <div class="icon"><i class="fas fa-box"></i></div>
+                    <div class="value" id="entregadosTotal">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-mini-card entregado" data-stat="entregadosCosto">
+                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="value" id="entregadosCosto">C$0</div>
+                    <div class="label">Costo</div>
+                </div>
+                <div class="stat-mini-card entregado" data-stat="entregadosGalones">
+                    <div class="icon"><i class="fas fa-oil-can"></i></div>
+                    <div class="value" id="entregadosGalones">0</div>
+                    <div class="label">Galones</div>
+                </div>
+                <div class="stat-mini-card entregado" data-stat="entregadosPromedio">
+                    <div class="icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="value" id="entregadosPromedio">C$0</div>
+                    <div class="label">Promedio</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== GRÁFICAS DIVIDIDAS ===== -->
+    <div class="charts-panel-dividido">
+        <div class="chart-columna" data-chart="recibidosPie">
+            <div class="chart-columna-header">
+                <h4><i class="fas fa-chart-pie" style="color:#fbbf24;"></i> Recibidos por Tipo</h4>
+                <span class="mini-badge">Pie</span>
+            </div>
+            <div class="chart-columna-body"><canvas id="recibidosPie"></canvas></div>
+        </div>
+        <div class="chart-columna" data-chart="recibidosBar">
+            <div class="chart-columna-header">
+                <h4><i class="fas fa-chart-bar" style="color:#fbbf24;"></i> Costo Recibidos</h4>
+                <span class="mini-badge">Bar</span>
+            </div>
+            <div class="chart-columna-body"><canvas id="recibidosBar"></canvas></div>
+        </div>
+        <div class="chart-columna" data-chart="entregadosPie">
+            <div class="chart-columna-header">
+                <h4><i class="fas fa-chart-pie" style="color:#34d399;"></i> Entregados por Tipo</h4>
+                <span class="mini-badge">Pie</span>
+            </div>
+            <div class="chart-columna-body"><canvas id="entregadosPie"></canvas></div>
+        </div>
+        <div class="chart-columna" data-chart="entregadosBar">
+            <div class="chart-columna-header">
+                <h4><i class="fas fa-chart-bar" style="color:#34d399;"></i> Costo Entregados</h4>
+                <span class="mini-badge">Bar</span>
+            </div>
+            <div class="chart-columna-body"><canvas id="entregadosBar"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===== TRIPLE GRID - LAS TRES LISTAS ORIGINALES ===== -->
+    <div class="triple-grid-elegante">
+        <div class="elegant-card pendientes-card">
+            <div class="elegant-card-header">
+                <div class="header-icon-title"><div class="icon-circle pendiente-icon"><i class="fas fa-hourglass-half"></i></div><div><h4>Pendientes</h4><p>Pedidos pendientes de entrega</p></div></div>
+                <div class="counter-badge" id="pendientesCount">0</div>
+            </div>
+            <div class="elegant-card-body" id="pedidosPendientesList"><div class="empty-state-elegante"><i class="fas fa-check-circle"></i><p>No hay pedidos pendientes</p></div></div>
+            <div class="elegant-card-footer"><button class="btn-link-elegante" onclick="irATablasEditables()"><i class="fas fa-table"></i> Ver en Tablas Editables <i class="fas fa-arrow-right"></i></button></div>
+        </div>
+        
+        <div class="elegant-card camino-card">
+            <div class="elegant-card-header">
+                <div class="header-icon-title"><div class="icon-circle camino-icon"><i class="fas fa-truck"></i></div><div><h4>En Camino</h4><p>Pedidos en tránsito</p></div></div>
+                <div class="counter-badge camino-counter" id="caminoCount">0</div>
+            </div>
+            <div class="elegant-card-body" id="pedidosCaminoList"><div class="empty-state-elegante"><i class="fas fa-truck"></i><p>No hay pedidos en camino</p></div></div>
+            <div class="elegant-card-footer"><button class="btn-link-elegante" onclick="irATablasEditables()"><i class="fas fa-table"></i> Ver en Tablas Editables <i class="fas fa-arrow-right"></i></button></div>
+        </div>
+        
+        <div class="elegant-card entregados-card">
+            <div class="elegant-card-header">
+                <div class="header-icon-title"><div class="icon-circle entregado-icon"><i class="fas fa-check-double"></i></div><div><h4>Entregados</h4><p>Pedidos ya entregados</p></div></div>
+                <div class="counter-badge entregado-counter" id="entregadosCount">0</div>
+            </div>
+            <div class="elegant-card-body" id="pedidosEntregadosList"><div class="empty-state-elegante"><i class="fas fa-truck"></i><p>No hay pedidos entregados aún</p></div></div>
+            <div class="elegant-card-footer"><button class="btn-link-elegante" onclick="irATablasEditables()"><i class="fas fa-table"></i> Ver en Tablas Editables <i class="fas fa-arrow-right"></i></button></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALES -->
+<div id="observacionModal" class="observacion-modal">
+    <div class="observacion-modal-content">
+        <div class="observacion-modal-header">
+            <h3><i class="fas fa-comment"></i> Observación del Pedido</h3>
+            <button class="observacion-modal-close" onclick="cerrarObservacionModal()">&times;</button>
+        </div>
+        <div class="observacion-modal-body" id="observacionModalBody">
+            <div class="loading-spinner-small" style="margin: 20px auto;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="detailModal" class="detail-modal">
+    <div class="detail-modal-content">
+        <div class="detail-modal-header">
+            <h3 id="modalTitle"><i class="fas fa-chart-line"></i> Detalle de Estadística</h3>
+            <button class="detail-modal-close" onclick="cerrarModalDetalle()">&times;</button>
+        </div>
+        <div class="detail-modal-body" id="modalBody">
+            <div class="loading-spinner-small" style="margin: 20px auto;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== RECEPCIÓN - PANEL DIVIDIDO ====================
+(function() {
+    console.log("📊 Módulo Recepción - Panel Dividido (Recibidos | Entregados)");
+
+    let refreshInterval = null;
+    let progressInterval = null;
+    let progressStep = 0;
+    const REFRESH_TIME_MS = 5000;
+    const PROGRESS_STEPS = 50;
+
+    let progressBar = document.getElementById('updateProgressFill');
+    let progressTextEl = document.getElementById('progressText');
+    let progressTimeEl = document.getElementById('progressTime');
+
+    let cachedPedidos = [];
+    let cachedObservaciones = {};
+    let cachedEstadosFacturas = {};
+    let charts = {};
+
+    const ESTADO_ESPERA = 'espera';
+    const ESTADO_CAMINO = 'camino';
+    const ESTADO_ENTREGADO = 'entregado';
+    const ESTADO_COMPROBANTE = 'comprobante';
+    const ESTADO_FACTURACION = 'facturacion';
+
+    function formatearMoneda(valor) {
+        if (valor === undefined || valor === null) return 'C$0';
+        return 'C$' + parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function formatearNumero(numero) {
+        if (numero === undefined || numero === null) return '0';
+        return numero.toLocaleString('es-NI', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function mostrarToast(mensaje, tipo) {
+        tipo = tipo || 'success';
+        var existing = document.querySelector('.toast-message');
+        if (existing) existing.remove();
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icon = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + mensaje;
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3000);
+    }
+
+    function verificarTiempoExcedido(fechaRecepcion) {
+        if (!fechaRecepcion) return false;
+        try {
+            var fecha = new Date(fechaRecepcion);
+            var ahora = new Date();
+            var horasDiff = (ahora - fecha) / (1000 * 60 * 60);
+            return horasDiff > 24;
+        } catch(e) { return false; }
+    }
+
+    window.cerrarObservacionModal = function() {
+        document.getElementById('observacionModal').style.display = 'none';
+    };
+    window.cerrarModalDetalle = function() {
+        document.getElementById('detailModal').style.display = 'none';
+    };
+
+    window.verObservacion = function(facturaId, empresaNombre, fechaRecepcion) {
+        var modal = document.getElementById('observacionModal');
+        var modalBody = document.getElementById('observacionModalBody');
+        modalBody.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Cargando...</div>';
+        modal.style.display = 'flex';
+
+        try {
+            var observacion = null;
+            if (cachedObservaciones[facturaId]) {
+                observacion = cachedObservaciones[facturaId].observacion;
+            } else if (cachedObservaciones[facturaId.replace('FAC-', '')]) {
+                observacion = cachedObservaciones[facturaId.replace('FAC-', '')].observacion;
+            } else {
+                var pedido = cachedPedidos.find(function(p) { return p.factura_id === facturaId || p.id === facturaId; });
+                if (pedido && pedido.observacion) observacion = pedido.observacion;
+            }
+
+            var fechaDate = new Date(fechaRecepcion);
+            var ahora = new Date();
+            var horasDiff = (ahora - fechaDate) / (1000 * 60 * 60);
+            var alerta = horasDiff > 24 ? '<div style="background:rgba(239,68,68,0.04);padding:8px;border-radius:8px;margin-bottom:10px;font-size:11px;color:#f87171;"><i class="fas fa-exclamation-triangle"></i> ⚠️ Han pasado más de 24 horas desde la recepción</div>' : '';
+
+            modalBody.innerHTML = 
+                '<div class="info-observacion">' +
+                    '<div><i class="fas fa-file-invoice"></i> Factura: ' + escapeHtml(facturaId) + '</div>' +
+                    '<div><i class="fas fa-building"></i> ' + escapeHtml(empresaNombre) + '</div>' +
+                    '<div><i class="fas fa-calendar"></i> ' + new Date(fechaRecepcion).toLocaleString() + '</div>' +
+                '</div>' +
+                alerta +
+                '<div class="observacion-texto-modal">' +
+                    '<i class="fas fa-comment"></i> <strong>Observación:</strong><br>' +
+                    (observacion ? escapeHtml(observacion) : 'No hay observación registrada para este pedido.') +
+                '</div>';
+        } catch(e) {
+            modalBody.innerHTML = '<div class="empty-state-elegante"><i class="fas fa-exclamation-circle"></i><p>Error al cargar la observación</p></div>';
+        }
+    };
+
+    function irATablasEditables() {
+        if (typeof window.cambiarModulo === 'function') {
+            window.cambiarModulo('tablas_editables');
+            mostrarToast('Abriendo Tablas Editables...', 'info');
+        } else {
+            mostrarToast('Función cambiarModulo no disponible', 'warning');
+        }
+    }
+    window.irATablasEditables = irATablasEditables;
+
+    async function cargarObservaciones() {
+        try {
+            var response = await fetch('/api/obtener_todas_observaciones?_=' + Date.now());
+            var data = await response.json();
+            if (data.ok && data.observaciones) {
+                cachedObservaciones = data.observaciones;
+            }
+        } catch(e) { console.error('Error cargando observaciones:', e); }
+    }
+
+    async function cargarEstadosFacturas() {
+        try {
+            var response = await fetch('/api/obtener_estados_facturas?_=' + Date.now());
+            var data = await response.json();
+            if (data.ok) {
+                cachedEstadosFacturas = data.estados || {};
+            }
+        } catch(e) { console.error('Error cargando estados:', e); }
+        return cachedEstadosFacturas;
+    }
+
+    async function obtenerDatos() {
+        try {
+            await cargarObservaciones();
+            await cargarEstadosFacturas();
+            
+            var pedidosRes = await fetch('/api/obtener_pedidos_actualizados?_=' + Date.now());
+            var pedidosData = await pedidosRes.json();
+            var pedidos = pedidosData.ok ? pedidosData.pedidos : [];
+
+            for (var i = 0; i < pedidos.length; i++) {
+                var p = pedidos[i];
+                var facturaId = p.factura_id || p.id;
+                
+                if (cachedEstadosFacturas[facturaId]) {
+                    p.estado_operacion = cachedEstadosFacturas[facturaId];
+                } else if (cachedEstadosFacturas[p.id]) {
+                    p.estado_operacion = cachedEstadosFacturas[p.id];
+                } else if (!p.estado_operacion) {
+                    if (p.entregado === true) p.estado_operacion = ESTADO_ENTREGADO;
+                    else if (p.facturado === true) p.estado_operacion = ESTADO_COMPROBANTE;
+                    else p.estado_operacion = ESTADO_ESPERA;
+                }
+
+                if (cachedObservaciones[facturaId]) {
+                    p.observacion = cachedObservaciones[facturaId].observacion;
+                } else if (cachedObservaciones[facturaId.replace('FAC-', '')]) {
+                    p.observacion = cachedObservaciones[facturaId.replace('FAC-', '')].observacion;
+                }
+
+                if (!p.costo_total) p.costo_total = p.importe || 0;
+                if (!p.fecha_str && p.fecha) {
+                    p.fecha_str = new Date(p.fecha).toISOString().split('T')[0];
+                }
+            }
+
+            pedidos.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+            cachedPedidos = pedidos;
+            return pedidos;
+        } catch(e) {
+            console.error('Error obteniendo datos:', e);
+            return cachedPedidos;
+        }
+    }
+
+    function actualizarPaneles(pedidos) {
+        // Recibidos = TODOS los que NO están entregados
+        var recibidos = pedidos.filter(function(p) {
+            var estado = p.estado_operacion || '';
+            return estado !== ESTADO_ENTREGADO && estado !== 'entregado';
+        });
+
+        // Entregados = SOLO los entregados
+        var entregados = pedidos.filter(function(p) {
+            var estado = p.estado_operacion || '';
+            return estado === ESTADO_ENTREGADO || estado === 'entregado';
+        });
+
+        // ===== ACTUALIZAR PANEL DE ESTADÍSTICAS =====
+        var totalRecibidos = recibidos.length;
+        var totalEntregados = entregados.length;
+        var costoRecibidos = recibidos.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0);
+        var costoEntregados = entregados.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0);
+        var galonesRecibidos = recibidos.reduce(function(s, p) { return s + (p.galones || 0); }, 0);
+        var galonesEntregados = entregados.reduce(function(s, p) { return s + (p.galones || 0); }, 0);
+        var promRecibidos = totalRecibidos > 0 ? costoRecibidos / totalRecibidos : 0;
+        var promEntregados = totalEntregados > 0 ? costoEntregados / totalEntregados : 0;
+
+        document.getElementById('statsRecibidosCount').innerText = totalRecibidos;
+        document.getElementById('statsEntregadosCount').innerText = totalEntregados;
+        document.getElementById('recibidosTotal').innerText = totalRecibidos;
+        document.getElementById('entregadosTotal').innerText = totalEntregados;
+        document.getElementById('recibidosCosto').innerHTML = formatearMoneda(costoRecibidos);
+        document.getElementById('entregadosCosto').innerHTML = formatearMoneda(costoEntregados);
+        document.getElementById('recibidosGalones').innerText = formatearNumero(galonesRecibidos);
+        document.getElementById('entregadosGalones').innerText = formatearNumero(galonesEntregados);
+        document.getElementById('recibidosPromedio').innerHTML = formatearMoneda(promRecibidos);
+        document.getElementById('entregadosPromedio').innerHTML = formatearMoneda(promEntregados);
+
+        // ===== ACTUALIZAR LAS TRES LISTAS ORIGINALES =====
+        var pendientes = pedidos.filter(function(p) {
+            var estado = p.estado_operacion || '';
+            return estado === ESTADO_ESPERA || estado === 'espera' || estado === ESTADO_COMPROBANTE || estado === 'comprobante';
+        });
+        var camino = pedidos.filter(function(p) {
+            var estado = p.estado_operacion || '';
+            return estado === ESTADO_CAMINO || estado === 'camino' || estado === ESTADO_FACTURACION || estado === 'facturacion';
+        });
+        var entregadosList = pedidos.filter(function(p) {
+            var estado = p.estado_operacion || '';
+            return estado === ESTADO_ENTREGADO || estado === 'entregado';
+        });
+
+        document.getElementById('pendientesCount').innerText = pendientes.length;
+        document.getElementById('caminoCount').innerText = camino.length;
+        document.getElementById('entregadosCount').innerText = entregadosList.length;
+
+        // Renderizar Pendientes
+        var pendientesListEl = document.getElementById('pedidosPendientesList');
+        if (pendientes.length === 0) {
+            pendientesListEl.innerHTML = '<div class="empty-state-elegante"><i class="fas fa-check-circle"></i><p>No hay pedidos pendientes</p></div>';
+        } else {
+            pendientesListEl.innerHTML = pendientes.slice(0, 20).map(function(p) { return renderPedidoItem(p); }).join('');
+        }
+
+        // Renderizar En Camino
+        var caminoListEl = document.getElementById('pedidosCaminoList');
+        if (camino.length === 0) {
+            caminoListEl.innerHTML = '<div class="empty-state-elegante"><i class="fas fa-truck"></i><p>No hay pedidos en camino</p></div>';
+        } else {
+            caminoListEl.innerHTML = camino.slice(0, 20).map(function(p) { return renderPedidoItem(p); }).join('');
+        }
+
+        // Renderizar Entregados
+        var entregadosListEl = document.getElementById('pedidosEntregadosList');
+        if (entregadosList.length === 0) {
+            entregadosListEl.innerHTML = '<div class="empty-state-elegante"><i class="fas fa-check-circle"></i><p>No hay pedidos entregados</p></div>';
+        } else {
+            entregadosListEl.innerHTML = entregadosList.slice(0, 20).map(function(p) { return renderPedidoItem(p); }).join('');
+        }
+    }
+
+    function renderPedidoItem(p) {
+        var facturaId = p.factura_id || p.id;
+        var tieneObservacion = !!p.observacion;
+        var alertaClase = tieneObservacion ? 'has-observacion' : '';
+        var tiempoExcedido = verificarTiempoExcedido(p.fecha_entrega || p.fecha || p.fecha_str);
+        var alertaBadge = tiempoExcedido ? '<span class="time-alert"><i class="fas fa-exclamation-triangle"></i> +24h</span>' : '';
+        var observacionIcon = tieneObservacion ? '<i class="fas fa-comment observacion-icon" title="Tiene observación"></i>' : '';
+
+        var estado = p.estado_operacion || '';
+        var statusClass = 'status-pendiente-card';
+        var statusText = 'PENDIENTE';
+        if (estado === ESTADO_CAMINO || estado === 'camino' || estado === ESTADO_FACTURACION || estado === 'facturacion') {
+            statusClass = 'status-camino-card';
+            statusText = 'EN CAMINO';
+        } else if (estado === ESTADO_ENTREGADO || estado === 'entregado') {
+            statusClass = 'status-entregado-card';
+            statusText = 'ENTREGADO';
+        }
+
+        var tipoCombustible = p.tipo_combustible || 'N/A';
+        var galones = p.galones || 0;
+        var conductor = p.conductor_asignado || '-';
+        var placa = p.camion_asignado || p.placa || '-';
+        var fechaStr = p.fecha_str || (p.fecha ? new Date(p.fecha).toISOString().split('T')[0] : '-');
+
+        var observacionPreview = tieneObservacion ?
+            '<div class="observacion-preview"><i class="fas fa-comment"></i> ' + escapeHtml(p.observacion.substring(0, 80)) + (p.observacion.length > 80 ? '...' : '') + '</div>' : '';
+
+        var verObsBtn = tieneObservacion ?
+            '<button class="btn-ver-observacion" onclick="event.stopPropagation(); window.verObservacion(\'' + facturaId + '\', \'' + escapeHtml(p.nombre || p.empresa_nombre || 'Cliente') + '\', \'' + (p.fecha_entrega || p.fecha || p.fecha_str) + '\')"><i class="fas fa-eye"></i> Ver Observación</button>' : '';
+
+        return '<div class="pedido-item-card ' + alertaClase + '" onclick="copiarTexto(\'' + p.id + '\')">' +
+            '<div class="pedido-item-header">' +
+                '<div class="pedido-empresa-nombre"><i class="fas fa-building"></i><span>' + escapeHtml(p.nombre || p.empresa_nombre || 'Cliente') + '</span>' + observacionIcon + alertaBadge + '</div>' +
+                '<div class="status-badge-card ' + statusClass + '"><i class="fas fa-circle" style="font-size:6px;"></i> ' + statusText + '</div>' +
+            '</div>' +
+            '<div class="pedido-fecha-card"><i class="far fa-calendar-alt"></i> ' + fechaStr + '</div>' +
+            '<div class="pedido-detalles-card">' +
+                '<div class="detalle-chip-card"><i class="fas fa-gas-pump"></i> ' + escapeHtml(tipoCombustible) + '</div>' +
+                '<div class="detalle-chip-card"><i class="fas fa-chart-line"></i> ' + formatearNumero(galones) + ' gal</div>' +
+                (conductor !== '-' ? '<div class="detalle-chip-card"><i class="fas fa-user-tie"></i> ' + escapeHtml(conductor) + '</div>' : '') +
+                (placa !== '-' ? '<div class="detalle-chip-card"><i class="fas fa-truck"></i> ' + escapeHtml(placa) + '</div>' : '') +
+            '</div>' +
+            '<div class="pedido-total-card"><span class="total-label-card">Total:</span><span class="total-monto-card">' + formatearMoneda(p.costo_total) + '</span></div>' +
+            observacionPreview +
+            (verObsBtn ? '<div style="display:flex;gap:6px;margin-top:4px;">' + verObsBtn + '</div>' : '') +
+        '</div>';
+    }
+
+    function actualizarGraficas(pedidos) {
+        if (typeof Chart === 'undefined') return;
+        Object.keys(charts).forEach(function(key) { if (charts[key]) { charts[key].destroy(); charts[key] = null; } });
+
+        var recibidos = pedidos.filter(function(p) {
+            var estado = p.estado_operacion || '';
+            return estado !== ESTADO_ENTREGADO && estado !== 'entregado';
+        });
+        var entregados = pedidos.filter(function(p) {
+            var estado = p.estado_operacion || '';
+            return estado === ESTADO_ENTREGADO || estado === 'entregado';
+        });
+
+        // ===== GRÁFICA 1: RECIBIDOS PIE =====
+        var tiposRecibidos = {};
+        recibidos.forEach(function(p) { var tipo = p.tipo_combustible || 'Otro'; tiposRecibidos[tipo] = (tiposRecibidos[tipo] || 0) + (p.costo_total || 0); });
+        var labelsRec = Object.keys(tiposRecibidos);
+        var dataRec = Object.values(tiposRecibidos);
+        var colorsRec = ['rgba(251,191,36,0.4)', 'rgba(251,191,36,0.3)', 'rgba(251,191,36,0.2)', 'rgba(251,191,36,0.15)'];
+        var borderRec = ['#fbbf24', '#f59e0b', '#d97706', '#b45309'];
+
+        var ctxRecPie = document.getElementById('recibidosPie')?.getContext('2d');
+        if (ctxRecPie) {
+            charts.recPie = new Chart(ctxRecPie, {
+                type: 'pie',
+                data: {
+                    labels: labelsRec,
+                    datasets: [{
+                        data: dataRec,
+                        backgroundColor: colorsRec.slice(0, labelsRec.length),
+                        borderColor: borderRec.slice(0, labelsRec.length),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff', font: { size: 8, weight: '600' }, boxWidth: 10, padding: 4 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===== GRÁFICA 2: RECIBIDOS BAR (por empresa) =====
+        var empresasRec = {};
+        recibidos.forEach(function(p) {
+            var nombre = p.nombre || p.empresa_nombre || 'Sin nombre';
+            empresasRec[nombre] = (empresasRec[nombre] || 0) + (p.costo_total || 0);
+        });
+        var sortedRec = Object.entries(empresasRec).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
+        var labelsRecBar = sortedRec.map(function(e) { return e[0]; });
+        var dataRecBar = sortedRec.map(function(e) { return e[1]; });
+
+        var ctxRecBar = document.getElementById('recibidosBar')?.getContext('2d');
+        if (ctxRecBar) {
+            charts.recBar = new Chart(ctxRecBar, {
+                type: 'bar',
+                data: {
+                    labels: labelsRecBar,
+                    datasets: [{
+                        label: 'Costo (C$)',
+                        data: dataRecBar,
+                        backgroundColor: 'rgba(251,191,36,0.3)',
+                        borderColor: '#fbbf24',
+                        borderWidth: 2,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff', font: { size: 8, weight: '600' } }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#ffffff', font: { size: 7 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#ffffff', font: { size: 7 } } }
+                    }
+                }
+            });
+        }
+
+        // ===== GRÁFICA 3: ENTREGADOS PIE =====
+        var tiposEntregados = {};
+        entregados.forEach(function(p) { var tipo = p.tipo_combustible || 'Otro'; tiposEntregados[tipo] = (tiposEntregados[tipo] || 0) + (p.costo_total || 0); });
+        var labelsEnt = Object.keys(tiposEntregados);
+        var dataEnt = Object.values(tiposEntregados);
+        var colorsEnt = ['rgba(16,185,129,0.4)', 'rgba(16,185,129,0.3)', 'rgba(16,185,129,0.2)', 'rgba(16,185,129,0.15)'];
+        var borderEnt = ['#10b981', '#059669', '#047857', '#065f46'];
+
+        var ctxEntPie = document.getElementById('entregadosPie')?.getContext('2d');
+        if (ctxEntPie) {
+            charts.entPie = new Chart(ctxEntPie, {
+                type: 'pie',
+                data: {
+                    labels: labelsEnt,
+                    datasets: [{
+                        data: dataEnt,
+                        backgroundColor: colorsEnt.slice(0, labelsEnt.length),
+                        borderColor: borderEnt.slice(0, labelsEnt.length),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff', font: { size: 8, weight: '600' }, boxWidth: 10, padding: 4 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===== GRÁFICA 4: ENTREGADOS BAR (por empresa) =====
+        var empresasEnt = {};
+        entregados.forEach(function(p) {
+            var nombre = p.nombre || p.empresa_nombre || 'Sin nombre';
+            empresasEnt[nombre] = (empresasEnt[nombre] || 0) + (p.costo_total || 0);
+        });
+        var sortedEnt = Object.entries(empresasEnt).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
+        var labelsEntBar = sortedEnt.map(function(e) { return e[0]; });
+        var dataEntBar = sortedEnt.map(function(e) { return e[1]; });
+
+        var ctxEntBar = document.getElementById('entregadosBar')?.getContext('2d');
+        if (ctxEntBar) {
+            charts.entBar = new Chart(ctxEntBar, {
+                type: 'bar',
+                data: {
+                    labels: labelsEntBar,
+                    datasets: [{
+                        label: 'Costo (C$)',
+                        data: dataEntBar,
+                        backgroundColor: 'rgba(16,185,129,0.3)',
+                        borderColor: '#34d399',
+                        borderWidth: 2,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff', font: { size: 8, weight: '600' } }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#ffffff', font: { size: 7 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#ffffff', font: { size: 7 } } }
+                    }
+                }
+            });
+        }
+    }
+
+    // ===== PROGRESO =====
+    function iniciarBarraProgreso() {
+        if (progressInterval) clearInterval(progressInterval);
+        progressStep = 0;
+        if (progressBar) progressBar.style.width = '0%';
+        if (progressTextEl) progressTextEl.textContent = 'Esperando actualización...';
+        if (progressTimeEl) progressTimeEl.textContent = 'Próxima actualización en 5s';
+        var stepTime = REFRESH_TIME_MS / PROGRESS_STEPS;
+        progressInterval = setInterval(function() {
+            progressStep++;
+            var percent = (progressStep / PROGRESS_STEPS) * 100;
+            if (progressBar) progressBar.style.width = percent + '%';
+            var remaining = Math.ceil((REFRESH_TIME_MS - (progressStep * stepTime)) / 1000);
+            if (progressTimeEl) progressTimeEl.textContent = 'Próxima actualización en ' + remaining + 's';
+            if (progressStep >= PROGRESS_STEPS) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+                if (progressTimeEl) progressTimeEl.textContent = 'Actualizando...';
+                if (progressTextEl) progressTextEl.textContent = 'Actualizando datos...';
+            }
+        }, stepTime);
+    }
+
+    function finalizarBarraProgreso() {
+        if (progressBar) { progressBar.style.width = '100%'; setTimeout(function() { if (progressBar) progressBar.style.width = '0%'; }, 200); }
+        if (progressTextEl) progressTextEl.textContent = 'Datos actualizados ✓';
+        setTimeout(function() { if (progressTextEl && progressTextEl.textContent === 'Datos actualizados ✓') progressTextEl.textContent = 'Esperando actualización...'; }, 1000);
+    }
+
+    var isUpdating = false;
+    async function actualizarTodosLosDatos() {
+        if (isUpdating) return;
+        isUpdating = true;
+        try {
+            var pedidos = await obtenerDatos();
+            if (pedidos.length === 0) return;
+            actualizarPaneles(pedidos);
+            actualizarGraficas(pedidos);
+            finalizarBarraProgreso();
+        } catch(e) { console.error('Error:', e); } finally { isUpdating = false; }
+    }
+
+    async function iniciarCicloActualizacion() {
+        await actualizarTodosLosDatos();
+        iniciarBarraProgreso();
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(async function() { await actualizarTodosLosDatos(); iniciarBarraProgreso(); }, REFRESH_TIME_MS);
+    }
+
+    // ===== CLICK EN TARJETAS =====
+    function initClickHandlers() {
+        var statCards = document.querySelectorAll('.stat-mini-card');
+        statCards.forEach(function(card) {
+            card.addEventListener('click', function() {
+                var statId = card.getAttribute('data-stat');
+                if (!statId) return;
+                
+                var titulo = '';
+                var datos = { lista: [] };
+                var recibidos = cachedPedidos.filter(function(p) {
+                    var estado = p.estado_operacion || '';
+                    return estado !== ESTADO_ENTREGADO && estado !== 'entregado';
+                });
+                var entregados = cachedPedidos.filter(function(p) {
+                    var estado = p.estado_operacion || '';
+                    return estado === ESTADO_ENTREGADO || estado === 'entregado';
+                });
+
+                switch(statId) {
+                    case 'recibidosTotal':
+                        titulo = 'Detalle de Pedidos Recibidos';
+                        datos = { lista: recibidos, total: recibidos.length, sumatoria: recibidos.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0) };
+                        break;
+                    case 'recibidosCosto':
+                        titulo = 'Detalle de Costos - Recibidos';
+                        datos = { lista: recibidos.map(function(p) { return { id: p.id, nombre: p.nombre, fecha_str: p.fecha_str, galones: p.galones, costo_total: p.costo_total }; }), total: recibidos.length, sumatoria: recibidos.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0) };
+                        break;
+                    case 'recibidosGalones':
+                        titulo = 'Detalle de Galones - Recibidos';
+                        datos = { lista: recibidos, total: recibidos.length, sumatoria: recibidos.reduce(function(s, p) { return s + (p.galones || 0); }, 0) };
+                        break;
+                    case 'recibidosPromedio':
+                        var prom = recibidos.length > 0 ? recibidos.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0) / recibidos.length : 0;
+                        titulo = 'Promedio - Recibidos';
+                        datos = { lista: recibidos, total: recibidos.length, sumatoria: prom };
+                        break;
+                    case 'entregadosTotal':
+                        titulo = 'Detalle de Pedidos Entregados';
+                        datos = { lista: entregados, total: entregados.length, sumatoria: entregados.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0) };
+                        break;
+                    case 'entregadosCosto':
+                        titulo = 'Detalle de Costos - Entregados';
+                        datos = { lista: entregados.map(function(p) { return { id: p.id, nombre: p.nombre, fecha_str: p.fecha_str, galones: p.galones, costo_total: p.costo_total }; }), total: entregados.length, sumatoria: entregados.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0) };
+                        break;
+                    case 'entregadosGalones':
+                        titulo = 'Detalle de Galones - Entregados';
+                        datos = { lista: entregados, total: entregados.length, sumatoria: entregados.reduce(function(s, p) { return s + (p.galones || 0); }, 0) };
+                        break;
+                    case 'entregadosPromedio':
+                        var promE = entregados.length > 0 ? entregados.reduce(function(s, p) { return s + (p.costo_total || 0); }, 0) / entregados.length : 0;
+                        titulo = 'Promedio - Entregados';
+                        datos = { lista: entregados, total: entregados.length, sumatoria: promE };
+                        break;
+                    default:
+                        return;
+                }
+                
+                if (datos.lista.length > 0) {
+                    mostrarDetalle(statId, titulo, datos);
+                } else {
+                    mostrarToast('No hay datos disponibles para mostrar', 'info');
+                }
+            });
+        });
+
+        // Click en gráficas
+        var chartCards = document.querySelectorAll('.chart-columna');
+        chartCards.forEach(function(card) {
+            card.addEventListener('click', function() {
+                var chartType = card.getAttribute('data-chart');
+                var titulo = '';
+                var datos = { labels: [], data: [] };
+                var esRecibidos = chartType === 'recibidosPie' || chartType === 'recibidosBar';
+                var lista = esRecibidos ? 
+                    cachedPedidos.filter(function(p) { return p.estado_operacion !== ESTADO_ENTREGADO && p.estado_operacion !== 'entregado'; }) :
+                    cachedPedidos.filter(function(p) { return p.estado_operacion === ESTADO_ENTREGADO || p.estado_operacion === 'entregado'; });
+                var tipos = {};
+                lista.forEach(function(p) { var tipo = p.tipo_combustible || 'Otro'; tipos[tipo] = (tipos[tipo] || 0) + (p.costo_total || 0); });
+                
+                if (chartType === 'recibidosPie' || chartType === 'entregadosPie') {
+                    titulo = chartType === 'recibidosPie' ? 'Distribución - Recibidos' : 'Distribución - Entregados';
+                    datos = { labels: Object.keys(tipos), data: Object.values(tipos), sumatoria: Object.values(tipos).reduce(function(a, b) { return a + b; }, 0) };
+                } else {
+                    titulo = chartType === 'recibidosBar' ? 'Top Empresas - Recibidos' : 'Top Empresas - Entregados';
+                    var empresas = {};
+                    lista.forEach(function(p) {
+                        var nombre = p.nombre || p.empresa_nombre || 'Sin nombre';
+                        empresas[nombre] = (empresas[nombre] || 0) + (p.costo_total || 0);
+                    });
+                    var sorted = Object.entries(empresas).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
+                    datos = { labels: sorted.map(function(e) { return e[0]; }), data: sorted.map(function(e) { return e[1]; }), sumatoria: sorted.reduce(function(s, e) { return s + e[1]; }, 0) };
+                }
+                
+                if (datos.labels.length > 0) {
+                    mostrarDetalleGrafica(chartType, titulo, datos);
+                } else {
+                    mostrarToast('No hay datos disponibles para mostrar', 'info');
+                }
+            });
+        });
+    }
+
+    function mostrarDetalle(statId, titulo, datos) {
+        var modal = document.getElementById('detailModal');
+        var modalTitle = document.getElementById('modalTitle');
+        var modalBody = document.getElementById('modalBody');
+        
+        modalTitle.innerHTML = '<i class="fas fa-chart-line"></i> ' + titulo;
+        
+        var html = '';
+        if (datos.lista && datos.lista.length > 0) {
+            html += 
+                '<div class="detail-stats">' +
+                    '<div class="detail-stat-card">' +
+                        '<div class="detail-stat-value">' + (datos.total || datos.lista.length) + '</div>' +
+                        '<div class="detail-stat-label">Total Registros</div>' +
+                    '</div>' +
+                    '<div class="detail-stat-card">' +
+                        '<div class="detail-stat-value">' + (datos.sumatoria ? formatearMoneda(datos.sumatoria) : '-') + '</div>' +
+                        '<div class="detail-stat-label">Sumatoria</div>' +
+                    '</div>' +
+                '</div>' +
+                '<table class="detail-table">' +
+                    '<thead><tr><th>ID</th><th>Empresa</th><th>Fecha</th><th>Galones</th><th>Total</th></tr></thead>' +
+                    '<tbody>';
+            
+            for (var i = 0; i < Math.min(datos.lista.length, 100); i++) {
+                var item = datos.lista[i];
+                html += '<tr>' +
+                    '<td>' + escapeHtml(item.id || '-') + '</td>' +
+                    '<td>' + escapeHtml(item.nombre || item.empresa_nombre || '-') + '</td>' +
+                    '<td>' + (item.fecha_str || '-') + '</td>' +
+                    '<td>' + formatearNumero(item.galones) + '</td>' +
+                    '<td style="color:#34d399; font-weight:700;">' + formatearMoneda(item.costo_total || item.importe) + '</td>' +
+                '</tr>';
+            }
+            
+            if (datos.lista.length > 100) {
+                html += '<tr><td colspan="5" style="text-align:center; color:rgba(255,255,255,0.2);">Mostrando 100 de ' + datos.lista.length + ' registros</td></tr>';
+            }
+            
+            html += '</tbody></table>';
+        } else {
+            html = '<div class="empty-state-elegante"><i class="fas fa-inbox"></i><p>No hay datos disponibles para mostrar</p></div>';
+        }
+        
+        modalBody.innerHTML = html;
+        modal.style.display = 'flex';
+    }
+
+    function mostrarDetalleGrafica(chartId, titulo, datos) {
+        var modal = document.getElementById('detailModal');
+        var modalTitle = document.getElementById('modalTitle');
+        var modalBody = document.getElementById('modalBody');
+        
+        modalTitle.innerHTML = '<i class="fas fa-chart-pie"></i> ' + titulo + ' - Detalle de Datos';
+        
+        var html = '';
+        if (datos.labels && datos.labels.length > 0 && datos.data) {
+            var total = datos.sumatoria || datos.data.reduce(function(a, b) { return a + b; }, 0);
+            html += 
+                '<div class="detail-stats">' +
+                    '<div class="detail-stat-card">' +
+                        '<div class="detail-stat-value">' + datos.labels.length + '</div>' +
+                        '<div class="detail-stat-label">Categorías</div>' +
+                    '</div>' +
+                    '<div class="detail-stat-card">' +
+                        '<div class="detail-stat-value">' + formatearMoneda(datos.sumatoria || 0) + '</div>' +
+                        '<div class="detail-stat-label">Sumatoria Total</div>' +
+                    '</div>' +
+                '</div>' +
+                '<table class="detail-table">' +
+                    '<thead><tr><th>#</th><th>Categoría</th><th>Valor</th><th>Porcentaje</th></tr></thead>' +
+                    '<tbody>';
+            
+            for (var i = 0; i < datos.labels.length; i++) {
+                var porcentaje = total > 0 ? ((datos.data[i] / total) * 100).toFixed(1) : 0;
+                html += '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td>' + escapeHtml(datos.labels[i]) + '</td>' +
+                    '<td style="color:#34d399; font-weight:700;">' + formatearMoneda(datos.data[i]) + '</td>' +
+                    '<td>' + porcentaje + '%</td>' +
+                '</tr>';
+            }
+            
+            html += '</tbody></table>';
+        } else {
+            html = '<div class="empty-state-elegante"><i class="fas fa-inbox"></i><p>No hay datos disponibles para mostrar</p></div>';
+        }
+        
+        modalBody.innerHTML = html;
+        modal.style.display = 'flex';
+    }
+
+    window.copiarTexto = function(texto) {
+        navigator.clipboard.writeText(texto);
+        mostrarToast('📋 ID copiado: ' + texto, 'success');
+    };
+
+    // ===== INICIALIZACIÓN =====
+    async function init() {
+        console.log("🚀 Inicializando Recepción - Panel Dividido");
+        document.getElementById('recargarBtn')?.addEventListener('click', async function() {
+            mostrarToast('🔄 Recargando...', 'info');
+            await actualizarTodosLosDatos();
+        });
+
+        initClickHandlers();
+        await iniciarCicloActualizacion();
+
+        console.log('✅ Módulo Recepción - Panel Dividido (Recibidos | Entregados)');
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();
+</script>
+</body>
+</html>

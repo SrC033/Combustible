@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Comprobante de Pedido | Grupo GSN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        
+        /* ========== ESTILOS BASE ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    padding: 0; 
+    margin: 0; 
+    color: #34d399;
+    min-height: 100vh;
+    min-height: 130dvh;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    background: transparent !important;
+    width: 100%;
+    max-width: 100vw;
+    background: rgba(0, 0, 0, 0.8);
+
+}
+
+/* ========== CONTENEDOR PRINCIPAL ========== */
+.facturacion-modulo {
+    padding-top: 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeInUp 0.5s ease;
+    min-height: calc(100vh - 52px);
+    min-height: calc(100dvh - 52px);
+    width: 100%;
+}
+
+        /* ========== TEMAS ========== */
+        body.default-theme { background: transparent !important; }
+        body.dark-theme { background: transparent !important; color: #34d399; }
+        body.light-theme { background: transparent !important; color: #34d399; }
+        body.light-theme .facturacion-header-sticky { background: rgba(10,26,10,0.05) !important; border-bottom-color: rgba(16,185,129,0.05); }
+        body.light-theme .filtros-panel,
+        body.light-theme .pedidos-panel,
+        body.light-theme .factura-panel,
+        body.light-theme .facturas-generadas-panel {
+            background: rgba(10,26,10,0.05) !important;
+            border-color: rgba(16,185,129,0.05);
+        }
+        body.light-theme .filtros-header,
+        body.light-theme .pedidos-header,
+        body.light-theme .factura-header-bar,
+        body.light-theme .facturas-header {
+            background: rgba(10,26,10,0.05);
+            border-bottom-color: rgba(16,185,129,0.05);
+        }
+        body.light-theme .filtros-header h3,
+        body.light-theme .pedidos-header h3,
+        body.light-theme .factura-header-bar h3,
+        body.light-theme .facturas-header h3 { color: #34d399; }
+        body.light-theme .filtro-group label { color: #34d399; }
+        body.light-theme .filtro-group select,
+        body.light-theme .filtro-group input {
+            background: rgba(10,26,10,0.05);
+            border-color: rgba(16,185,129,0.08);
+            color: #34d399;
+        }
+        body.light-theme .counter-badge {
+            background: rgba(10,26,10,0.05);
+            color: #10b981;
+        }
+        body.light-theme .pedido-card {
+            background: rgba(10,26,10,0.05);
+            border-color: rgba(16,185,129,0.05);
+        }
+        body.light-theme .pedido-card .pedido-empresa { color: #34d399; }
+        body.light-theme .pedido-card .pedido-total { color: #10b981; }
+        body.light-theme .pedido-card .info-adicional { color: #34d399; }
+        body.light-theme .pedido-card:hover { background: rgba(10,26,10,0.1); }
+        body.light-theme .btn-outline { border-color: rgba(16,185,129,0.08); color: #34d399; }
+        body.light-theme .factura-container { background: rgba(10,26,10,0.05); }
+        body.light-theme .factura-item { background: rgba(10,26,10,0.05); border-color: rgba(16,185,129,0.05); }
+        body.light-theme .factura-item .factura-info h4 { color: #34d399; }
+        body.light-theme .factura-item .factura-info p { color: #34d399; }
+        body.light-theme .factura-item:hover { background: rgba(10,26,10,0.1); }
+        body.light-theme .modal-config-content { background: rgba(10,26,10,0.05) !important; }
+        body.light-theme .modal-config-header h3 { color: #34d399; }
+        body.light-theme .modal-config-header { background: rgba(10,26,10,0.05); border-bottom-color: rgba(16,185,129,0.05); }
+        body.light-theme .config-field label { color: #34d399; }
+        body.light-theme .config-field input,
+        body.light-theme .config-field textarea {
+            background: rgba(10,26,10,0.05);
+            border-color: rgba(16,185,129,0.08);
+            color: #34d399;
+        }
+        body.light-theme .config-section h4 { color: #10b981; }
+        body.light-theme .btn-add-field { color: #10b981; border-color: rgba(16,185,129,0.08); }
+        body.light-theme .modal-config-footer { border-top-color: rgba(16,185,129,0.05); }
+        body.light-theme .factura-preview { background: rgba(255,255,255,0.95); }
+
+        body.navy-theme { background: transparent !important; color: #34d399; }
+        body.nature-theme { background: transparent !important; color: #34d399; }
+        body.image-theme { background: transparent !important; position: relative; }
+
+        /* ========== BARRA FIJA ========== */
+        .facturacion-header-sticky {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            height: 52px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .header-titulo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #34d399;
+            font-size: 0.9rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .header-titulo i {
+            color: #10b981;
+            font-size: 1rem;
+        }
+        .header-titulo span {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .header-titulo .badge-version {
+            display: none;
+        }
+
+        .header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .btn-header {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.05);
+            padding: 5px 10px;
+            border-radius: 30px;
+            color: #10b981;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            backdrop-filter: blur(10px);
+            font-size: 0.65rem;
+            white-space: nowrap;
+        }
+        .btn-header:hover { background: rgba(16, 185, 129, 0.1); }
+        .btn-header span { display: none; }
+
+        .btn-header-primary {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.15));
+            border: none;
+            padding: 5px 12px;
+            border-radius: 30px;
+            color: #34d399;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            font-size: 0.65rem;
+            white-space: nowrap;
+        }
+        .btn-header-primary:hover { transform: translateY(-1px); background: linear-gradient(135deg, rgba(16,185,129,0.25), rgba(5,150,105,0.25)); }
+        .btn-header-primary span { display: none; }
+
+        /* ========== CONTENEDOR PRINCIPAL ========== */
+        .facturacion-modulo {
+            padding-top: 12px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            animation: fadeInUp 0.5s ease;
+            min-height: 100vh;
+        }
+        
+        .facturacion-layout {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .col-izquierda {
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .col-derecha {
+            flex: 2;
+            min-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .filtros-panel, .pedidos-panel, .factura-panel, .facturas-generadas-panel {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 16px;
+            border: 1px solid rgba(16,185,129,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filtros-header, .pedidos-header, .factura-header-bar, .facturas-header {
+            padding: 8px 12px;
+            background: rgba(16, 185, 129, 0.03);
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        
+        .filtros-header h3, .pedidos-header h3, .factura-header-bar h3, .facturas-header h3 {
+            font-size: 0.75rem;
+            color: #34d399;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0;
+        }
+        .filtros-header h3 i, .pedidos-header h3 i, .factura-header-bar h3 i, .facturas-header h3 i {
+            color: #10b981;
+            font-size: 0.75rem;
+        }
+        
+        .filtros-body { padding: 8px 10px; flex-shrink: 0; }
+        .filtros-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+        .filtro-group { flex: 1; min-width: 140px; }
+        .filtro-group label { display: block; font-size: 0.6rem; color: #34d399; opacity: 0.6; margin-bottom: 2px; }
+        .filtro-group select, .filtro-group input {
+            width: 100%; padding: 6px 10px; background: rgba(10, 26, 10, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.05); border-radius: 8px; color: #34d399; font-size: 0.7rem;
+            backdrop-filter: blur(10px);
+        }
+        .filtro-group select option { background: #0a1a0a; color: #34d399; }
+        .filtro-group select { min-width: 120px; }
+        .counter-badge { background: rgba(16, 185, 129, 0.05); padding: 2px 10px; border-radius: 20px; font-size: 0.6rem; font-weight: 600; color: #34d399; }
+        
+        .pedidos-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            padding: 8px;
+            overflow-y: auto;
+            flex: 1;
+            max-height: 400px;
+        }
+        .pedidos-grid::-webkit-scrollbar { width: 4px; }
+        .pedidos-grid::-webkit-scrollbar-track { background: rgba(16,185,129,0.02); border-radius: 10px; }
+        .pedidos-grid::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        
+        .pedido-card {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(16,185,129,0.05);
+        }
+        .pedido-card:hover { background: rgba(10, 26, 10, 0.1) !important; transform: translateX(2px); border-color: rgba(16,185,129,0.1); }
+        .pedido-card.selected { border: 2px solid rgba(16,185,129,0.2); background: rgba(16, 185, 129, 0.05); }
+        .pedido-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; gap: 4px; }
+        .pedido-empresa { font-weight: 700; font-size: 0.75rem; color: #34d399; }
+        .estado-pendiente { background: rgba(16, 185, 129, 0.05); padding: 2px 8px; border-radius: 12px; font-size: 0.55rem; color: #34d399; }
+        .pedido-total { font-size: 0.8rem; font-weight: 800; color: #10b981; text-align: right; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(16,185,129,0.05); }
+        .info-adicional { font-size: 0.55rem; color: #34d399; opacity: 0.6; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(16,185,129,0.05); display: flex; gap: 8px; flex-wrap: wrap; }
+        .info-adicional span { display: inline-flex; align-items: center; gap: 3px; }
+        
+        .factura-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+        .factura-actions button { 
+            width: 30px; 
+            height: 30px; 
+            padding: 0; 
+            border-radius: 8px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            border: none; 
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-primary { background: rgba(16,185,129,0.1); color: #34d399; }
+        .btn-success { background: rgba(16,185,129,0.1); color: #34d399; }
+        .btn-success:hover { transform: translateY(-1px); background: rgba(16,185,129,0.15); }
+        .btn-warning { background: rgba(139,92,246,0.1); color: #a78bfa; }
+        .btn-warning:hover { transform: translateY(-1px); background: rgba(139,92,246,0.15); }
+        .btn-info { background: rgba(16,185,129,0.1); color: #34d399; }
+        .btn-outline { background: transparent; border: 1px solid rgba(16,185,129,0.05); color: #34d399; }
+        .btn-danger { background: rgba(239,68,68,0.1); color: #f87171; border: none; }
+        .btn-danger:hover { transform: translateY(-1px); background: rgba(239,68,68,0.15); }
+        
+        /* ===== FACTURA CONTAINER - SIN LÍMITE DE ALTURA ===== */
+        .factura-container {
+            padding: 12px;
+            flex: 1;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            background: rgba(10, 26, 10, 0.05);
+            max-height: none !important;
+            height: auto !important;
+            min-height: 500px;
+        }
+        .factura-container::-webkit-scrollbar { width: 6px; }
+        .factura-container::-webkit-scrollbar-track { background: rgba(16,185,129,0.02); border-radius: 10px; }
+        .factura-container::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        
+        /* ===== FACTURA PREVIEW - COMPLETA Y VISIBLE ===== */
+        .factura-preview {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: visible !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            margin: 0 auto;
+            font-family: 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+            border: 1px solid rgba(200,200,200,0.3);
+            height: auto !important;
+            min-height: 300px;
+        }
+        .factura-content {
+            background: #ffffff !important;
+            padding: 20px 24px;
+            color: #1a1a2e !important;
+            overflow: visible !important;
+            height: auto !important;
+            min-height: 400px;
+        }
+        
+        .factura-content [contenteditable="true"] {
+            outline: none;
+            border-bottom: 1px dashed rgba(0,0,0,0.15);
+            min-width: 20px;
+            display: inline-block;
+            cursor: text;
+            background: rgba(245,245,245,0.3);
+            transition: all 0.2s;
+            padding: 1px 4px;
+            border-radius: 3px;
+            color: #1a1a2e !important;
+        }
+        .factura-content [contenteditable="true"]:hover { background: rgba(245,245,245,0.6); }
+        .factura-content [contenteditable="true"]:focus { border-bottom: 2px solid #f59e0b; background: rgba(245,245,245,0.5); outline: none; }
+        
+        .factura-content .factura-titulo { text-align: center; border-bottom: 2px solid #f59e0b; padding-bottom: 12px; margin-bottom: 18px; }
+        .factura-content .factura-titulo h1 { font-size: 20px; font-weight: 800; color: #1a1a2e !important; margin-bottom: 4px; }
+        .factura-content .factura-titulo p { color: #666 !important; font-size: 10px; margin: 2px 0; }
+        .factura-content .factura-titulo h3 { font-size: 14px; margin-top: 8px; color: #333 !important; }
+        
+        .factura-content .info-row { display: flex; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
+        .factura-content .info-box { flex: 1; background: #f8f9fa !important; padding: 10px 14px; border-radius: 8px; border-left: 3px solid #f59e0b; }
+        .factura-content .info-box strong { display: block; font-size: 10px; color: #f59e0b !important; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .factura-content .info-box p { font-size: 11px; margin: 3px 0; color: #333 !important; line-height: 1.4; }
+        
+        .factura-content .info-flota {
+            background: #f0f7ff !important;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            border: 1px solid #e0e8f0;
+        }
+        .factura-content .info-flota-item { flex: 1; min-width: 80px; }
+        .factura-content .info-flota-item strong { font-size: 8px; color: #f59e0b !important; text-transform: uppercase; display: block; margin-bottom: 3px; letter-spacing: 0.3px; }
+        .factura-content .info-flota-item p { font-size: 10px; color: #333 !important; margin: 2px 0; }
+        
+        /* ===== CAMPOS DE BONO, VIÁTICO Y TRASLADO - SOLO LECTURA ===== */
+        .factura-content .info-extra-preview-item input.readonly-field {
+            background: #f0f0f0 !important;
+            border: 1px solid #ddd !important;
+            color: #666 !important;
+            cursor: default;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        .factura-content .info-extra-preview-item input.readonly-field:focus {
+            outline: none;
+            border-color: #ddd !important;
+        }
+        
+        .factura-content .info-extra-preview {
+            background: #fff8f0 !important;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            border: 1px solid #f0e8e0;
+            border-left: 3px solid #f59e0b;
+        }
+        .factura-content .info-extra-preview-item { flex: 1; min-width: 80px; }
+        .factura-content .info-extra-preview-item strong { font-size: 8px; color: #f59e0b !important; text-transform: uppercase; display: block; margin-bottom: 3px; }
+        .factura-content .info-extra-preview-item input {
+            width: 100%;
+            padding: 4px 8px;
+            background: #ffffff !important;
+            border: 1px solid #ddd !important;
+            border-radius: 6px;
+            font-size: 10px;
+            color: #333 !important;
+        }
+        .factura-content .info-extra-preview-item input:focus {
+            outline: none;
+            border-color: #f59e0b !important;
+        }
+        
+        .factura-content .campos-preview { 
+            margin: 12px 0; 
+            padding: 10px; 
+            background: #f5f5f5 !important; 
+            border-radius: 8px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            border: 1px solid #eee;
+        }
+        .factura-content .campo-preview-item { 
+            background: #ffffff !important;
+            padding: 4px 12px; 
+            border-radius: 16px; 
+            font-size: 10px; 
+            color: #333 !important; 
+            border-left: 2px solid #f59e0b;
+        }
+        .factura-content .campo-preview-item strong { color: #f59e0b !important; margin-right: 4px; }
+        .factura-content .campo-valor-editable { 
+            display: inline-block; 
+            min-width: 30px; 
+            color: #333 !important;
+        }
+        
+        .factura-content .factura-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+            font-family: 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+            display: table;
+        }
+        .factura-content .factura-tabla th {
+            background: #f59e0b !important;
+            color: #ffffff !important;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 10px;
+            border: 1px solid #e8a00a;
+        }
+        .factura-content .factura-tabla td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+            color: #333 !important;
+            font-size: 10px;
+        }
+        .factura-content .factura-tabla td:first-child { text-align: left; background: #fefaf5 !important; }
+        .factura-content .factura-tabla td { text-align: center; background: #ffffff !important; }
+        .factura-content .factura-item-titulo { font-weight: 700; font-size: 11px; margin-bottom: 4px; display: block; color: #1a1a2e !important; }
+        .factura-content .factura-item-subtitulo { font-size: 9px; color: #666 !important; margin-top: 2px; display: block; font-weight: normal; }
+        
+        .factura-content .btn-add-row {
+            background: rgba(16,185,129,0.1);
+            color: #10b981;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 10px;
+            cursor: pointer;
+            margin: 8px 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .factura-content .btn-add-row:hover { transform: translateY(-1px); background: rgba(16,185,129,0.15); }
+        .factura-content .btn-remove-row {
+            background: rgba(239,68,68,0.1);
+            color: #ef4444;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .factura-content .btn-remove-row:hover { background: rgba(239,68,68,0.2); }
+        
+        .factura-content .factura-totales {
+            text-align: right;
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 2px solid #f59e0b;
+            background: #fefaf5 !important;
+            padding: 12px 18px;
+            border-radius: 6px;
+        }
+        .factura-content .factura-totales .total-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a2e !important;
+        }
+        .factura-content .factura-totales .total-monto {
+            font-size: 18px;
+            font-weight: 800;
+            color: #f59e0b !important;
+            margin-left: 12px;
+            display: inline-block;
+            background: #fff !important;
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid #f0e0d0;
+        }
+        
+        .factura-content .factura-footer {
+            text-align: center;
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            font-size: 8px;
+            color: #999 !important;
+        }
+        .factura-content .factura-footer p { margin: 2px 0; color: #999 !important; }
+        
+        .facturas-lista { padding: 8px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; max-height: 200px; }
+        .facturas-lista::-webkit-scrollbar { width: 4px; }
+        .facturas-lista::-webkit-scrollbar-track { background: rgba(16,185,129,0.02); border-radius: 10px; }
+        .facturas-lista::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.2); border-radius: 10px; }
+        
+        .factura-item {
+            background: rgba(10, 26, 10, 0.05) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            border-left: 3px solid rgba(16,185,129,0.15);
+            flex-wrap: wrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .factura-item:hover {
+            background: rgba(10, 26, 10, 0.1) !important;
+            transform: translateX(2px);
+            border-left-color: rgba(16,185,129,0.25);
+        }
+        .factura-item.selected {
+            border-left: 3px solid rgba(16,185,129,0.3);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .factura-info { flex: 1; }
+        .factura-info h4 { font-size: 10px; margin-bottom: 2px; color: #34d399; }
+        .factura-info p { font-size: 8px; color: #34d399; opacity: 0.6; }
+        .factura-item button { width: 28px; height: 28px; padding: 0; border-radius: 6px; cursor: pointer; font-size: 9px; }
+        
+        .factura-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(16, 185, 129, 0.03);
+            padding: 3px 8px;
+            border-radius: 16px;
+            font-size: 8px;
+            cursor: pointer;
+        }
+        .factura-checkbox input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: #f59e0b;
+            margin: 0;
+        }
+        .factura-checkbox span {
+            cursor: pointer;
+            color: #34d399;
+            opacity: 0.6;
+            font-size: 8px;
+        }
+        .factura-checkbox input:checked + span {
+            color: #34d399;
+            opacity: 1;
+        }
+        .factura-checkbox.checked { background: rgba(16, 185, 129, 0.05); }
+        .factura-checkbox.checked span { color: #34d399; opacity: 1; }
+        
+        .facturas-generadas-panel {
+            flex-shrink: 0;
+            max-height: 240px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .empty-state { text-align: center; padding: 30px 20px; color: #34d399; opacity: 0.3; font-size: 11px; }
+        .loading-state { text-align: center; padding: 30px; }
+        .spinner-small { width: 22px; height: 22px; border: 2px solid rgba(16, 185, 129, 0.05); border-top-color: rgba(16,185,129,0.3); border-radius: 50%; margin: 0 auto 8px; animation: spin 0.8s linear infinite; }
+        .toast-message { position: fixed; bottom: 15px; right: 15px; background: rgba(10, 26, 10, 0.05); backdrop-filter: blur(30px); padding: 6px 14px; border-radius: 30px; z-index: 10001; border-left: 3px solid rgba(16,185,129,0.1); font-size: 0.7rem; color: #34d399; }
+        .limpieza-indicator { font-size: 8px; color: #34d399; opacity: 0.4; margin-left: 4px; display: inline-flex; align-items: center; gap: 3px; }
+        
+        /* ========== MODAL CONFIG ========== */
+        .modal-config {
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100vh; 
+            height: 100dvh;
+            background: rgba(0, 0, 0, 0.3); 
+            backdrop-filter: blur(30px); 
+            z-index: 20000; 
+            justify-content: center; 
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 20px 10px;
+        }
+
+        .modal-config::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .modal-config::-webkit-scrollbar-track {
+            background: rgba(10, 26, 10, 0.02);
+            border-radius: 10px;
+        }
+
+        .modal-config::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+        }
+
+        .modal-config::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.4);
+        }
+
+        .modal-config-content { 
+            background: rgba(10, 26, 10, 0.05) !important; 
+            backdrop-filter: blur(30px); 
+            -webkit-backdrop-filter: blur(30px); 
+            border-radius: 20px; 
+            width: 96%; 
+            max-width: 700px; 
+            min-height: 90dvh;
+            overflow-y: auto; 
+            border: 1px solid rgba(16, 185, 129, 0.05); 
+            margin: 0 auto;
+            padding-bottom: 20px;
+        }
+
+        .modal-config-content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .modal-config-content::-webkit-scrollbar-track {
+            background: rgba(16, 185, 129, 0.02);
+            border-radius: 10px;
+        }
+
+        .modal-config-content::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+        }
+
+        .modal-config-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.5);
+        }
+
+        .modal-config-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(16,185,129,0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16,185,129,0.03);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+        .modal-config-header i { font-size: 16px; color: #10b981; }
+        .modal-config-header h3 { flex: 1; font-size: 14px; font-weight: 700; color: #34d399; margin: 0; }
+        .close-modal { background: none; border: none; color: #34d399; opacity: 0.5; font-size: 20px; cursor: pointer; }
+        .modal-config-body { padding: 16px; }
+        .config-section { margin-bottom: 15px; border-bottom: 1px solid rgba(16,185,129,0.05); padding-bottom: 12px; }
+        .config-section h4 { color: #10b981; margin-bottom: 8px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+        .config-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+        .config-field { display: flex; flex-direction: column; gap: 3px; }
+        .config-field label { font-size: 8px; color: #34d399; opacity: 0.6; }
+        .config-field input, .config-field textarea { padding: 6px 10px; background: rgba(10, 26, 10, 0.05); border: 1px solid rgba(16,185,129,0.05); border-radius: 8px; color: #34d399; font-size: 10px; }
+        .config-field input[type="color"] { width: 40px; height: 30px; padding: 2px; }
+        .campos-adicionales { margin-top: 8px; }
+        .campo-extra-item { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; flex-wrap: wrap; }
+        .campo-extra-item input { flex: 1; padding: 4px 8px; background: rgba(10, 26, 10, 0.05); border: 1px solid rgba(16,185,129,0.05); border-radius: 6px; color: #34d399; font-size: 10px; }
+        .btn-add-field { background: rgba(16,185,129,0.05); border: 1px dashed rgba(16,185,129,0.1); padding: 4px 12px; border-radius: 8px; color: #10b981; cursor: pointer; font-size: 9px; margin-top: 4px; }
+        .modal-config-footer { padding: 10px 16px; border-top: 1px solid rgba(16,185,129,0.05); display: flex; justify-content: flex-end; gap: 8px; }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .facturacion-layout { flex-direction: column; }
+            .col-izquierda, .col-derecha { min-width: 0; }
+            .col-izquierda { max-height: none; }
+            .col-derecha { max-height: none; }
+            .pedidos-grid { max-height: 300px; }
+            .factura-container { min-height: 400px; }
+        }
+
+        @media (max-width: 768px) {
+            .facturacion-header-sticky { padding: 6px 10px; height: 46px; }
+            .header-titulo { font-size: 0.75rem; gap: 4px; }
+            .btn-header { padding: 4px 8px; font-size: 0.6rem; }
+            .btn-header-primary { padding: 4px 10px; font-size: 0.6rem; }
+            .facturacion-modulo { padding-left: 6px; padding-right: 6px; padding-top: 8px; }
+            .filtro-group { min-width: 100px; }
+            .filtro-group select { min-width: 80px; }
+            .factura-content { padding: 14px 16px; min-height: 300px; }
+            .factura-content .factura-titulo h1 { font-size: 17px; }
+            .factura-content .factura-tabla th { font-size: 9px; padding: 6px 4px; }
+            .factura-content .factura-tabla td { font-size: 9px; padding: 6px 4px; }
+            .facturas-generadas-panel { max-height: 200px; }
+            .factura-container { min-height: 350px; }
+            .factura-preview { min-height: 250px; }
+        }
+
+        @media (max-width: 480px) {
+            .facturacion-header-sticky { padding: 4px 6px; height: 40px; }
+            .header-titulo { font-size: 0.65rem; }
+            .header-titulo i { font-size: 0.7rem; }
+            .btn-header { padding: 3px 6px; font-size: 0.5rem; }
+            .btn-header i { font-size: 0.5rem; }
+            .btn-header-primary { padding: 3px 8px; font-size: 0.5rem; }
+            .btn-header-primary i { font-size: 0.5rem; }
+            .facturacion-modulo { padding-left: 4px; padding-right: 4px; padding-top: 6px; }
+            .filtros-row { gap: 4px; }
+            .filtro-group { min-width: 70px; }
+            .filtro-group select, .filtro-group input { font-size: 0.6rem; padding: 4px 6px; }
+            .pedidos-grid { padding: 4px; gap: 4px; max-height: 250px; }
+            .pedido-card { padding: 6px 8px; }
+            .pedido-empresa { font-size: 0.65rem; }
+            .pedido-total { font-size: 0.7rem; }
+            .factura-content { padding: 10px 12px; min-height: 250px; }
+            .factura-content .factura-titulo h1 { font-size: 15px; }
+            .factura-content .info-box p { font-size: 9px; }
+            .factura-content .factura-tabla th { font-size: 8px; padding: 4px 3px; }
+            .factura-content .factura-tabla td { font-size: 8px; padding: 4px 3px; }
+            .factura-actions button { width: 26px; height: 26px; font-size: 0.65rem; }
+            .facturas-lista { padding: 4px; gap: 4px; max-height: 150px; }
+            .factura-item { padding: 4px 8px; }
+            .factura-info h4 { font-size: 8px; }
+            .factura-info p { font-size: 7px; }
+            .modal-config-content { width: 96%; }
+            .config-grid { grid-template-columns: 1fr; }
+            .factura-container { min-height: 300px; }
+            .facturas-generadas-panel { max-height: 170px; }
+            .factura-preview { min-height: 200px; }
+        }
+
+        @media (max-width: 380px) {
+            .facturacion-header-sticky { height: 36px; padding: 2px 4px; }
+            .header-titulo { font-size: 0.55rem; }
+            .btn-header { padding: 2px 4px; font-size: 0.45rem; }
+            .btn-header-primary { padding: 2px 6px; font-size: 0.45rem; }
+            .facturacion-modulo { padding-top: 4px; }
+            .filtro-group { min-width: 60px; }
+            .pedidos-grid { max-height: 200px; }
+            .factura-content { padding: 8px 8px; min-height: 200px; }
+            .factura-content .factura-titulo h1 { font-size: 13px; }
+            .factura-content .factura-tabla { font-size: 7px; }
+            .factura-content .factura-tabla th, .factura-content .factura-tabla td { font-size: 7px; padding: 3px 2px; }
+            .factura-container { min-height: 250px; }
+            .facturas-generadas-panel { max-height: 140px; }
+            .factura-preview { min-height: 150px; }
+        }
+    </style>
+</head>
+<body>
+<!-- ========== HEADER FIJO ========== -->
+<div class="facturacion-header-sticky" id="headerFacturacion">
+    <div class="header-titulo">
+        <i class="fas fa-file-invoice"></i>
+        <span>Comprobante de Pedido</span>
+        <span class="badge-version">v1</span>
+    </div>
+    <div class="header-buttons">
+        <button id="refrescarPedidosBtn" class="btn-header">
+            <i class="fas fa-sync-alt"></i>
+            <span>Recargar</span>
+        </button>
+        <button id="configFacturaBtn" class="btn-header">
+            <i class="fas fa-cog"></i>
+            <span>Config</span>
+        </button>
+        <button id="cargarPedidosBtn" class="btn-header-primary">
+            <i class="fas fa-search"></i>
+            <span>Cargar</span>
+        </button>
+    </div>
+</div>
+
+<div class="facturacion-modulo">
+    <div class="facturacion-layout">
+        <div class="col-izquierda">
+            <div class="filtros-panel">
+                <div class="filtros-header"><h3><i class="fas fa-filter"></i> Filtrar Pedidos</h3></div>
+                <div class="filtros-body">
+                    <div class="filtros-row">
+                        <button id="debugBtn" class="btn-outline" style="width:30px; height:30px; border-radius:8px; font-size:0.65rem;" onclick="window.debugPedidosFacturacion()"><i class="fas fa-bug"></i></button>
+                        <div class="filtro-group"><label>Empresa</label><select id="selectEmpresaFacturar"><option value="">Todas</option></select></div>
+                        <div class="filtro-group" style="flex:0 0 auto;"><label>&nbsp;</label><button id="filtrarBtn" class="btn-header-primary" style="padding:5px 14px; font-size:0.65rem;"><i class="fas fa-filter"></i> Filtrar</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="pedidos-panel">
+                <div class="pedidos-header"><h3><i class="fas fa-clock"></i> Pedidos Pendientes</h3><span id="pedidosCount" class="counter-badge">0</span></div>
+                <div id="pedidosList" class="pedidos-grid">
+                    <div class="loading-state"><div class="spinner-small"></div><p style="font-size:0.65rem;">Cargando pedidos...</p></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-derecha">
+            <div class="factura-panel">
+                <div class="factura-header-bar">
+                    <h3><i class="fas fa-file-invoice"></i> Comprobante (Editable)</h3>
+                    <div class="factura-actions">
+                        <button id="accionFacturaBtn" class="btn-success" disabled><i class="fas fa-save"></i></button>
+                        <button id="imprimirFacturaBtn" class="btn-primary" disabled><i class="fas fa-print"></i></button>
+                        <button id="descargarPDFBtn" class="btn-info" disabled><i class="fas fa-download"></i></button>
+                        <button id="enviarCorreoBtn" class="btn-outline" disabled><i class="fas fa-envelope"></i></button>
+                    </div>
+                </div>
+                <div id="facturaPreview" class="factura-container">
+                    <!-- El contenido se carga con JavaScript -->
+                    <div class="loading-state"><div class="spinner-small"></div><p style="font-size:0.65rem;">Cargando comprobante...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="facturas-generadas-panel">
+        <div class="facturas-header">
+            <h3><i class="fas fa-history"></i> Comprobantes Generados</h3>
+            <div style="display: flex; gap: 4px; align-items: center;">
+                <span id="limpiezaIndicator" class="limpieza-indicator"><i class="fas fa-broom"></i> Cargando...</span>
+                <button id="limpiarFacturasBtn" class="btn-danger" style="width:28px; height:28px; font-size:0.65rem;"><i class="fas fa-trash-alt"></i></button>
+                <button id="refrescarFacturasBtn" class="btn-outline" style="width:28px; height:28px; font-size:0.65rem;"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+        <div id="facturasList" class="facturas-lista">
+            <div class="loading-state"><div class="spinner-small"></div><p style="font-size:0.65rem;">Cargando comprobantes...</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIG -->
+<div id="modalConfigFactura" class="modal-config">
+    <div class="modal-config-content">
+        <div class="modal-config-header">
+            <i class="fas fa-palette"></i>
+            <h3>Configurar Comprobante</h3>
+            <button class="close-modal" onclick="cerrarModalConfig()">&times;</button>
+        </div>
+        <div class="modal-config-body">
+            <div class="config-section">
+                <h4><i class="fas fa-building"></i> Empresa</h4>
+                <div class="config-grid">
+                    <div class="config-field"><label>Nombre</label><input type="text" id="configEmpresaNombre"></div>
+                    <div class="config-field"><label>RUC</label><input type="text" id="configEmpresaRuc"></div>
+                    <div class="config-field"><label>Teléfono</label><input type="text" id="configEmpresaTelefono"></div>
+                    <div class="config-field"><label>Dirección</label><input type="text" id="configEmpresaDireccion"></div>
+                    <div class="config-field"><label>Email</label><input type="email" id="configEmpresaEmail"></div>
+                    <div class="config-field"><label>Slogan</label><input type="text" id="configEmpresaSlogan"></div>
+                </div>
+            </div>
+            <div class="config-section">
+                <h4><i class="fas fa-palette"></i> Colores</h4>
+                <div class="config-grid">
+                    <div class="config-field"><label>Primario</label><input type="color" id="configColorPrimario"></div>
+                    <div class="config-field"><label>Título</label><input type="color" id="configColorTitulo"></div>
+                    <div class="config-field"><label>Fondo</label><input type="color" id="configColorFondo"></div>
+                    <div class="config-field"><label>Tabla Header</label><input type="color" id="configColorTablaHeader"></div>
+                </div>
+            </div>
+            <div class="config-section">
+                <h4><i class="fas fa-eye"></i> Visibilidad</h4>
+                <div class="config-grid">
+                    <div class="config-field"><label><input type="checkbox" id="configMostrarSlogan"> Slogan</label></div>
+                    <div class="config-field"><label><input type="checkbox" id="configMostrarRuc"> RUC</label></div>
+                    <div class="config-field"><label><input type="checkbox" id="configMostrarTelefono"> Teléfono</label></div>
+                    <div class="config-field"><label><input type="checkbox" id="configMostrarEmail"> Email</label></div>
+                    <div class="config-field"><label><input type="checkbox" id="configMostrarDireccion"> Dirección</label></div>
+                </div>
+            </div>
+            <div class="config-section">
+                <h4><i class="fas fa-plus-circle"></i> Campos Adicionales</h4>
+                <div id="camposAdicionalesList"></div>
+                <button class="btn-add-field" onclick="agregarCampoAdicional()"><i class="fas fa-plus"></i> Agregar</button>
+            </div>
+        </div>
+        <div class="modal-config-footer">
+            <button class="btn-outline" onclick="cerrarModalConfig()">Cancelar</button>
+            <button class="btn-primary" onclick="guardarConfigFactura()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    console.log("🧾 Comprobante de Pedido - Móvil + Campos solo lectura");
+
+    // ==================== TEMAS ====================
+    function obtenerUsuarioKey() {
+        try {
+            var usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+            if (usuarioStr) {
+                var usuario = JSON.parse(usuarioStr);
+                return 'tema_usuario_' + (usuario.id || usuario.email || 'default');
+            }
+        } catch(e) {}
+        return 'tema_usuario_default';
+    }
+
+    function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? parseInt(result[1], 16) + ', ' + parseInt(result[2], 16) + ', ' + parseInt(result[3], 16) : '10, 26, 10';
+    }
+
+    function aplicarTransparenciaModulo(t) {
+        var defaultTransparencia = { fondo: 0.05, tarjetas: 0.05, bordes: 0.05, blur: 30 };
+        if (!t) {
+            var usuarioKey = obtenerUsuarioKey();
+            var transparenciaGuardada = localStorage.getItem(usuarioKey + '_transparencia');
+            if (transparenciaGuardada) {
+                try { t = JSON.parse(transparenciaGuardada); } catch(e) { t = defaultTransparencia; }
+            } else { t = defaultTransparencia; }
+        }
+        var fondo = t.fondo || defaultTransparencia.fondo;
+        var tarjetas = t.tarjetas || defaultTransparencia.tarjetas;
+        var bordes = t.bordes || defaultTransparencia.bordes;
+        var blur = t.blur || defaultTransparencia.blur;
+
+        var cards = document.querySelectorAll('.filtros-panel, .pedidos-panel, .factura-panel, .facturas-generadas-panel, .pedido-card, .factura-item, .modal-config-content');
+        cards.forEach(function(el) {
+            if (el.classList.contains('factura-preview') || el.closest('.factura-preview')) return;
+            el.style.backgroundColor = 'rgba(10, 26, 10, ' + tarjetas + ') !important';
+            el.style.backdropFilter = 'blur(' + blur + 'px)';
+            el.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+            el.style.borderColor = 'rgba(16,185,129, 0.05)';
+        });
+
+        var headers = document.querySelectorAll('.filtros-header, .pedidos-header, .factura-header-bar, .facturas-header, .facturacion-header-sticky');
+        headers.forEach(function(el) {
+            el.style.background = 'rgba(10, 26, 10, ' + fondo + ') !important';
+            el.style.backdropFilter = 'blur(' + blur + 'px)';
+            el.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+            el.style.borderBottomColor = 'rgba(16,185,129, 0.05)';
+        });
+
+        var modal = document.querySelector('.modal-config-content');
+        if (modal) {
+            modal.style.background = 'rgba(10, 26, 10, ' + fondo + ') !important';
+            modal.style.backdropFilter = 'blur(' + blur + 'px)';
+            modal.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+            modal.style.borderColor = 'rgba(16,185,129, 0.05)';
+        }
+
+        var buttons = document.querySelectorAll('.btn-primary, .btn-success, .btn-warning, .btn-info, .btn-danger, .btn-header, .btn-header-primary');
+        buttons.forEach(function(el) {
+            el.style.backdropFilter = 'blur(' + blur + 'px)';
+            el.style.webkitBackdropFilter = 'blur(' + blur + 'px)';
+        });
+
+        var usuarioKey = obtenerUsuarioKey();
+        localStorage.setItem(usuarioKey + '_transparencia', JSON.stringify({ fondo, tarjetas, bordes, blur }));
+    }
+
+    function cargarTransparenciaGuardada() {
+        var usuarioKey = obtenerUsuarioKey();
+        var transparenciaGuardada = localStorage.getItem(usuarioKey + '_transparencia');
+        if (transparenciaGuardada) {
+            try { var t = JSON.parse(transparenciaGuardada); aplicarTransparenciaModulo(t); return t; } catch(e) {}
+        }
+        aplicarTransparenciaModulo(null);
+        return null;
+    }
+
+    function aplicarTema(tema, imagenUrl) {
+        var body = document.body;
+        body.classList.remove('default-theme', 'dark-theme', 'light-theme', 'navy-theme', 'nature-theme', 'image-theme');
+        body.style.background = 'transparent !important';
+        body.style.backgroundColor = 'transparent !important';
+        body.style.backgroundImage = 'none !important';
+        if (tema === 'image' && imagenUrl) {
+            body.classList.add('image-theme');
+        } else {
+            body.classList.add(tema + '-theme');
+        }
+        setTimeout(cargarTransparenciaGuardada, 200);
+    }
+
+    function cargarTemaGuardado() {
+        var usuarioKey = obtenerUsuarioKey();
+        var temaGuardado = localStorage.getItem(usuarioKey);
+        var imagenGuardada = localStorage.getItem(usuarioKey + '_imagen');
+        if (temaGuardado) {
+            if (temaGuardado === 'image' && imagenGuardada) aplicarTema('image', imagenGuardada);
+            else if (temaGuardado !== 'image') aplicarTema(temaGuardado);
+        }
+        cargarTransparenciaGuardada();
+    }
+
+    function escucharMensajesTema() {
+        window.addEventListener('message', function(event) {
+            var msg = event.data;
+            if (!msg) return;
+            if (msg.type === 'CAMBIAR_TEMA') {
+                var tema = msg.tema, imagen = msg.imagen || null;
+                if (tema) {
+                    if (tema === 'image' && imagen) aplicarTema('image', imagen);
+                    else if (tema !== 'image') aplicarTema(tema);
+                }
+            }
+            if (msg.type === 'APLICAR_TRANSPARENCIA') {
+                var transparencia = msg.transparencia;
+                if (transparencia) aplicarTransparenciaModulo(transparencia);
+            }
+        });
+    }
+
+    // ==================== FUNCIONES DEL MÓDULO ====================
+    let pedidosParaFacturar = [];
+    let pedidoSeleccionado = null;
+    let facturaSeleccionada = null;
+    let facturaGenerada = null;
+    let empresasLista = [];
+    let facturasListaGlobal = [];
+    let isLoading = false;
+    let modoEdicion = 'pedido';
+    let filasTabla = [];
+    let datosEditadosCache = {};
+    let camposAdicionalesValores = {};
+    
+    let configFactura = {
+        empresa: { nombre: "GRUPO GSN", ruc: "J0310000012345", telefono: "+505 2278 1234", direccion: "Managua, Nicaragua", email: "info@gruposn.com", slogan: "Sistema de Gestión de Combustible" },
+        colores: { primario: "#f59e0b", titulo: "#f59e0b", fondo: "#ffffff", tablaHeader: "#f59e0b" },
+        visibles: { mostrarSlogan: true, mostrarRuc: true, mostrarTelefono: true, mostrarEmail: true, mostrarDireccion: true },
+        camposAdicionales: []
+    };
+
+    function formatearMoneda(valor) { 
+        if (valor === undefined || valor === null) return 'C$0.00'; 
+        return 'C$' + parseFloat(valor).toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+    }
+    
+    function formatearNumero(numero) { 
+        return (numero || 0).toLocaleString('es-NI', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); 
+    }
+    
+    function escapeHtml(text) { 
+        if (!text) return ''; 
+        var div = document.createElement('div'); 
+        div.textContent = text; 
+        return div.innerHTML; 
+    }
+    
+    function mostrarToast(mensaje, tipo) {
+        tipo = tipo || 'success';
+        var toast = document.createElement('div'); 
+        toast.className = 'toast-message'; 
+        var icon = tipo === 'success' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + mensaje; 
+        toast.style.borderLeftColor = tipo === 'success' ? 'rgba(16,185,129,0.3)' : (tipo === 'error' ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)');
+        document.body.appendChild(toast); 
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 3000); 
+    }
+    
+    function limpiarVisualizador() {
+        // No limpiamos el visualizador, siempre mostramos el comprobante por defecto
+        mostrarComprobantePorDefecto();
+        
+        pedidoSeleccionado = null;
+        facturaSeleccionada = null;
+        facturaGenerada = null;
+        modoEdicion = 'pedido';
+        filasTabla = [];
+        datosEditadosCache = {};
+        camposAdicionalesValores = {};
+        
+        var btn = document.getElementById('accionFacturaBtn');
+        btn.className = 'btn-success';
+        btn.disabled = true;
+        btn.title = 'Guardar (Nuevo Comprobante)';
+        
+        document.getElementById('imprimirFacturaBtn').disabled = true;
+        document.getElementById('descargarPDFBtn').disabled = true;
+        document.getElementById('enviarCorreoBtn').disabled = true;
+        
+        document.querySelectorAll('.pedido-card').forEach(function(card) { card.classList.remove('selected'); });
+        document.querySelectorAll('.factura-item').forEach(function(item) { item.classList.remove('selected'); });
+    }
+
+    // ==================== MOSTRAR COMPROBANTE POR DEFECTO ====================
+    function mostrarComprobantePorDefecto() {
+        var empresa = configFactura.empresa;
+        var visibles = configFactura.visibles;
+        
+        var fechaActual = new Date();
+        var numeroFactura = 'FAC-' + fechaActual.getFullYear() + 
+                            (fechaActual.getMonth()+1).toString().padStart(2,'0') + 
+                            fechaActual.getDate().toString().padStart(2,'0') + 
+                            '-' + Math.floor(Math.random()*1000);
+        
+        // Datos de ejemplo para el comprobante
+        var datosEjemplo = {
+            empresa_nombre: empresa.nombre,
+            slogan: empresa.slogan,
+            ruc: empresa.ruc,
+            telefono: empresa.telefono,
+            direccion: empresa.direccion,
+            email: empresa.email,
+            numero_factura: numeroFactura,
+            fecha: fechaActual.toLocaleDateString('es-NI'),
+            cliente_nombre: 'CLIENTE EJEMPLO',
+            cliente_nit: 'J0310000012345',
+            conductor1: 'Juan Pérez',
+            conductor2: 'María Gómez',
+            camion1: 'ABC-123',
+            camion2: 'DEF-456',
+            bono1: 'BONO-001',
+            bono2: 'BONO-002',
+            viatico1: 1500,
+            viatico2: 800,
+            costo_traslado: 2500,
+            filas: [
+                { descripcion: 'DIESEL', cantidad: 500, precio: 42.50, total: 21250 },
+                { descripcion: 'GASOLINA SUPER', cantidad: 200, precio: 45.00, total: 9000 }
+            ],
+            total: 32750
+        };
+        
+        // Actualizar filasTabla con los datos de ejemplo
+        filasTabla = datosEjemplo.filas.map(function(f, idx) {
+            return { 
+                id: Date.now() + idx, 
+                descripcion: f.descripcion, 
+                cantidad: f.cantidad, 
+                precio: f.precio, 
+                total: f.total 
+            };
+        });
+        
+        // Generar HTML del comprobante
+        var html = generarHtmlComprobante(datosEjemplo);
+        document.getElementById('facturaPreview').innerHTML = html;
+        
+        // Configurar eventos para campos editables
+        configurarEventosComprobante();
+        
+        console.log("✅ Comprobante por defecto cargado");
+    }
+
+    function generarHtmlComprobante(datos) {
+        var empresa = configFactura.empresa;
+        var visibles = configFactura.visibles;
+        
+        var html = '<div class="factura-preview"><div class="factura-content">' +
+            '<div class="factura-titulo">' +
+                '<h1 contenteditable="true" data-field="empresa_nombre">' + escapeHtml(datos.empresa_nombre || empresa.nombre) + '</h1>' +
+                (visibles.mostrarSlogan ? '<p contenteditable="true" data-field="slogan">' + escapeHtml(datos.slogan || empresa.slogan) + '</p>' : '') +
+                '<p>' + (visibles.mostrarRuc ? 'RUC: ' + escapeHtml(datos.ruc || empresa.ruc) : '') + 
+                (visibles.mostrarTelefono ? ' | Tel: ' + escapeHtml(datos.telefono || empresa.telefono) : '') + '</p>' +
+                '<p contenteditable="true" data-field="direccion">' + (visibles.mostrarDireccion ? escapeHtml(datos.direccion || empresa.direccion) : '') + '</p>' +
+                (visibles.mostrarEmail ? '<p>' + escapeHtml(datos.email || empresa.email) + '</p>' : '') +
+                '<h3>COMPROBANTE No. ' + escapeHtml(datos.numero_factura || 'FAC-000000') + '</h3>' +
+                '<p>Fecha: ' + escapeHtml(datos.fecha || new Date().toLocaleDateString('es-NI')) + '</p>' +
+            '</div>' +
+            '<div class="info-row">' +
+                '<div class="info-box"><strong>EMISOR</strong><p contenteditable="true" data-field="emisor_nombre">' + escapeHtml(empresa.nombre) + '</p><p contenteditable="true" data-field="emisor_direccion">' + escapeHtml(empresa.direccion) + '</p></div>' +
+                '<div class="info-box"><strong>CLIENTE</strong><p contenteditable="true" data-field="cliente_nombre">' + escapeHtml(datos.cliente_nombre || 'Cliente') + '</p><p><strong>NIT:</strong> <span contenteditable="true" data-field="cliente_nit">' + escapeHtml(datos.cliente_nit || '-') + '</span></p></div>' +
+            '</div>' +
+            '<div class="info-flota">' +
+                '<div class="info-flota-item"><strong>CONDUCTOR 1</strong><p>' + escapeHtml(datos.conductor1 || '-') + '</p></div>' +
+                '<div class="info-flota-item"><strong>CONDUCTOR 2</strong><p>' + escapeHtml(datos.conductor2 || '-') + '</p></div>' +
+                '<div class="info-flota-item"><strong>CAMIÓN 1</strong><p>' + escapeHtml(datos.camion1 || '-') + '</p></div>' +
+                '<div class="info-flota-item"><strong>CAMIÓN 2</strong><p>' + escapeHtml(datos.camion2 || '-') + '</p></div>' +
+            '</div>' +
+            '<div class="info-extra-preview">' +
+                '<div class="info-extra-preview-item"><strong>BONO 1</strong><input type="text" id="bono1Preview" class="readonly-field" value="' + escapeHtml(datos.bono1 || '') + '" readonly disabled></div>' +
+                '<div class="info-extra-preview-item"><strong>BONO 2</strong><input type="text" id="bono2Preview" class="readonly-field" value="' + escapeHtml(datos.bono2 || '') + '" readonly disabled></div>' +
+                '<div class="info-extra-preview-item"><strong>VIÁTICO 1</strong><input type="number" id="viatico1Preview" class="readonly-field" value="' + (datos.viatico1 || 0) + '" step="10" readonly disabled></div>' +
+                '<div class="info-extra-preview-item"><strong>VIÁTICO 2</strong><input type="number" id="viatico2Preview" class="readonly-field" value="' + (datos.viatico2 || 0) + '" step="10" readonly disabled></div>' +
+                '<div class="info-extra-preview-item"><strong>TRASLADO</strong><input type="number" id="costoTrasladoPreview" class="readonly-field" value="' + (datos.costo_traslado || 0) + '" step="100" readonly disabled></div>' +
+            '</div>' +
+            generarCamposAdicionalesHtml() +
+            generarHtmlTablaConDatos(datos.filas || []) +
+            '<div class="factura-totales"><span class="total-label">TOTAL:</span><span class="total-monto" id="totalMonto">' + formatearMoneda(datos.total || 0) + '</span></div>' +
+            '<div class="factura-footer"><p>Gracias por su preferencia</p><p>Grupo GSN - Nicaragua</p></div>' +
+        '</div></div>';
+        
+        return html;
+    }
+
+    function generarHtmlTablaConDatos(filas) {
+        var html = '<table class="factura-tabla" id="tabla-items">' +
+            '<thead><tr><th width="40%">DESCRIPCIÓN</th><th width="20%">CANTIDAD</th><th width="20%">PRECIO UNIT.</th><th width="20%">TOTAL</th></tr></thead><tbody>';
+        
+        if (!filas || filas.length === 0) {
+            filas = [{ descripcion: 'Combustible', cantidad: 0, precio: 0, total: 0 }];
+        }
+        
+        filas.forEach(function(fila, idx) {
+            html += '<tr>' +
+                '<td style="text-align:left"><div class="factura-item-titulo" contenteditable="true" data-field="descripcion_' + idx + '">' + escapeHtml(fila.descripcion || 'Producto') + '</div></td>' +
+                '<td><span contenteditable="true" class="cantidad-item" data-field="cantidad_' + idx + '">' + formatearNumero(fila.cantidad || 0) + '</span></td>' +
+                '<td><span contenteditable="true" class="precio-item" data-field="precio_' + idx + '">' + formatearMoneda(fila.precio || 0) + '</span></td>' +
+                '<td><span class="item-total" data-field="total_' + idx + '">' + formatearMoneda((fila.cantidad || 0) * (fila.precio || 0)) + '</span>' +
+                '<button class="btn-remove-row" onclick="this.closest(\'tr\').remove(); window.recalcularTotalTabla();" style="margin-left:6px;">✖</button></td>' +
+            '</tr>';
+        });
+        
+        html += '</tbody></table><button class="btn-add-row" onclick="agregarFilaTabla()"><i class="fas fa-plus"></i> Agregar</button>';
+        return html;
+    }
+
+    function configurarEventosComprobante() {
+        // Configurar eventos para campos editables
+        document.querySelectorAll('.campo-valor-editable').forEach(function(el) {
+            el.addEventListener('blur', function() {
+                var nombreCampo = this.dataset.campo;
+                var valor = this.innerText.trim();
+                camposAdicionalesValores[nombreCampo] = valor;
+            });
+        });
+        
+        document.querySelectorAll('#tabla-items [contenteditable="true"]').forEach(function(el) {
+            el.addEventListener('blur', function() { recalcularTotalTabla(); });
+        });
+        
+        // Inicializar filasTabla desde la tabla
+        actualizarFilasDesdeTabla();
+        
+        recalcularTotalTabla();
+    }
+
+    function actualizarFilasDesdeTabla() {
+        filasTabla = [];
+        var filas = document.querySelectorAll('#tabla-items tbody tr');
+        filas.forEach(function(fila, idx) {
+            var descripcionEl = fila.querySelector('.factura-item-titulo');
+            var cantidadEl = fila.querySelector('.cantidad-item');
+            var precioEl = fila.querySelector('.precio-item');
+            var descripcion = descripcionEl ? descripcionEl.innerText.trim() : 'Producto';
+            var cantidad = 0, precio = 0;
+            if (cantidadEl) cantidad = parseFloat(cantidadEl.innerText.trim().replace(/[^0-9.-]/g, '')) || 0;
+            if (precioEl) precio = parseFloat(precioEl.innerText.trim().replace(/[^0-9.-]/g, '')) || 0;
+            filasTabla.push({ 
+                id: Date.now() + idx, 
+                descripcion: descripcion, 
+                cantidad: cantidad, 
+                precio: precio, 
+                total: cantidad * precio 
+            });
+        });
+    }
+    
+    function generarCamposAdicionalesHtml() {
+        var camposVisibles = configFactura.camposAdicionales.filter(function(c) { return c.visible !== false; });
+        if (camposVisibles.length === 0) return '';
+        var html = '<div class="campos-preview">';
+        camposVisibles.forEach(function(campo) {
+            var valor = camposAdicionalesValores[campo.label] || '';
+            html += '<div class="campo-preview-item"><strong>' + escapeHtml(campo.label) + ':</strong> <span contenteditable="true" class="campo-valor-editable" data-campo="' + escapeHtml(campo.label) + '">' + escapeHtml(valor) + '</span></div>';
+        });
+        html += '</div>';
+        return html;
+    }
+
+    async function obtenerPedidosParaFacturar() {
+        try {
+            console.log("📡 Solicitando pedidos...");
+            var response = await fetch('/api/operaciones/pedidos_facturacion?_=' + Date.now());
+            var data = await response.json();
+            if (data.ok && data.pedidos) return data.pedidos;
+            return [];
+        } catch (error) {
+            console.error("Error:", error);
+            return [];
+        }
+    }
+    
+    async function guardarConfigBackend(config) {
+        try {
+            var response = await fetch('/api/guardar_config_factura', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
+            var data = await response.json();
+            return data.ok;
+        } catch(e) { return false; }
+    }
+
+    async function cargarConfigBackend() {
+        try {
+            var response = await fetch('/api/obtener_config_factura');
+            var data = await response.json();
+            if (data.ok && data.config) {
+                configFactura = { ...configFactura, ...data.config };
+                if (data.config.empresa) configFactura.empresa = { ...configFactura.empresa, ...data.config.empresa };
+                if (data.config.colores) configFactura.colores = { ...configFactura.colores, ...data.config.colores };
+                if (data.config.visibles) configFactura.visibles = { ...configFactura.visibles, ...data.config.visibles };
+                if (data.config.camposAdicionales) configFactura.camposAdicionales = data.config.camposAdicionales;
+            }
+            return true;
+        } catch(e) { return true; }
+    }
+
+    function aplicarConfigAInputs() {
+        document.getElementById('configEmpresaNombre').value = configFactura.empresa.nombre;
+        document.getElementById('configEmpresaRuc').value = configFactura.empresa.ruc;
+        document.getElementById('configEmpresaTelefono').value = configFactura.empresa.telefono;
+        document.getElementById('configEmpresaDireccion').value = configFactura.empresa.direccion;
+        document.getElementById('configEmpresaEmail').value = configFactura.empresa.email;
+        document.getElementById('configEmpresaSlogan').value = configFactura.empresa.slogan;
+        document.getElementById('configColorPrimario').value = configFactura.colores.primario;
+        document.getElementById('configColorTitulo').value = configFactura.colores.titulo;
+        document.getElementById('configColorFondo').value = configFactura.colores.fondo;
+        document.getElementById('configColorTablaHeader').value = configFactura.colores.tablaHeader;
+        document.getElementById('configMostrarSlogan').checked = configFactura.visibles.mostrarSlogan;
+        document.getElementById('configMostrarRuc').checked = configFactura.visibles.mostrarRuc;
+        document.getElementById('configMostrarTelefono').checked = configFactura.visibles.mostrarTelefono;
+        document.getElementById('configMostrarEmail').checked = configFactura.visibles.mostrarEmail;
+        document.getElementById('configMostrarDireccion').checked = configFactura.visibles.mostrarDireccion;
+        renderizarCamposAdicionales();
+    }
+
+    function renderizarCamposAdicionales() {
+        var container = document.getElementById('camposAdicionalesList');
+        if (!container) return;
+        container.innerHTML = '';
+        configFactura.camposAdicionales.forEach(function(campo, index) {
+            var div = document.createElement('div');
+            div.className = 'campo-extra-item';
+            div.innerHTML = '<input type="text" placeholder="Campo" value="' + escapeHtml(campo.label) + '" onchange="window.actualizarCampoAdicional(' + index + ', \'label\', this.value)" style="flex:1;font-size:10px;">' +
+                           '<label style="display:flex; align-items:center; gap:3px;font-size:9px;"><input type="checkbox" ' + (campo.visible !== false ? 'checked' : '') + ' onchange="window.actualizarCampoAdicional(' + index + ', \'visible\', this.checked)"> Mostrar</label>' +
+                           '<button class="btn-outline" style="width:24px;height:24px;padding:0;border-radius:6px;font-size:8px;" onclick="window.eliminarCampoAdicional(' + index + ')"><i class="fas fa-trash"></i></button>';
+            container.appendChild(div);
+        });
+    }
+
+    window.agregarCampoAdicional = function() { 
+        configFactura.camposAdicionales.push({ label: "Nuevo Campo", valor: "", visible: true }); 
+        renderizarCamposAdicionales(); 
+    };
+    window.actualizarCampoAdicional = function(index, field, value) { 
+        if (configFactura.camposAdicionales[index]) configFactura.camposAdicionales[index][field] = value;
+    };
+    window.eliminarCampoAdicional = function(index) { 
+        configFactura.camposAdicionales.splice(index, 1); 
+        renderizarCamposAdicionales(); 
+    };
+
+    async function guardarConfigFactura() {
+        configFactura.empresa = { 
+            nombre: document.getElementById('configEmpresaNombre').value, 
+            ruc: document.getElementById('configEmpresaRuc').value, 
+            telefono: document.getElementById('configEmpresaTelefono').value, 
+            direccion: document.getElementById('configEmpresaDireccion').value, 
+            email: document.getElementById('configEmpresaEmail').value, 
+            slogan: document.getElementById('configEmpresaSlogan').value 
+        };
+        configFactura.colores = { 
+            primario: document.getElementById('configColorPrimario').value, 
+            titulo: document.getElementById('configColorTitulo').value, 
+            fondo: document.getElementById('configColorFondo').value, 
+            tablaHeader: document.getElementById('configColorTablaHeader').value 
+        };
+        configFactura.visibles = { 
+            mostrarSlogan: document.getElementById('configMostrarSlogan').checked, 
+            mostrarRuc: document.getElementById('configMostrarRuc').checked, 
+            mostrarTelefono: document.getElementById('configMostrarTelefono').checked, 
+            mostrarEmail: document.getElementById('configMostrarEmail').checked, 
+            mostrarDireccion: document.getElementById('configMostrarDireccion').checked 
+        };
+        
+        localStorage.setItem('factura_config_v7', JSON.stringify(configFactura));
+        await guardarConfigBackend(configFactura);
+        cerrarModalConfig();
+        mostrarComprobantePorDefecto();
+        mostrarToast("✅ Configuración guardada", "success");
+    }
+
+    window.cerrarModalConfig = function() { document.getElementById('modalConfigFactura').style.display = 'none'; };
+    function abrirModalConfig() { aplicarConfigAInputs(); document.getElementById('modalConfigFactura').style.display = 'flex'; }
+
+    async function cargarEmpresasSelect() {
+        try {
+            var r = await fetch('/api/empresas_activas');
+            var data = await r.json();
+            empresasLista = data.empresas || [];
+            var select = document.getElementById('selectEmpresaFacturar');
+            if (select) { 
+                select.innerHTML = '<option value="">Todas</option>'; 
+                empresasLista.forEach(function(emp) { 
+                    select.innerHTML += '<option value="' + emp.id + '">' + escapeHtml(emp.nombre) + '</option>'; 
+                }); 
+            }
+        } catch(e) { console.error("Error:", e); }
+    }
+
+    async function cargarPedidosParaFacturar() {
+        if (isLoading) return;
+        isLoading = true;
+        
+        try {
+            var empresaId = document.getElementById('selectEmpresaFacturar')?.value;
+            var todosPedidos = await obtenerPedidosParaFacturar();
+            
+            var filtrados = [].concat(todosPedidos);
+            if (empresaId && empresaId !== '') {
+                filtrados = filtrados.filter(function(p) { return p.empresa_id === empresaId; });
+            }
+            filtrados.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+            pedidosParaFacturar = filtrados;
+            
+            document.getElementById('pedidosCount').innerText = pedidosParaFacturar.length;
+            var container = document.getElementById('pedidosList');
+            
+            if (pedidosParaFacturar.length === 0) { 
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay pedidos pendientes</p></div>'; 
+                return; 
+            }
+            
+            container.innerHTML = pedidosParaFacturar.map(function(p) {
+                var total = (p.galones || 0) * (p.precio_por_galon || 0) + (p.costo_traslado || 0);
+                return '<div class="pedido-card" data-id="' + p.id + '" onclick="window.seleccionarPedido(\'' + p.id + '\')">' +
+                    '<div class="pedido-card-header"><span class="pedido-empresa">' + escapeHtml(p.nombre || p.empresa_nombre || 'Cliente') + '</span><span class="estado-pendiente">PENDIENTE</span></div>' +
+                    '<div class="pedido-total">' + formatearMoneda(total) + '</div>' +
+                    '<div class="info-adicional"><span><i class="fas fa-user-tie"></i> ' + escapeHtml(p.conductor_asignado || '-') + '</span><span><i class="fas fa-truck"></i> ' + escapeHtml(p.camion_asignado || '-') + '</span></div>' +
+                '</div>';
+            }).join('');
+            
+            if (modoEdicion === 'factura') limpiarSeleccionFactura();
+            
+            if (pedidoSeleccionado && modoEdicion === 'pedido') {
+                var pedidoAunExiste = pedidosParaFacturar.find(function(p) { return p.id === pedidoSeleccionado.id; });
+                if (pedidoAunExiste) {
+                    document.querySelector('.pedido-card[data-id="' + pedidoSeleccionado.id + '"]')?.classList.add('selected');
+                    // Actualizar comprobante con los datos del pedido seleccionado
+                    if (pedidoSeleccionado) {
+                        actualizarComprobanteConPedido(pedidoSeleccionado);
+                    }
+                } else {
+                    pedidoSeleccionado = null;
+                    mostrarComprobantePorDefecto();
+                }
+            }
+        } catch(error) {
+            console.error("Error:", error);
+            document.getElementById('pedidosList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error cargando pedidos</p></div>';
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    // ==================== ACTUALIZAR COMPROBANTE CON DATOS DEL PEDIDO ====================
+    function actualizarComprobanteConPedido(pedido) {
+        var empresaInfo = empresasLista.find(function(e) { return e.id === pedido.empresa_id; }) || {};
+        
+        var galonesInicial = pedido.galones || 0;
+        var precioInicial = pedido.precio_por_galon || 0;
+        var costoTrasladoInicial = pedido.costo_traslado || 0;
+        var totalInicial = (galonesInicial * precioInicial) + costoTrasladoInicial;
+        
+        var fechaActual = new Date();
+        var numeroFactura = 'FAC-' + fechaActual.getFullYear() + 
+                            (fechaActual.getMonth()+1).toString().padStart(2,'0') + 
+                            fechaActual.getDate().toString().padStart(2,'0') + 
+                            '-' + Math.floor(Math.random()*1000);
+        var nombreCliente = pedido.nombre || pedido.empresa_nombre || 'Cliente';
+        var nitCliente = empresaInfo.cedula || pedido.cedula || pedido.empresa_id || '-';
+        
+        var datosPedido = {
+            empresa_nombre: configFactura.empresa.nombre,
+            slogan: configFactura.empresa.slogan,
+            ruc: configFactura.empresa.ruc,
+            telefono: configFactura.empresa.telefono,
+            direccion: configFactura.empresa.direccion,
+            email: configFactura.empresa.email,
+            numero_factura: numeroFactura,
+            fecha: fechaActual.toLocaleDateString('es-NI'),
+            cliente_nombre: nombreCliente,
+            cliente_nit: nitCliente,
+            conductor1: pedido.conductor_asignado || '-',
+            conductor2: pedido.conductor2_asignado || '-',
+            camion1: pedido.camion_asignado || '-',
+            camion2: pedido.camion2_asignado || '-',
+            bono1: pedido.bono1 || '',
+            bono2: pedido.bono2 || '',
+            viatico1: pedido.viatico1 || 0,
+            viatico2: pedido.viatico2 || 0,
+            costo_traslado: costoTrasladoInicial,
+            filas: [
+                { descripcion: pedido.tipo_combustible || 'Combustible', cantidad: galonesInicial, precio: precioInicial, total: galonesInicial * precioInicial }
+            ],
+            total: totalInicial
+        };
+        
+        // Actualizar filasTabla
+        filasTabla = datosPedido.filas.map(function(f, idx) {
+            return { 
+                id: Date.now() + idx, 
+                descripcion: f.descripcion, 
+                cantidad: f.cantidad, 
+                precio: f.precio, 
+                total: f.total 
+            };
+        });
+        
+        var html = generarHtmlComprobante(datosPedido);
+        document.getElementById('facturaPreview').innerHTML = html;
+        configurarEventosComprobante();
+        
+        var btn = document.getElementById('accionFacturaBtn');
+        btn.className = 'btn-success';
+        btn.disabled = false;
+        btn.title = 'Guardar (Nuevo Comprobante)';
+        btn.innerHTML = '<i class="fas fa-save"></i>';
+        
+        document.getElementById('imprimirFacturaBtn').disabled = false;
+        document.getElementById('descargarPDFBtn').disabled = true;
+        document.getElementById('enviarCorreoBtn').disabled = true;
+        
+        mostrarToast('✅ Datos del pedido cargados', 'success');
+    }
+
+    window.seleccionarPedido = function(id) {
+        document.querySelectorAll('.pedido-card').forEach(function(card) { card.classList.remove('selected'); });
+        document.querySelectorAll('.factura-item').forEach(function(item) { item.classList.remove('selected'); });
+        var selectedCard = document.querySelector('.pedido-card[data-id="' + id + '"]');
+        if (selectedCard) selectedCard.classList.add('selected');
+        
+        pedidoSeleccionado = pedidosParaFacturar.find(function(p) { return p.id === id; });
+        facturaSeleccionada = null;
+        modoEdicion = 'pedido';
+        
+        if (pedidoSeleccionado) { 
+            actualizarComprobanteConPedido(pedidoSeleccionado);
+        }
+    };
+    
+    window.seleccionarFactura = async function(facturaId) {
+        document.querySelectorAll('.factura-item').forEach(function(item) { item.classList.remove('selected'); });
+        document.querySelectorAll('.pedido-card').forEach(function(card) { card.classList.remove('selected'); });
+        var selectedItem = document.querySelector('.factura-item[data-id="' + facturaId + '"]');
+        if (selectedItem) selectedItem.classList.add('selected');
+        
+        pedidoSeleccionado = null;
+        modoEdicion = 'factura';
+        datosEditadosCache = {};
+        camposAdicionalesValores = {};
+        
+        try {
+            var response = await fetch('/api/factura/' + facturaId);
+            var data = await response.json();
+            if (data.ok && data.factura) {
+                facturaSeleccionada = data.factura;
+                if (facturaSeleccionada.filas && facturaSeleccionada.filas.length > 0) {
+                    filasTabla = JSON.parse(JSON.stringify(facturaSeleccionada.filas));
+                } else {
+                    filasTabla = [];
+                }
+                if (facturaSeleccionada.campos_adicionales) {
+                    camposAdicionalesValores = JSON.parse(JSON.stringify(facturaSeleccionada.campos_adicionales));
+                } else {
+                    camposAdicionalesValores = {};
+                }
+                mostrarFacturaPreviewFactura(facturaSeleccionada);
+                
+                var btn = document.getElementById('accionFacturaBtn');
+                btn.className = 'btn-warning';
+                btn.disabled = false;
+                btn.title = 'Actualizar Comprobante';
+                btn.innerHTML = '<i class="fas fa-save"></i>';
+                
+                document.getElementById('imprimirFacturaBtn').disabled = false;
+                document.getElementById('descargarPDFBtn').disabled = false;
+                document.getElementById('enviarCorreoBtn').disabled = false;
+            }
+        } catch(e) {
+            console.error("Error:", e);
+            mostrarToast("Error al cargar el comprobante", "error");
+        }
+    };
+    
+    function recalcularTotalTabla() {
+        var totalGeneral = 0;
+        var filas = document.querySelectorAll('#tabla-items tbody tr');
+        filas.forEach(function(fila, index) {
+            var cantidadInput = fila.querySelector('.cantidad-item');
+            var precioInput = fila.querySelector('.precio-item');
+            var totalSpan = fila.querySelector('.item-total');
+            
+            var cantidad = 0, precio = 0;
+            if (cantidadInput) {
+                var cantText = cantidadInput.innerText.trim();
+                cantidad = parseFloat(cantText.replace(/[^0-9.-]/g, '')) || 0;
+            }
+            if (precioInput) {
+                var precText = precioInput.innerText.trim();
+                precio = parseFloat(precText.replace(/[^0-9.-]/g, '')) || 0;
+            }
+            
+            var totalFila = cantidad * precio;
+            if (totalSpan) totalSpan.innerText = formatearMoneda(totalFila);
+            totalGeneral += totalFila;
+            if (filasTabla[index]) {
+                filasTabla[index].cantidad = cantidad;
+                filasTabla[index].precio = precio;
+                filasTabla[index].total = totalFila;
+            }
+        });
+        
+        var costoTrasladoInput = document.querySelector('#costoTrasladoPreview');
+        if (costoTrasladoInput) {
+            var costoTraslado = parseFloat(costoTrasladoInput.value) || 0;
+            totalGeneral += costoTraslado;
+        }
+        
+        var totalElement = document.getElementById('totalMonto');
+        if (totalElement) totalElement.innerText = formatearMoneda(totalGeneral);
+        return totalGeneral;
+    }
+    
+    function agregarFilaTabla(descripcion, cantidad, precio) {
+        descripcion = descripcion || '';
+        cantidad = cantidad || 0;
+        precio = precio || 0;
+        var tbody = document.querySelector('#tabla-items tbody');
+        if (!tbody) return;
+        
+        var nuevaFila = document.createElement('tr');
+        var rowId = Date.now() + Math.random();
+        
+        nuevaFila.innerHTML = 
+            '<td style="text-align:left">' +
+                '<div class="factura-item-titulo" contenteditable="true" data-field="descripcion_' + rowId + '">' + escapeHtml(descripcion || 'Nuevo producto') + '</div>' +
+            '</td>' +
+            '<td><span contenteditable="true" class="cantidad-item" data-field="cantidad_' + rowId + '">' + formatearNumero(cantidad) + '</span></td>' +
+            '<td><span contenteditable="true" class="precio-item" data-field="precio_' + rowId + '">' + formatearMoneda(precio) + '</span></td>' +
+            '<td><span class="item-total" data-field="total_' + rowId + '">' + formatearMoneda(cantidad * precio) + '</span>' +
+                '<button class="btn-remove-row" onclick="this.closest(\'tr\').remove(); window.recalcularTotalTabla();" style="margin-left:6px;">✖</button>' +
+            '</td>';
+        
+        tbody.appendChild(nuevaFila);
+        nuevaFila.querySelectorAll('[contenteditable="true"]').forEach(function(el) {
+            el.addEventListener('blur', function() { recalcularTotalTabla(); });
+        });
+        filasTabla.push({ id: rowId, descripcion: descripcion || 'Nuevo producto', cantidad: cantidad, precio: precio, total: cantidad * precio });
+        recalcularTotalTabla();
+    }
+    
+    function mostrarFacturaPreviewFactura(factura) {
+        var empresa = configFactura.empresa;
+        var visibles = configFactura.visibles;
+        var nombreCliente = factura.empresa_nombre || 'Cliente';
+        var nitCliente = factura.empresa_nit || '-';
+        
+        if (factura.campos_adicionales) {
+            camposAdicionalesValores = JSON.parse(JSON.stringify(factura.campos_adicionales));
+        }
+        
+        var datosFactura = {
+            empresa_nombre: empresa.nombre,
+            slogan: empresa.slogan,
+            ruc: empresa.ruc,
+            telefono: empresa.telefono,
+            direccion: empresa.direccion,
+            email: empresa.email,
+            numero_factura: factura.id,
+            fecha: factura.fecha_emision_str || '',
+            cliente_nombre: nombreCliente,
+            cliente_nit: nitCliente,
+            conductor1: factura.conductor_asignado || '-',
+            conductor2: factura.conductor2_asignado || '-',
+            camion1: factura.camion_asignado || '-',
+            camion2: factura.camion2_asignado || '-',
+            bono1: factura.bono1 || '',
+            bono2: factura.bono2 || '',
+            viatico1: factura.viatico1 || 0,
+            viatico2: factura.viatico2 || 0,
+            costo_traslado: factura.costo_traslado || 0,
+            filas: factura.filas || [{ descripcion: 'Producto', cantidad: 0, precio: 0, total: 0 }],
+            total: factura.total || 0
+        };
+        
+        // Actualizar filasTabla
+        filasTabla = datosFactura.filas.map(function(f, idx) {
+            return { 
+                id: Date.now() + idx, 
+                descripcion: f.descripcion, 
+                cantidad: f.cantidad, 
+                precio: f.precio, 
+                total: f.total 
+            };
+        });
+        
+        var html = generarHtmlComprobante(datosFactura);
+        document.getElementById('facturaPreview').innerHTML = html;
+        configurarEventosComprobante();
+    }
+
+    function capturarValoresEditados() {
+        var datos = {
+            empresa_nombre: '', cliente_nombre: '', cliente_nit: '',
+            galones: 0, precio_galon: 0, costo_traslado: 0, total: 0,
+            conductor_asignado: '', conductor2_asignado: '',
+            camion_asignado: '', camion2_asignado: '',
+            bono1: '', bono2: '', viatico1: 0, viatico2: 0,
+            filas: [], campos_adicionales: {}
+        };
+        
+        var clienteNombreEl = document.querySelector('[data-field="cliente_nombre"]');
+        if (clienteNombreEl) datos.cliente_nombre = clienteNombreEl.innerText.trim();
+        
+        var clienteNitEl = document.querySelector('[data-field="cliente_nit"]');
+        if (clienteNitEl) datos.cliente_nit = clienteNitEl.innerText.trim();
+        
+        // Los campos de bono, viático y traslado son de solo lectura
+        var bono1Input = document.getElementById('bono1Preview');
+        if (bono1Input) datos.bono1 = bono1Input.value;
+        var bono2Input = document.getElementById('bono2Preview');
+        if (bono2Input) datos.bono2 = bono2Input.value;
+        var viatico1Input = document.getElementById('viatico1Preview');
+        if (viatico1Input) datos.viatico1 = parseFloat(viatico1Input.value) || 0;
+        var viatico2Input = document.getElementById('viatico2Preview');
+        if (viatico2Input) datos.viatico2 = parseFloat(viatico2Input.value) || 0;
+        var costoTrasladoInput = document.getElementById('costoTrasladoPreview');
+        if (costoTrasladoInput) datos.costo_traslado = parseFloat(costoTrasladoInput.value) || 0;
+        
+        var filas = document.querySelectorAll('#tabla-items tbody tr');
+        datos.filas = [];
+        filas.forEach(function(fila, idx) {
+            var descripcionEl = fila.querySelector('.factura-item-titulo');
+            var cantidadEl = fila.querySelector('.cantidad-item');
+            var precioEl = fila.querySelector('.precio-item');
+            var descripcion = descripcionEl ? descripcionEl.innerText.trim() : 'Producto';
+            var cantidad = 0, precio = 0;
+            if (cantidadEl) cantidad = parseFloat(cantidadEl.innerText.trim().replace(/[^0-9.-]/g, '')) || 0;
+            if (precioEl) precio = parseFloat(precioEl.innerText.trim().replace(/[^0-9.-]/g, '')) || 0;
+            datos.filas.push({ descripcion: descripcion, cantidad: cantidad, precio: precio, total: cantidad * precio });
+            if (idx === 0) { datos.tipo_combustible = descripcion; datos.galones = cantidad; datos.precio_galon = precio; }
+        });
+        
+        document.querySelectorAll('.campo-valor-editable').forEach(function(el) {
+            var nombreCampo = el.dataset.campo;
+            var valor = el.innerText.trim();
+            datos.campos_adicionales[nombreCampo] = valor;
+        });
+        
+        var totalEl = document.getElementById('totalMonto');
+        if (totalEl) {
+            var totalText = totalEl.innerText.trim();
+            var totalMatch = totalText.match(/[\d,.]+/);
+            if (totalMatch) datos.total = parseFloat(totalMatch[0].replace(/,/g, ''));
+        }
+        return datos;
+    }
+
+    async function actualizarFactura() {
+        if (!facturaSeleccionada) { mostrarToast('No hay comprobante seleccionado', 'warning'); return; }
+        var btn = document.getElementById('accionFacturaBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+        try {
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'CERRAR_MODAL_FACTURA', factura_id: facturaSeleccionada.id }, '*');
+            }
+            await new Promise(function(resolve) { setTimeout(resolve, 300); });
+            var datosEditados = capturarValoresEditados();
+            var totalFinal = 0;
+            datosEditados.filas.forEach(function(fila) { totalFinal += fila.total; });
+            totalFinal += datosEditados.costo_traslado;
+            
+            var response = await fetch('/api/actualizar_factura', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    factura_id: facturaSeleccionada.id,
+                    datos: {
+                        empresa_nombre: datosEditados.cliente_nombre || facturaSeleccionada.empresa_nombre,
+                        empresa_nit: datosEditados.cliente_nit || facturaSeleccionada.empresa_nit,
+                        galones: datosEditados.galones || 0,
+                        precio_por_galon: datosEditados.precio_galon || 0,
+                        costo_traslado: datosEditados.costo_traslado || 0,
+                        total: totalFinal,
+                        bono1: datosEditados.bono1 || '',
+                        bono2: datosEditados.bono2 || '',
+                        viatico1: datosEditados.viatico1 || 0,
+                        viatico2: datosEditados.viatico2 || 0,
+                        filas: datosEditados.filas,
+                        campos_adicionales: datosEditados.campos_adicionales
+                    }
+                })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('✅ Comprobante actualizado', 'success');
+                mostrarComprobantePorDefecto();
+                await cargarFacturasGeneradas();
+                await cargarPedidosParaFacturar();
+            } else {
+                mostrarToast(data.error || 'Error', 'error');
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i>'; btn.className = 'btn-warning';
+            }
+        } catch(error) {
+            console.error("Error:", error);
+            mostrarToast('Error de conexión', 'error');
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i>'; btn.className = 'btn-warning';
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i>';
+        }
+    }
+
+    async function generarNuevaFactura() {
+        if (!pedidoSeleccionado) { mostrarToast('Seleccione un pedido', 'warning'); return; }
+        var btn = document.getElementById('accionFacturaBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+        try {
+            var datosEditados = capturarValoresEditados();
+            var empresaInfo = empresasLista.find(function(e) { return e.id === pedidoSeleccionado.empresa_id; }) || {};
+            var totalFinal = 0;
+            datosEditados.filas.forEach(function(fila) { totalFinal += fila.total; });
+            totalFinal += datosEditados.costo_traslado;
+            
+            var response = await fetch('/api/facturar_pedidos', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    pedidos_ids: [pedidoSeleccionado.id], 
+                    empresa_nombre_cliente: datosEditados.cliente_nombre || pedidoSeleccionado.nombre, 
+                    empresa_nit: datosEditados.cliente_nit || empresaInfo.cedula || '', 
+                    empresa_id: pedidoSeleccionado.empresa_id, 
+                    email_cliente: empresaInfo.email || '',
+                    bono1: datosEditados.bono1 || pedidoSeleccionado.bono1 || '',
+                    bono2: datosEditados.bono2 || pedidoSeleccionado.bono2 || '',
+                    viatico1: datosEditados.viatico1 || pedidoSeleccionado.viatico1 || 0,
+                    viatico2: datosEditados.viatico2 || pedidoSeleccionado.viatico2 || 0,
+                    total_editado: totalFinal,
+                    filas: datosEditados.filas,
+                    costo_traslado: datosEditados.costo_traslado || 0,
+                    datos_editados: { 
+                        galones: datosEditados.galones || 0,
+                        precio_por_galon: datosEditados.precio_galon || 0,
+                        costo_traslado: datosEditados.costo_traslado || 0,
+                        empresa_emisora: datosEditados.empresa_nombre,
+                        cliente_nombre: datosEditados.cliente_nombre,
+                        cliente_nit: datosEditados.cliente_nit,
+                        filas: datosEditados.filas,
+                        conductor_asignado: pedidoSeleccionado.conductor_asignado || '',
+                        conductor2_asignado: pedidoSeleccionado.conductor2_asignado || '',
+                        camion_asignado: pedidoSeleccionado.camion_asignado || '',
+                        camion2_asignado: pedidoSeleccionado.camion2_asignado || '',
+                        bono1: datosEditados.bono1 || pedidoSeleccionado.bono1 || '',
+                        bono2: datosEditados.bono2 || pedidoSeleccionado.bono2 || '',
+                        viatico1: datosEditados.viatico1 || pedidoSeleccionado.viatico1 || 0,
+                        viatico2: datosEditados.viatico2 || pedidoSeleccionado.viatico2 || 0
+                    },
+                    campos_adicionales: datosEditados.campos_adicionales
+                })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('✅ Comprobante generado: ' + data.factura_id, 'success');
+                facturaGenerada = data;
+                await cargarPedidosParaFacturar();
+                await cargarFacturasGeneradas();
+                mostrarComprobantePorDefecto();
+            } else { 
+                mostrarToast(data.error || 'Error', 'error'); 
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i>'; btn.className = 'btn-success';
+            }
+        } catch(error) { 
+            console.error("Error:", error);
+            mostrarToast('Error de conexión', 'error'); 
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i>'; btn.className = 'btn-success';
+        } finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i>'; }
+    }
+    
+    window.agregarFilaTabla = agregarFilaTabla;
+    window.recalcularTotalTabla = recalcularTotalTabla;
+    
+    // ==================== ACTUALIZAR PERMISO (CORREGIDO) ====================
+    async function actualizarPermisoFactura(facturaId, permitido) {
+        try {
+            console.log("[DEBUG] actualizarPermisoFactura:", facturaId, permitido);
+            var response = await fetch('/api/actualizar_permiso_factura', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ factura_id: facturaId, permitido: permitido })
+            });
+            var data = await response.json();
+            if (data.ok) {
+                console.log("[DEBUG] Permiso actualizado correctamente");
+                return true;
+            } else {
+                console.error("[ERROR] Error actualizando permiso:", data.error);
+                return false;
+            }
+        } catch(e) {
+            console.error("[ERROR] Error en actualizarPermisoFactura:", e);
+            return false;
+        }
+    }
+
+    // ==================== CARGAR FACTURAS GENERADAS (CORREGIDO) ====================
+ // ==================== CARGAR FACTURAS GENERADAS (MUESTRA TODAS) ====================
+async function cargarFacturasGeneradas() {
+    try {
+        var response = await fetch('/api/facturas_lista');
+        var data = await response.json();
+        var facturas = data.facturas || [];
+        var container = document.getElementById('facturasList');
+        
+        // Obtener permisos para mostrar el estado del checkbox
+        var permisos = {};
+        try {
+            var permResponse = await fetch('/api/obtener_permisos_facturas');
+            var permData = await permResponse.json();
+            if (permData.ok && permData.permisos) {
+                permisos = permData.permisos;
+            }
+        } catch(e) {
+            console.warn("Error obteniendo permisos:", e);
+        }
+        
+        console.log("[DEBUG] Facturas totales:", facturas.length);
+        
+        // ============ MOSTRAR TODAS LAS FACTURAS (SIN FILTRAR) ============
+        facturas.sort(function(a, b) { 
+            return new Date(b.fecha_emision) - new Date(a.fecha_emision); 
+        });
+        facturasListaGlobal = facturas;
+        
+        if (facturas.length === 0) { 
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No hay comprobantes</p></div>'; 
+            return; 
+        }
+        
+        container.innerHTML = facturas.slice(0, 50).map(function(f) {
+            var permitido = permisos[f.id] === true;
+            return '<div class="factura-item" data-id="' + f.id + '" onclick="window.seleccionarFactura(\'' + f.id + '\')">' +
+                '<div class="factura-info"><h4>' + escapeHtml(f.id) + '</h4><p>' + escapeHtml(f.empresa_nombre || 'Cliente') + ' | ' + formatearMoneda(f.total) + '</p></div>' +
+                '<div style="display:flex; gap:4px; align-items:center;" onclick="event.stopPropagation()">' +
+                    '<label class="factura-checkbox ' + (permitido ? 'checked' : '') + '" style="display:flex; align-items:center; gap:3px; cursor:pointer;">' +
+                        '<input type="checkbox" class="factura-permiso" data-id="' + f.id + '" ' + (permitido ? 'checked' : '') + ' style="width:14px; height:14px; cursor:pointer; accent-color:#f59e0b;">' +
+                        '<span style="font-size:7px;color:#666;">Compartir</span>' +
+                    '</label>' +
+                    '<button class="btn-primary" onclick="window.descargarFacturaPorId(\'' + f.id + '\')" style="width:24px; height:24px; border-radius:6px; font-size:8px; background:rgba(16,185,129,0.1); color:#34d399; border:none; cursor:pointer;"><i class="fas fa-download"></i></button>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+        
+        // Event listeners para los checkboxes
+        document.querySelectorAll('.factura-permiso').forEach(function(checkbox) {
+            checkbox.addEventListener('change', async function(e) {
+                e.stopPropagation();
+                var facturaId = this.dataset.id;
+                var permitido = this.checked;
+                
+                console.log("[DEBUG] Cambiando permiso:", facturaId, permitido);
+                
+                // Actualizar permiso en el servidor
+                await actualizarPermisoFactura(facturaId, permitido);
+                
+                // Actualizar UI del checkbox
+                var parent = this.closest('.factura-checkbox');
+                if (parent) { 
+                    if (permitido) parent.classList.add('checked'); 
+                    else parent.classList.remove('checked'); 
+                }
+                
+                // Recargar la lista para reflejar el cambio
+                await cargarFacturasGeneradas();
+                
+                // Mostrar mensaje
+                if (permitido) {
+                    mostrarToast('🔓 Comprobante compartido', 'success');
+                } else {
+                    mostrarToast('🔒 Comprobante oculto', 'info');
+                }
+            });
+        });
+    } catch(error) {
+        console.error("Error en cargarFacturasGeneradas:", error);
+        document.getElementById('facturasList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error cargando comprobantes</p></div>';
+    }
+}
+    function limpiarSeleccionFactura() {
+        facturaSeleccionada = null;
+        modoEdicion = 'pedido';
+        filasTabla = [];
+        datosEditadosCache = {};
+        camposAdicionalesValores = {};
+        var btn = document.getElementById('accionFacturaBtn');
+        btn.className = 'btn-success'; btn.innerHTML = '<i class="fas fa-save"></i>'; btn.title = 'Guardar (Nuevo Comprobante)';
+    }
+    
+    function descargarFacturaPorId(id) { window.open('/descargar_factura/' + id, '_blank'); }
+
+    async function enviarFacturaPorCorreo() {
+        if (!facturaGenerada && !facturaSeleccionada) { mostrarToast('No hay comprobante', 'warning'); return; }
+        var facturaId = facturaGenerada ? facturaGenerada.factura_id : facturaSeleccionada.id;
+        var emailCliente = prompt('📧 Correo del cliente:', 'cliente@ejemplo.com');
+        if (!emailCliente) return;
+        var btn = document.getElementById('enviarCorreoBtn'); btn.disabled = true;
+        try {
+            var response = await fetch('/api/enviar_factura_correo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ factura_id: facturaId, email: emailCliente }) });
+            var data = await response.json();
+            if (data.ok) mostrarToast('📧 Enviada', 'success');
+            else mostrarToast('Error', 'error');
+        } catch(e) { mostrarToast('Error de conexión', 'error'); }
+        finally { btn.disabled = false; }
+    }
+
+    function imprimirFactura() {
+        var contenido = document.getElementById('facturaPreview')?.innerHTML;
+        if (!contenido || contenido.includes('Seleccione')) { mostrarToast('No hay comprobante', 'warning'); return; }
+        var ventana = window.open('', '_blank');
+        ventana.document.write('<!DOCTYPE html><html><head><title>Comprobante GSN</title><meta charset="UTF-8"><style>' + document.querySelector('style').innerHTML + '</style></head><body style="background:#f5f5f5; padding:20px;">' + contenido + '<script>setTimeout(function(){ window.print(); window.close(); }, 500);<\/script></body></html>');
+        ventana.document.close();
+    }
+
+    async function descargarFacturaPDF() { 
+        var facturaId = facturaGenerada ? facturaGenerada.factura_id : (facturaSeleccionada ? facturaSeleccionada.id : null);
+        if (!facturaId) { mostrarToast('No hay comprobante', 'warning'); return; } 
+        window.open('/descargar_factura/' + facturaId, '_blank'); 
+    }
+
+    window.debugPedidosFacturacion = async function() { 
+        mostrarToast('Recargando...', 'info');
+        await cargarPedidosParaFacturar(); 
+        mostrarToast('Pedidos recargados', 'success'); 
+    };
+
+    async function limpiarFacturas() {
+        if (!confirm('¿Limpiar listado de comprobantes?')) return;
+        try {
+            var response = await fetch('/api/limpiar_facturas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmar: true }) });
+            var data = await response.json();
+            if (data.ok) {
+                mostrarToast('✅ ' + (data.mensaje || 'Comprobantes limpiados'), 'success');
+                await cargarFacturasGeneradas();
+            }
+        } catch(e) { mostrarToast('Error', 'error'); }
+    }
+
+    window.addEventListener('message', async function(event) {
+        if (event.data && event.data.type === 'PEDIDO_ENVIADO_FACTURACION') {
+            mostrarToast('🔄 Nuevo pedido', 'info');
+            await cargarPedidosParaFacturar();
+        }
+        if (event.data && event.data.type === 'APLICAR_TRANSPARENCIA') {
+            var transparencia = event.data.transparencia;
+            if (transparencia) aplicarTransparenciaModulo(transparencia);
+        }
+    });
+
+    // Event listener para el botón de filtrar
+    document.getElementById('filtrarBtn')?.addEventListener('click', function() {
+        cargarPedidosParaFacturar();
+        mostrarToast('🔄 Filtrado...', 'info');
+    });
+
+    async function init() {
+        console.log("🚀 Comprobante de Pedido - Móvil + Campos solo lectura");
+        cargarTemaGuardado();
+        escucharMensajesTema();
+        await cargarConfigBackend();
+        aplicarConfigAInputs();
+        await cargarEmpresasSelect();
+        
+        // ===== MOSTRAR COMPROBANTE POR DEFECTO =====
+        mostrarComprobantePorDefecto();
+        
+        await cargarPedidosParaFacturar();
+        await cargarFacturasGeneradas();
+        
+        document.getElementById('cargarPedidosBtn').onclick = function() { cargarPedidosParaFacturar(); };
+        document.getElementById('refrescarPedidosBtn').onclick = function() { cargarPedidosParaFacturar(); };
+        document.getElementById('refrescarFacturasBtn').onclick = function() { cargarFacturasGeneradas(); };
+        document.getElementById('accionFacturaBtn').onclick = function() {
+            if (modoEdicion === 'factura' && facturaSeleccionada) actualizarFactura();
+            else generarNuevaFactura();
+        };
+        document.getElementById('enviarCorreoBtn').onclick = enviarFacturaPorCorreo;
+        document.getElementById('imprimirFacturaBtn').onclick = imprimirFactura;
+        document.getElementById('descargarPDFBtn').onclick = descargarFacturaPDF;
+        document.getElementById('configFacturaBtn').onclick = function() { abrirModalConfig(); };
+        document.getElementById('limpiarFacturasBtn').onclick = limpiarFacturas;
+        
+        setTimeout(cargarTransparenciaGuardada, 500);
+        setInterval(async function() { await cargarPedidosParaFacturar(); await cargarFacturasGeneradas(); }, 30000);
+        console.log("✅ Comprobante de Pedido inicializado");
+    }
+    
+    window.descargarFacturaPorId = descargarFacturaPorId;
+    window.guardarConfigFactura = guardarConfigFactura;
+    window.cerrarModalConfig = cerrarModalConfig;
+    window.agregarCampoAdicional = agregarCampoAdicional;
+    window.actualizarCampoAdicional = actualizarCampoAdicional;
+    window.eliminarCampoAdicional = eliminarCampoAdicional;
+    window.seleccionarPedido = window.seleccionarPedido;
+    window.seleccionarFactura = window.seleccionarFactura;
+    window.debugPedidosFacturacion = debugPedidosFacturacion;
+    window.aplicarTransparenciaModulo = aplicarTransparenciaModulo;
+    
+    init();
+})();
+</script>
+</body>
+</html>

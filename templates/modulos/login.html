@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Login | Grupo GSN - Sistema de Gestión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== ESTILOS BASE ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 10% 20%, #0a0f1c, #03060c);
+            color: #f0f3fa;
+            transition: all 0.3s ease;
+        }
+
+        /* ========== FONDO CON IMAGEN ========== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/templates/modulos/Imagenes/fondo.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            z-index: 0;
+            opacity: 0.7;
+        }
+
+        /* Overlay oscuro para mejor legibilidad */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+
+        /* Si la imagen no carga, usar el fondo gradiente */
+        body.no-image::before {
+            background-image: none !important;
+        }
+        body.no-image::after {
+            background: rgba(0, 0, 0, 0) !important;
+        }
+
+        /* ========== PARTICULAS ========== */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* ========== TARJETA DE LOGIN ========== */
+        .login-card {
+            position: relative;
+            z-index: 10;
+            width: 450px;
+            max-width: 90%;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.6s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-card.exit {
+            animation: slideOut 0.4s ease-in forwards;
+        }
+
+        @keyframes slideOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-100px); }
+        }
+
+        /* ========== LOGO ========== */
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.15);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); }
+        }
+
+        .logo-icon i {
+            font-size: 40px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #ffffff, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 40px rgba(245,158,11,0.1);
+        }
+
+        .logo p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+
+        /* ========== FORMULARIO ========== */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group label i {
+            color: #f59e0b;
+            margin-right: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #f59e0b;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08);
+        }
+
+        .input-wrapper input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            color: #f59e0b;
+        }
+
+        /* ========== BOTONES ========== */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ========== REGISTRO ========== */
+        .register-link {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .register-link a {
+            color: #fbbf24;
+            text-decoration: none;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .register-link a:hover {
+            color: #f59e0b;
+            transform: translateX(3px);
+        }
+
+        /* ========== ERROR ========== */
+        .error-message {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 15px;
+            color: #f87171;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* ========== SPINNER ========== */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========== TOAST BIENVENIDA ========== */
+        .welcome-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            padding: 20px 40px;
+            border-radius: 60px;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .welcome-toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 600px) {
+            .login-card {
+                padding: 25px;
+            }
+            .logo-icon {
+                width: 60px;
+                height: 60px;
+            }
+            .logo-icon i {
+                font-size: 30px;
+            }
+            .welcome-toast {
+                font-size: 14px;
+                padding: 15px 30px;
+                white-space: normal;
+            }
+            .logo h1 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .login-card {
+                padding: 20px;
+            }
+            .login-card {
+                border-radius: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="login-card" id="loginCard">
+    <div class="logo">
+        <div class="logo-icon"><i class="fas fa-gas-pump"></i></div>
+        <h1>GRUPO GSN</h1>
+        <p>Sistema de Gestión de Combustible</p>
+    </div>
+
+    <div class="input-group">
+        <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
+        <div class="input-wrapper">
+            <input type="email" id="loginEmail" placeholder="correo@ejemplo.com" value="admin@gruposn.com">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label><i class="fas fa-lock"></i> Contraseña</label>
+        <div class="input-wrapper">
+            <input type="password" id="loginPassword" placeholder="••••••••" value="admin123">
+            <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+        </div>
+    </div>
+
+    <div class="error-message" id="errorMessage">
+        <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+    </div>
+
+    <button class="btn-login" id="loginBtn">
+        <i class="fas fa-arrow-right-to-bracket"></i> Iniciar Sesión
+    </button>
+
+    <div class="register-link">
+        <a onclick="irARegistro()">
+            <i class="fas fa-user-plus"></i> ¿No tienes cuenta? Regístrate
+        </a>
+    </div>
+</div>
+
+<script>
+// ==================== LOGIN CON IMAGEN DE FONDO ====================
+console.log("🚀 Login módulo cargado - Con imagen de fondo");
+
+// ==================== FUNCIONES ====================
+
+// Verificar si la imagen de fondo existe
+function verificarImagenFondo() {
+    const rutas = [
+        '/templates/modulos/Imagenes/fondo.png',
+        '/modulos/Imagenes/fondo.png',
+        '/static/Imagenes/fondo.png'
+    ];
+    
+    let rutaActual = 0;
+    
+    function probarRuta() {
+        if (rutaActual >= rutas.length) {
+            console.warn("⚠️ No se pudo cargar imagen de fondo, usando gradiente");
+            document.body.classList.add('no-image');
+            return;
+        }
+        
+        const img = new Image();
+        img.onload = function() {
+            console.log("✅ Imagen de fondo cargada:", rutas[rutaActual]);
+            // La imagen ya está en el CSS, no necesitamos hacer nada más
+        };
+        img.onerror = function() {
+            console.warn("⚠️ No se pudo cargar:", rutas[rutaActual]);
+            rutaActual++;
+            probarRuta();
+        };
+        img.src = rutas[rutaActual];
+    }
+    
+    probarRuta();
+}
+
+// Crear partículas de fondo
+function crearParticulas() {
+    const particlesContainer = document.getElementById('particles');
+    if (!particlesContainer) return;
+    
+    particlesContainer.innerHTML = '';
+    
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        const size = Math.random() * 5 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = Math.random() * 20 + 10 + 's';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Mostrar error
+function mostrarError(mensaje) {
+    const errorDiv = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    errorText.innerText = mensaje;
+    errorDiv.classList.add('show');
+    setTimeout(() => {
+        errorDiv.classList.remove('show');
+    }, 3000);
+}
+
+// Mostrar bienvenida
+function mostrarBienvenida(nombre) {
+    const toast = document.createElement('div');
+    toast.className = 'welcome-toast';
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> ¡Bienvenido, ${nombre}!`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 500);
+    }, 2000);
+}
+
+// Mostrar/ocultar contraseña
+function togglePassword() {
+    const pwd = document.getElementById('loginPassword');
+    const icon = document.getElementById('togglePassword');
+    
+    if (pwd.type === 'password') {
+        pwd.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        pwd.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Guardar sesión
+function guardarSesion(usuario) {
+    localStorage.setItem('usuario_actual', JSON.stringify(usuario));
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+    console.log("✅ Sesión guardada para:", usuario.nombre, "Rol:", usuario.rol);
+}
+
+// Iniciar sesión
+async function iniciarSesion() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('loginBtn');
+
+    if (!email) {
+        mostrarError("Ingrese su correo electrónico");
+        return;
+    }
+    
+    if (!password) {
+        mostrarError("Ingrese su contraseña");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Verificando...';
+
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        });
+        
+        const data = await response.json();
+
+        if (data.ok && data.usuario) {
+            guardarSesion(data.usuario);
+            mostrarBienvenida(data.usuario.nombre);
+            
+            const loginCard = document.getElementById('loginCard');
+            loginCard.classList.add('exit');
+            
+            setTimeout(() => {
+                console.log("🚀 Redirigiendo a: /madre");
+                window.location.href = '/madre';
+            }, 500);
+        } else {
+            mostrarError(data.error || "Correo o contraseña incorrectos");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> Iniciar Sesión';
+        }
+    } catch (error) {
+        console.error("Error en login:", error);
+        mostrarError("Error de conexión con el servidor");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> Iniciar Sesión';
+    }
+}
+
+// Ir a registro
+function irARegistro() {
+    window.location.href = '/modulos/registro.html';
+}
+
+// Verificar si ya hay sesión activa
+function verificarSesionActiva() {
+    try {
+        const usuarioStr = localStorage.getItem('usuario_actual') || localStorage.getItem('usuario');
+        if (usuarioStr) {
+            const usuario = JSON.parse(usuarioStr);
+            console.log("Sesión activa detectada:", usuario.nombre);
+            window.location.href = '/madre';
+            return true;
+        }
+    } catch(e) {
+        console.error(e);
+    }
+    return false;
+}
+
+// ==================== INICIALIZACIÓN ====================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 Login inicializado con imagen de fondo");
+    
+    // Verificar sesión activa
+    if (verificarSesionActiva()) return;
+    
+    // Verificar imagen de fondo
+    verificarImagenFondo();
+    
+    // Crear partículas
+    crearParticulas();
+    
+    // Event listeners
+    document.getElementById('loginBtn').addEventListener('click', iniciarSesion);
+    document.getElementById('togglePassword').addEventListener('click', togglePassword);
+    
+    // Enter para enviar
+    document.getElementById('loginEmail').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') iniciarSesion();
+    });
+    
+    document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') iniciarSesion();
+    });
+    
+    console.log("✅ Login completamente inicializado con imagen de fondo");
+});
+
+// Exponer funciones globales
+window.irARegistro = irARegistro;
+window.iniciarSesion = iniciarSesion;
+</script>
+</body>
+</html>

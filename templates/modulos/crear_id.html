@@ -1,0 +1,534 @@
+<!-- MODULO CREAR ID EMPRESA - COMPLETO -->
+<div class="crear-id-modulo">
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-id-card"></i> Crear Nueva Empresa</h3>
+            <p class="panel-subtitle">Complete los datos para registrar una nueva empresa</p>
+        </div>
+        <div class="panel-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-building"></i> Nombre de la empresa <span class="required">*</span></label>
+                    <input type="text" id="newNombre" class="input-moderno" placeholder="Ej: Transportes Nicaragua">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Contacto</label>
+                    <input type="text" id="newContacto" class="input-moderno" placeholder="Nombre del representante">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-id-card"></i> RUC / NIT</label>
+                    <input type="text" id="newCedula" class="input-moderno" placeholder="Ej: 12345678">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Telefono</label>
+                    <input type="text" id="newTelefono" class="input-moderno" placeholder="Ej: 505 1234 5678">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="newEmail" class="input-moderno" placeholder="empresa@correo.com">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Direccion</label>
+                    <input type="text" id="newDireccion" class="input-moderno" placeholder="Direccion completa">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Tipo</label>
+                    <select id="newTipo" class="input-moderno">
+                        <option value="Cliente">Cliente</option>
+                        <option value="Proveedor">Proveedor</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-truck"></i> Placa (opcional)</label>
+                    <input type="text" id="newPlaca" class="input-moderno" placeholder="Ej: M337072">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-qrcode"></i> ID Personalizado (opcional)</label>
+                    <div class="input-group">
+                        <input type="text" id="newIdPersonalizado" class="input-moderno" placeholder="Dejar en blanco para auto-generar">
+                        <button id="generarIdSugeridoBtn" class="btn-sugerir">
+                            <i class="fas fa-magic"></i> Sugerir ID
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="crearIdBtn" class="btn-crear">
+                <i class="fas fa-save"></i> Crear Empresa
+            </button>
+            
+            <div id="idCreadoDisplay" class="id-creado-display" style="display: none;">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <span>Empresa creada exitosamente</span>
+                    <code id="idGeneradoDisplay"></code>
+                </div>
+                <button class="btn-copiar" onclick="copiarIdGenerado()">
+                    <i class="fas fa-copy"></i> Copiar ID
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== MODULO CREAR ID COMPLETO ====================
+(function() {
+    console.log("Modulo Crear ID cargando...");
+    
+    function mostrarToast(mensaje, tipo) {
+        var existingToast = document.querySelector('.toast-message');
+        if (existingToast) existingToast.remove();
+        
+        var toast = document.createElement('div');
+        toast.className = 'toast-message';
+        var icono = tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        toast.innerHTML = '<i class="fas ' + icono + '"></i> ' + mensaje;
+        var bgColor = tipo === 'success' ? '#10b981' : '#ef4444';
+        toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:' + bgColor + ';color:white;padding:12px 20px;border-radius:8px;z-index:10000;animation:slideIn 0.3s ease;font-family:"Inter",sans-serif;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+        document.body.appendChild(toast);
+        setTimeout(function() { if(toast.remove) toast.remove(); }, 4000);
+    }
+    
+    window.copiarIdGenerado = function() {
+        var idSpan = document.getElementById('idGeneradoDisplay');
+        if (idSpan && idSpan.innerText) {
+            navigator.clipboard.writeText(idSpan.innerText);
+            mostrarToast('ID copiado: ' + idSpan.innerText, 'success');
+        }
+    };
+    
+    function generarIdSugerido() {
+        var tipoSelect = document.getElementById('newTipo');
+        var nombreInput = document.getElementById('newNombre');
+        var tipo = tipoSelect ? tipoSelect.value : 'Cliente';
+        var nombre = nombreInput ? nombreInput.value : '';
+        var prefijos = { Cliente: 'CLI', Proveedor: 'PRO' };
+        var prefijo = prefijos[tipo] || 'EMP';
+        var iniciales = nombre ? nombre.substring(0, 3).toUpperCase() : 'XXX';
+        var numero = Math.floor(Math.random() * 900 + 100);
+        var idSugerido = prefijo + '-' + iniciales + numero;
+        
+        var idInput = document.getElementById('newIdPersonalizado');
+        if (idInput) idInput.value = idSugerido;
+    }
+    
+    function limpiarFormulario() {
+        document.getElementById('newNombre').value = '';
+        document.getElementById('newContacto').value = '';
+        document.getElementById('newCedula').value = '';
+        document.getElementById('newTelefono').value = '';
+        document.getElementById('newEmail').value = '';
+        document.getElementById('newDireccion').value = '';
+        document.getElementById('newPlaca').value = '';
+        document.getElementById('newIdPersonalizado').value = '';
+        var tipoSelect = document.getElementById('newTipo');
+        if (tipoSelect) tipoSelect.value = 'Cliente';
+    }
+    
+    async function crearNuevaEmpresa() {
+        var nombreInput = document.getElementById('newNombre');
+        var nombre = nombreInput ? nombreInput.value.trim() : '';
+        
+        if (!nombre) {
+            mostrarToast('Ingrese el nombre de la empresa', 'error');
+            return;
+        }
+        
+        var btn = document.getElementById('crearIdBtn');
+        var originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creando...';
+        
+        try {
+            var requestBody = {
+                nombre: nombre,
+                contacto: document.getElementById('newContacto')?.value || '',
+                cedula: document.getElementById('newCedula')?.value || '',
+                telefono: document.getElementById('newTelefono')?.value || '',
+                direccion: document.getElementById('newDireccion')?.value || '',
+                tipo: document.getElementById('newTipo')?.value || 'Cliente',
+                email: document.getElementById('newEmail')?.value || '',
+                id: document.getElementById('newIdPersonalizado')?.value || undefined,
+                placa: document.getElementById('newPlaca')?.value || '',
+                credito: 0,
+                limite_credito: 0
+            };
+            
+            console.log("Enviando empresa:", requestBody);
+            
+            var response = await fetch('/api/crear_empresa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+            
+            var data = await response.json();
+            console.log("Respuesta:", data);
+            
+            if (data.ok) {
+                mostrarToast('Empresa "' + nombre + '" creada exitosamente', 'success');
+                
+                var display = document.getElementById('idCreadoDisplay');
+                var idSpan = document.getElementById('idGeneradoDisplay');
+                if (display && idSpan && data.empresa) {
+                    idSpan.innerText = data.empresa.id;
+                    display.style.display = 'flex';
+                    setTimeout(function() {
+                        if (display) display.style.display = 'none';
+                    }, 5000);
+                }
+                
+                limpiarFormulario();
+                
+                if (typeof window.recargarEmpresas === 'function') {
+                    window.recargarEmpresas();
+                }
+                if (typeof window.cargarDatosEmpresas === 'function') {
+                    window.cargarDatosEmpresas();
+                }
+                
+                var event = new CustomEvent('empresaCreada', { detail: data.empresa });
+                window.dispatchEvent(event);
+                
+            } else {
+                mostrarToast(data.error || 'Error al crear empresa', 'error');
+            }
+        } catch(e) {
+            console.error("Error creando empresa:", e);
+            mostrarToast('Error de conexion', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+    
+    function inicializar() {
+        console.log("Inicializando Crear ID");
+        
+        var crearBtn = document.getElementById('crearIdBtn');
+        if (crearBtn) crearBtn.onclick = crearNuevaEmpresa;
+        
+        var generarBtn = document.getElementById('generarIdSugeridoBtn');
+        if (generarBtn) generarBtn.onclick = generarIdSugerido;
+        
+        var nombreInput = document.getElementById('newNombre');
+        if (nombreInput) {
+            nombreInput.addEventListener('input', function() {
+                var idInput = document.getElementById('newIdPersonalizado');
+                if (idInput && !idInput.value) {
+                    generarIdSugerido();
+                }
+            });
+        }
+    }
+    
+    window.inicializarCrearId = inicializar;
+    window.crearNuevaEmpresa = crearNuevaEmpresa;
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializar);
+    } else {
+        inicializar();
+    }
+    
+    console.log("Modulo Crear ID cargado");
+})();
+</script>
+
+<style>
+/* ==================== ESTILOS COMPLETOS ==================== */
+
+.crear-id-modulo {
+    padding: 20px;
+    animation: fadeInUp 0.5s ease;
+}
+
+.crear-id-modulo .panel {
+    background: rgba(15, 15, 25, 0.8);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.crear-id-modulo .panel-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(0, 0, 0, 0.2));
+}
+
+.crear-id-modulo .panel-header h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    margin: 0 0 5px 0;
+}
+
+.crear-id-modulo .panel-header h3 i {
+    color: #f59e0b;
+    font-size: 1.6rem;
+}
+
+.panel-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    margin: 5px 0 0 0;
+}
+
+.panel-body {
+    padding: 28px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.form-group label i {
+    color: #f59e0b;
+    margin-right: 6px;
+    width: 16px;
+}
+
+.required {
+    color: #ef4444;
+    margin-left: 4px;
+}
+
+.input-moderno {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.input-moderno:focus {
+    outline: none;
+    border-color: #f59e0b;
+    background: rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+.input-moderno::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+select.input-moderno {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f59e0b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 18px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.input-group .input-moderno {
+    flex: 1;
+}
+
+.btn-sugerir {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-sugerir:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.btn-crear {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-crear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.id-creado-display {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    animation: fadeInUp 0.3s ease;
+}
+
+.id-creado-display i {
+    font-size: 24px;
+    color: #10b981;
+}
+
+.id-creado-display span {
+    color: white;
+    font-size: 0.85rem;
+}
+
+.id-creado-display code {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #10b981;
+    display: inline-block;
+    margin-left: 10px;
+    font-family: monospace;
+}
+
+.btn-copiar {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #10b981;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-copiar:hover {
+    background: rgba(16, 185, 129, 0.4);
+    transform: scale(1.02);
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Toast animation */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .crear-id-modulo .panel {
+        margin: 0;
+    }
+    
+    .panel-body {
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .btn-sugerir {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .id-creado-display {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .id-creado-display code {
+        margin-left: 0;
+        display: block;
+        margin-top: 8px;
+    }
+}
+</style>
